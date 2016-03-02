@@ -11,6 +11,17 @@
 		866EBDEF1C86F0F500FABD9A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 866EBDEE1C86F0F500FABD9A /* Assets.xcassets */; };
 		866EBDF21C86F0F500FABD9A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 866EBDF01C86F0F500FABD9A /* MainMenu.xib */; };
 		866EBDFD1C86F0F500FABD9A /* SwifterSocketsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBDFC1C86F0F500FABD9A /* SwifterSocketsTests.swift */; };
+		866EBE0E1C86F17E00FABD9A /* SwifterSockets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE071C86F17E00FABD9A /* SwifterSockets.swift */; };
+		866EBE0F1C86F17E00FABD9A /* SwifterSockets.InitServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE081C86F17E00FABD9A /* SwifterSockets.InitServer.swift */; };
+		866EBE101C86F17E00FABD9A /* SwifterSockets.InitClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE091C86F17E00FABD9A /* SwifterSockets.InitClient.swift */; };
+		866EBE111C86F17E00FABD9A /* SwifterSockets.Transmit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0A1C86F17E00FABD9A /* SwifterSockets.Transmit.swift */; };
+		866EBE121C86F17E00FABD9A /* SwifterSockets.Receive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0B1C86F17E00FABD9A /* SwifterSockets.Receive.swift */; };
+		866EBE131C86F17E00FABD9A /* SwifterSockets.Accept.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0C1C86F17E00FABD9A /* SwifterSockets.Accept.swift */; };
+		866EBE141C86F17E00FABD9A /* Examples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0D1C86F17E00FABD9A /* Examples.swift */; };
+		866EBE1C1C86F66C00FABD9A /* asl-bridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE1A1C86F66C00FABD9A /* asl-bridge.m */; };
+		866EBE1D1C86F66C00FABD9A /* SwifterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE1B1C86F66C00FABD9A /* SwifterLog.swift */; };
+		866EBE211C86F6B000FABD9A /* ASCII.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE1F1C86F6B000FABD9A /* ASCII.swift */; };
+		866EBE221C86F6B000FABD9A /* VJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE201C86F6B000FABD9A /* VJson.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,6 +43,19 @@
 		866EBDF81C86F0F500FABD9A /* SwifterSocketsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwifterSocketsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		866EBDFC1C86F0F500FABD9A /* SwifterSocketsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwifterSocketsTests.swift; sourceTree = "<group>"; };
 		866EBDFE1C86F0F500FABD9A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		866EBE071C86F17E00FABD9A /* SwifterSockets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.swift; sourceTree = "<group>"; };
+		866EBE081C86F17E00FABD9A /* SwifterSockets.InitServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.InitServer.swift; sourceTree = "<group>"; };
+		866EBE091C86F17E00FABD9A /* SwifterSockets.InitClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.InitClient.swift; sourceTree = "<group>"; };
+		866EBE0A1C86F17E00FABD9A /* SwifterSockets.Transmit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Transmit.swift; sourceTree = "<group>"; };
+		866EBE0B1C86F17E00FABD9A /* SwifterSockets.Receive.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Receive.swift; sourceTree = "<group>"; };
+		866EBE0C1C86F17E00FABD9A /* SwifterSockets.Accept.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Accept.swift; sourceTree = "<group>"; };
+		866EBE0D1C86F17E00FABD9A /* Examples.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Examples.swift; sourceTree = "<group>"; };
+		866EBE151C86F64C00FABD9A /* SwifterSockets-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SwifterSockets-Bridging-Header.h"; sourceTree = "<group>"; };
+		866EBE191C86F66C00FABD9A /* asl-bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "asl-bridge.h"; path = "../../../SwifterLog/xcode/SwifterLog/SwifterLog/asl-bridge.h"; sourceTree = "<group>"; };
+		866EBE1A1C86F66C00FABD9A /* asl-bridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "asl-bridge.m"; path = "../../../SwifterLog/xcode/SwifterLog/SwifterLog/asl-bridge.m"; sourceTree = "<group>"; };
+		866EBE1B1C86F66C00FABD9A /* SwifterLog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwifterLog.swift; path = ../../../SwifterLog/xcode/SwifterLog/SwifterLog/SwifterLog.swift; sourceTree = "<group>"; };
+		866EBE1F1C86F6B000FABD9A /* ASCII.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASCII.swift; path = ../../../SwifterJSON/xcode/SwifterJSON/SwifterJSON/ASCII.swift; sourceTree = "<group>"; };
+		866EBE201C86F6B000FABD9A /* VJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VJson.swift; path = ../../../SwifterJSON/xcode/SwifterJSON/SwifterJSON/VJson.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +79,8 @@
 		866EBDE01C86F0F500FABD9A = {
 			isa = PBXGroup;
 			children = (
+				866EBE231C86F6B600FABD9A /* SwifterJSON */,
+				866EBE1E1C86F67200FABD9A /* SwifterLog */,
 				866EBDEB1C86F0F500FABD9A /* SwifterSockets */,
 				866EBDFB1C86F0F500FABD9A /* SwifterSocketsTests */,
 				866EBDEA1C86F0F500FABD9A /* Products */,
@@ -73,10 +99,18 @@
 		866EBDEB1C86F0F500FABD9A /* SwifterSockets */ = {
 			isa = PBXGroup;
 			children = (
+				866EBE071C86F17E00FABD9A /* SwifterSockets.swift */,
+				866EBE081C86F17E00FABD9A /* SwifterSockets.InitServer.swift */,
+				866EBE091C86F17E00FABD9A /* SwifterSockets.InitClient.swift */,
+				866EBE0A1C86F17E00FABD9A /* SwifterSockets.Transmit.swift */,
+				866EBE0B1C86F17E00FABD9A /* SwifterSockets.Receive.swift */,
+				866EBE0C1C86F17E00FABD9A /* SwifterSockets.Accept.swift */,
+				866EBE0D1C86F17E00FABD9A /* Examples.swift */,
 				866EBDEC1C86F0F500FABD9A /* AppDelegate.swift */,
 				866EBDEE1C86F0F500FABD9A /* Assets.xcassets */,
 				866EBDF01C86F0F500FABD9A /* MainMenu.xib */,
 				866EBDF31C86F0F500FABD9A /* Info.plist */,
+				866EBE151C86F64C00FABD9A /* SwifterSockets-Bridging-Header.h */,
 			);
 			path = SwifterSockets;
 			sourceTree = "<group>";
@@ -88,6 +122,25 @@
 				866EBDFE1C86F0F500FABD9A /* Info.plist */,
 			);
 			path = SwifterSocketsTests;
+			sourceTree = "<group>";
+		};
+		866EBE1E1C86F67200FABD9A /* SwifterLog */ = {
+			isa = PBXGroup;
+			children = (
+				866EBE191C86F66C00FABD9A /* asl-bridge.h */,
+				866EBE1A1C86F66C00FABD9A /* asl-bridge.m */,
+				866EBE1B1C86F66C00FABD9A /* SwifterLog.swift */,
+			);
+			name = SwifterLog;
+			sourceTree = "<group>";
+		};
+		866EBE231C86F6B600FABD9A /* SwifterJSON */ = {
+			isa = PBXGroup;
+			children = (
+				866EBE1F1C86F6B000FABD9A /* ASCII.swift */,
+				866EBE201C86F6B000FABD9A /* VJson.swift */,
+			);
+			name = SwifterJSON;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -190,6 +243,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				866EBE0F1C86F17E00FABD9A /* SwifterSockets.InitServer.swift in Sources */,
+				866EBE121C86F17E00FABD9A /* SwifterSockets.Receive.swift in Sources */,
+				866EBE111C86F17E00FABD9A /* SwifterSockets.Transmit.swift in Sources */,
+				866EBE131C86F17E00FABD9A /* SwifterSockets.Accept.swift in Sources */,
+				866EBE0E1C86F17E00FABD9A /* SwifterSockets.swift in Sources */,
+				866EBE211C86F6B000FABD9A /* ASCII.swift in Sources */,
+				866EBE221C86F6B000FABD9A /* VJson.swift in Sources */,
+				866EBE1D1C86F66C00FABD9A /* SwifterLog.swift in Sources */,
+				866EBE141C86F17E00FABD9A /* Examples.swift in Sources */,
+				866EBE1C1C86F66C00FABD9A /* asl-bridge.m in Sources */,
+				866EBE101C86F17E00FABD9A /* SwifterSockets.InitClient.swift in Sources */,
 				866EBDED1C86F0F500FABD9A /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -308,11 +372,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = SwifterSockets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = nl.balancingrock.SwifterSockets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "SwifterSockets/SwifterSockets-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -320,11 +387,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = SwifterSockets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = nl.balancingrock.SwifterSockets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "SwifterSockets/SwifterSockets-Bridging-Header.h";
 			};
 			name = Release;
 		};
@@ -373,6 +442,7 @@
 				866EBE031C86F0F500FABD9A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		866EBE041C86F0F500FABD9A /* Build configuration list for PBXNativeTarget "SwifterSocketsTests" */ = {
 			isa = XCConfigurationList;
@@ -381,6 +451,7 @@
 				866EBE061C86F0F500FABD9A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
