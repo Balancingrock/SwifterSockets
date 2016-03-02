@@ -4,6 +4,7 @@ A collection of socket utilities in pure Swift
 Dependencies:
 
 [SwifterLog](https://github.com/Swiftrien/SwifterLog): But can easily be removed.
+
 [SwifterJSON](https://github.com/Swiftrien/SwifterJSON): Only if SwifterLog is used, but can easily be removed from SwifterLog.
 
 Installation:
