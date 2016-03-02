@@ -1,0 +1,388 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		866EBDED1C86F0F500FABD9A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBDEC1C86F0F500FABD9A /* AppDelegate.swift */; };
+		866EBDEF1C86F0F500FABD9A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 866EBDEE1C86F0F500FABD9A /* Assets.xcassets */; };
+		866EBDF21C86F0F500FABD9A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 866EBDF01C86F0F500FABD9A /* MainMenu.xib */; };
+		866EBDFD1C86F0F500FABD9A /* SwifterSocketsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBDFC1C86F0F500FABD9A /* SwifterSocketsTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		866EBDF91C86F0F500FABD9A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 866EBDE11C86F0F500FABD9A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 866EBDE81C86F0F500FABD9A;
+			remoteInfo = SwifterSockets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		866EBDE91C86F0F500FABD9A /* SwifterSockets.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwifterSockets.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		866EBDEC1C86F0F500FABD9A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		866EBDEE1C86F0F500FABD9A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		866EBDF11C86F0F500FABD9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		866EBDF31C86F0F500FABD9A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		866EBDF81C86F0F500FABD9A /* SwifterSocketsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwifterSocketsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		866EBDFC1C86F0F500FABD9A /* SwifterSocketsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwifterSocketsTests.swift; sourceTree = "<group>"; };
+		866EBDFE1C86F0F500FABD9A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		866EBDE61C86F0F500FABD9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		866EBDF51C86F0F500FABD9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		866EBDE01C86F0F500FABD9A = {
+			isa = PBXGroup;
+			children = (
+				866EBDEB1C86F0F500FABD9A /* SwifterSockets */,
+				866EBDFB1C86F0F500FABD9A /* SwifterSocketsTests */,
+				866EBDEA1C86F0F500FABD9A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		866EBDEA1C86F0F500FABD9A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				866EBDE91C86F0F500FABD9A /* SwifterSockets.app */,
+				866EBDF81C86F0F500FABD9A /* SwifterSocketsTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		866EBDEB1C86F0F500FABD9A /* SwifterSockets */ = {
+			isa = PBXGroup;
+			children = (
+				866EBDEC1C86F0F500FABD9A /* AppDelegate.swift */,
+				866EBDEE1C86F0F500FABD9A /* Assets.xcassets */,
+				866EBDF01C86F0F500FABD9A /* MainMenu.xib */,
+				866EBDF31C86F0F500FABD9A /* Info.plist */,
+			);
+			path = SwifterSockets;
+			sourceTree = "<group>";
+		};
+		866EBDFB1C86F0F500FABD9A /* SwifterSocketsTests */ = {
+			isa = PBXGroup;
+			children = (
+				866EBDFC1C86F0F500FABD9A /* SwifterSocketsTests.swift */,
+				866EBDFE1C86F0F500FABD9A /* Info.plist */,
+			);
+			path = SwifterSocketsTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		866EBDE81C86F0F500FABD9A /* SwifterSockets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 866EBE011C86F0F500FABD9A /* Build configuration list for PBXNativeTarget "SwifterSockets" */;
+			buildPhases = (
+				866EBDE51C86F0F500FABD9A /* Sources */,
+				866EBDE61C86F0F500FABD9A /* Frameworks */,
+				866EBDE71C86F0F500FABD9A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SwifterSockets;
+			productName = SwifterSockets;
+			productReference = 866EBDE91C86F0F500FABD9A /* SwifterSockets.app */;
+			productType = "com.apple.product-type.application";
+		};
+		866EBDF71C86F0F500FABD9A /* SwifterSocketsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 866EBE041C86F0F500FABD9A /* Build configuration list for PBXNativeTarget "SwifterSocketsTests" */;
+			buildPhases = (
+				866EBDF41C86F0F500FABD9A /* Sources */,
+				866EBDF51C86F0F500FABD9A /* Frameworks */,
+				866EBDF61C86F0F500FABD9A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				866EBDFA1C86F0F500FABD9A /* PBXTargetDependency */,
+			);
+			name = SwifterSocketsTests;
+			productName = SwifterSocketsTests;
+			productReference = 866EBDF81C86F0F500FABD9A /* SwifterSocketsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		866EBDE11C86F0F500FABD9A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0720;
+				LastUpgradeCheck = 0720;
+				ORGANIZATIONNAME = "Marinus van der Lugt";
+				TargetAttributes = {
+					866EBDE81C86F0F500FABD9A = {
+						CreatedOnToolsVersion = 7.2.1;
+					};
+					866EBDF71C86F0F500FABD9A = {
+						CreatedOnToolsVersion = 7.2.1;
+						TestTargetID = 866EBDE81C86F0F500FABD9A;
+					};
+				};
+			};
+			buildConfigurationList = 866EBDE41C86F0F500FABD9A /* Build configuration list for PBXProject "SwifterSockets" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 866EBDE01C86F0F500FABD9A;
+			productRefGroup = 866EBDEA1C86F0F500FABD9A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				866EBDE81C86F0F500FABD9A /* SwifterSockets */,
+				866EBDF71C86F0F500FABD9A /* SwifterSocketsTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		866EBDE71C86F0F500FABD9A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				866EBDEF1C86F0F500FABD9A /* Assets.xcassets in Resources */,
+				866EBDF21C86F0F500FABD9A /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		866EBDF61C86F0F500FABD9A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		866EBDE51C86F0F500FABD9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				866EBDED1C86F0F500FABD9A /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		866EBDF41C86F0F500FABD9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				866EBDFD1C86F0F500FABD9A /* SwifterSocketsTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		866EBDFA1C86F0F500FABD9A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 866EBDE81C86F0F500FABD9A /* SwifterSockets */;
+			targetProxy = 866EBDF91C86F0F500FABD9A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		866EBDF01C86F0F500FABD9A /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				866EBDF11C86F0F500FABD9A /* Base */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		866EBDFF1C86F0F500FABD9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		866EBE001C86F0F500FABD9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		866EBE021C86F0F500FABD9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = SwifterSockets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = nl.balancingrock.SwifterSockets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		866EBE031C86F0F500FABD9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = SwifterSockets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = nl.balancingrock.SwifterSockets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		866EBE051C86F0F500FABD9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = SwifterSocketsTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = nl.balancingrock.SwifterSocketsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SwifterSockets.app/Contents/MacOS/SwifterSockets";
+			};
+			name = Debug;
+		};
+		866EBE061C86F0F500FABD9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = SwifterSocketsTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = nl.balancingrock.SwifterSocketsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SwifterSockets.app/Contents/MacOS/SwifterSockets";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		866EBDE41C86F0F500FABD9A /* Build configuration list for PBXProject "SwifterSockets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				866EBDFF1C86F0F500FABD9A /* Debug */,
+				866EBE001C86F0F500FABD9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		866EBE011C86F0F500FABD9A /* Build configuration list for PBXNativeTarget "SwifterSockets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				866EBE021C86F0F500FABD9A /* Debug */,
+				866EBE031C86F0F500FABD9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		866EBE041C86F0F500FABD9A /* Build configuration list for PBXNativeTarget "SwifterSocketsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				866EBE051C86F0F500FABD9A /* Debug */,
+				866EBE061C86F0F500FABD9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 866EBDE11C86F0F500FABD9A /* Project object */;
+}
