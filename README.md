@@ -3,16 +3,16 @@ A collection of socket utilities in pure Swift
 
 Dependencies:
 
-[SwifterLog](https://github.com/Swiftrien/SwifterLog): But can easily be removed
-(SwifterJSON)[https://github.com/Swiftrien/SwifterJSON]: Only if SwifterLog is used, but can easily be removed from SwifterLog.
+[SwifterLog](https://github.com/Swiftrien/SwifterLog): But can easily be removed.
+[SwifterJSON](https://github.com/Swiftrien/SwifterJSON): Only if SwifterLog is used, but can easily be removed from SwifterLog.
 
 Installation:
 
 Note: SwifterSockets is abbreviated to "sws" for better readability.
 
 1. Copy the files sws.swift, sws.InitServer.swift, sws.InitClient.swift, sws.Transmit.swift, sws.Receive.swift, sws.Accept.swift to your project.
-2. If you want to use (SwifterLog)[https://github.com/Swiftrien/SwifterLog], follow the intructions in that project. If you don't want to use SwifterLog, remove all references to SwifterLog from the files in point 1.
-3. If you want to use (SwifterJSON)[https://github.com/Swiftrien/SwifterJSON], follow the intructions in that project. If you don't want to use SwifterJSON, remove all references to it from the SwifterLog files.
+2. If you want to use [SwifterLog](https://github.com/Swiftrien/SwifterLog), follow the intructions in that project. If you don't want to use SwifterLog, remove all references to SwifterLog from the files in point 1.
+3. If you want to use [SwifterJSON](https://github.com/Swiftrien/SwifterJSON), follow the intructions in that project. If you don't want to use SwifterJSON, remove all references to it from the SwifterLog files.
 4. There is no point 4, this is all.
 
 SwifterSockets was developed on and for OS-X but will probably work on iOS as well.
