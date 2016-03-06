@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9
+//  Version:    0.9.1
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
@@ -24,6 +24,13 @@
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
 // =====================================================================================================================
+//
+// History
+// w0.9.1 Changed type of object in 'synchronized' from AnyObject to NSObject
+//        Added EXC_BAD_INSTRUCTION information to fd_set
+// v0.9.0 Initial release
+// =====================================================================================================================
+
 
 import Foundation
 
@@ -43,7 +50,7 @@ import Foundation
  - Note: Calling this function from within the closure guarantees a deadlock.
  */
 
-func synchronized<R>(object: AnyObject, _ closure: () -> R) -> R {
+func synchronized<R>(object: NSObject, _ closure: () -> R) -> R {
     objc_sync_enter(object)
     let r = closure()
     objc_sync_exit(object)
@@ -62,14 +69,14 @@ func synchronized<R>(object: AnyObject, _ closure: () -> R) -> R {
  - Note: Calling this function from within the closure guarantees a deadlock.
  */
 
-func synchronized(object: AnyObject, _ closure: () -> Void) {
+func synchronized(object: NSObject, _ closure: () -> Void) {
     objc_sync_enter(object)
     closure()
     objc_sync_exit(object)
 }
 
 
-class SwifterSockets {
+final class SwifterSockets {
     
     
     /**
@@ -126,6 +133,8 @@ class SwifterSockets {
      - Parameter set: A pointer to a fd_set structure.
      
      - Returns: The given set is updated in place, with the bit at offset 'fd' set to 1.
+     
+     - Note: If you receive an EXC_BAD_INSTRUCTION at the mask statement, then most likely the socket was already closed.
      */
     
     static func fdSet(fd: Int32, inout set: fd_set) {

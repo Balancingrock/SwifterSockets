@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Receive.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9
+//  Version:    0.9.1
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
@@ -34,6 +34,14 @@
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
 // =====================================================================================================================
+//
+// History
+//
+// w0.9.1 ReceiveTelemetry now inherits from NSObject
+//        Replaced (UnsafeMutablePointer<UInt8>, length) with UnsafeMutableBufferPointer<UInt8>
+//        Added note on DataEndDetector that it can be used to receive the data also.
+// v0.9.0 Initial release
+// =====================================================================================================================
 
 
 import Foundation
@@ -48,6 +56,8 @@ extension SwifterSockets {
         
         /**
          This function should only return 'true' when it detects that the received data is complete. It is likely that this function is called more than once for each data transfer. I.e. if the method to detect the end of the incoming data is not a unique single byte, a child implementation must be able to handle the chuncked reception. In other words, every received byte-block is only presented once to this function.
+         
+         - Note: It is possible to use this as a callback to receive data and leave the data that is returned by the receive function untouched.
          
          - Parameter buffer: A pointer to the received data. This will most likely be different for each block of data that is received.
          - Parameter size: The number of bytes present at and after the buffer pointer.
@@ -212,7 +222,7 @@ extension SwifterSockets {
     
     /// The telemetry that is available for the receive calls.
     
-    class ReceiveTelemetry: CustomStringConvertible, CustomDebugStringConvertible {
+    class ReceiveTelemetry: NSObject, CustomDebugStringConvertible {
         
         
         /// The time the transfer was requested. Set only once during the start of the function.
@@ -283,14 +293,14 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        override var description: String {
             return "StartTime = \(startTime), EndTime = \(endTime), BlockCounter = \(blockCounter), Length = \(length), timeoutTime = \(timeoutTime), resultBytes = \(result)"
         }
         
         
         /// The CustomDebugStringConvertible protocol
         
-        var debugDescription: String { return description }
+        override var debugDescription: String { return description }
     }
     
 
@@ -314,8 +324,7 @@ extension SwifterSockets {
     
     static func receiveBytes(
         socket: Int32,
-        buffer: UnsafeMutablePointer<UInt8>,
-        bufferSize: Int,
+        buffer: UnsafeMutableBufferPointer<UInt8>,
         timeout: NSTimeInterval,
         dataEndDetector: DataEndDetector,
         telemetry: ReceiveTelemetry?) -> ReceiveResult
@@ -332,7 +341,7 @@ extension SwifterSockets {
         
         // Make sure there is space in the buffer
         
-        guard bufferSize > 0 else {
+        guard buffer.count > 0 else {
             telemetry?.blockCounter = 0
             telemetry?.endTime = NSDate()
             telemetry?.length = 0
@@ -425,8 +434,8 @@ extension SwifterSockets {
             // Call the recv
             // =====================================================================================
             
-            let size = bufferSize - inOffset
-            let start = buffer + inOffset
+            let size = buffer.count - inOffset
+            let start = buffer.baseAddress + inOffset
             
             let bytesRead = recv(socket, start, size, 0)
             
@@ -460,7 +469,7 @@ extension SwifterSockets {
             // Exit if the data is completely received
             // =====================================================================================
             
-            if dataEndDetector.endReached(UnsafeBufferPointer<UInt8>(start:buffer + inOffset, count:bytesRead)) {
+            if dataEndDetector.endReached(UnsafeBufferPointer<UInt8>(start:buffer.baseAddress + inOffset, count:bytesRead)) {
                 telemetry?.endTime = NSDate()
                 telemetry?.length = inOffset
                 telemetry?.result = ReceiveResult.READY(data: inOffset + bytesRead)
@@ -476,7 +485,7 @@ extension SwifterSockets {
             // Exit if the buffer is full
             // =====================================================================================
             
-        } while (inOffset < bufferSize)
+        } while (inOffset < buffer.count)
         
         telemetry?.endTime = NSDate()
         telemetry?.length = inOffset
@@ -516,9 +525,10 @@ extension SwifterSockets {
         let bufferSize = 1024 * 1024 // 1 MByte (may never be zero, that would cause an endless loop)
         
         
-        // Use calloc to avoid initialization of the allocated memory. Note: This means we must use free(buffer) before exiting this function.
+        // Use alloc to avoid initialization of the allocated memory. Note: This means we must use dealloc() before exiting this function.
         
-        let buffer = calloc(bufferSize, 1)
+        let bufferPtr = UnsafeMutablePointer<UInt8>.alloc(bufferSize)
+        let buffer = UnsafeMutableBufferPointer(start: bufferPtr, count: bufferSize)
         
         
         // The object that will collect the incoming data.
@@ -547,7 +557,7 @@ extension SwifterSockets {
             let availableTime = timeoutTime.timeIntervalSinceNow // Negative result if the cutOffTime has not yet been reached.
             
             if availableTime < 0.0 {
-                free(buffer)
+                bufferPtr.dealloc(bufferSize)
                 telemetry?.endTime = NSDate()
                 telemetry?.result = ReceiveResult.TIMEOUT
                 return ReceiveResult.TIMEOUT
@@ -556,7 +566,7 @@ extension SwifterSockets {
             
             // Get the (next) chunck of data
             
-            let result = receiveBytes(socket, buffer: UnsafeMutablePointer<UInt8>(buffer), bufferSize: bufferSize, timeout: abs(availableTime), dataEndDetector: dataEndDetector, telemetry: telemetry)
+            let result = receiveBytes(socket, buffer: buffer, timeout: abs(availableTime), dataEndDetector: dataEndDetector, telemetry: telemetry)
             
 
             // Handle it corresponding to the result
@@ -568,16 +578,16 @@ extension SwifterSockets {
                 // Copy the data to the NSMutableData object and call the dataFromSocket again
                 // Note: since the bufferSize argument is never 0, this will not produce an endless loop.
                 
-                data.appendBytes(buffer, length: bufferSize)
+                data.appendBytes(buffer.baseAddress, length: bufferSize)
                 
                 
             case let .READY(nofBytes) where nofBytes is Int:
                 
                 // The end was found, copy the data to the NSMutableData object and return it.
                 
-                data.appendBytes(buffer, length: (nofBytes as! Int))
-                free(buffer)
-                                
+                data.appendBytes(buffer.baseAddress, length: (nofBytes as! Int))
+                bufferPtr.dealloc(bufferSize)
+                
                 telemetry?.endTime = NSDate()
                 telemetry?.length = data.length
                 telemetry?.result = ReceiveResult.READY(data: data)
@@ -589,7 +599,7 @@ extension SwifterSockets {
                 
                 // An error occured, raise an exception
                 
-                free(buffer)
+                bufferPtr.dealloc(bufferSize)
                 
                 telemetry?.endTime = NSDate()
                 telemetry?.length = data.length
@@ -602,7 +612,7 @@ extension SwifterSockets {
                 
                 // A timeout occured, raise an exception
                 
-                free(buffer)
+                bufferPtr.dealloc(bufferSize)
                 
                 telemetry?.endTime = NSDate()
                 telemetry?.length = data.length
@@ -615,8 +625,8 @@ extension SwifterSockets {
                 
                 // The client closed the connection, copy received data to the NSMutableData object and return it.
                 
-                data.appendBytes(buffer, length: (nofBytes as! Int))
-                free(buffer)
+                data.appendBytes(buffer.baseAddress, length: (nofBytes as! Int))
+                bufferPtr.dealloc(bufferSize)
                 
                 telemetry?.endTime = NSDate()
                 telemetry?.length = data.length
@@ -713,20 +723,19 @@ extension SwifterSockets {
     
     static func receiveBytesOrThrow(
         socket: Int32,
-        buffer: UnsafeMutablePointer<UInt8>,
-        bufferSize: Int,
+        buffer: UnsafeMutableBufferPointer<UInt8>,
         timeout: NSTimeInterval,
         dataEndDetector: DataEndDetector,
         telemetry: ReceiveTelemetry?) throws -> Int
     {
         if telemetry?.startTime == nil { telemetry?.startTime = NSDate() }
 
-        let result = receiveBytes(socket, buffer: buffer, bufferSize: bufferSize, timeout: timeout, dataEndDetector: dataEndDetector, telemetry: telemetry)
+        let result = receiveBytes(socket, buffer: buffer, timeout: timeout, dataEndDetector: dataEndDetector, telemetry: telemetry)
         
         switch result {
         case .TIMEOUT: throw ReceiveException.TIMEOUT
         case let .CLIENT_CLOSED(nofBytes) where nofBytes is Int: return nofBytes as! Int
-        case .BUFFER_FULL: return bufferSize
+        case .BUFFER_FULL: return buffer.count
         case let .READY(nofBytes) where nofBytes is Int: return nofBytes as! Int
         case let .ERROR(message: msg): throw ReceiveException.MESSAGE(msg)
         default:

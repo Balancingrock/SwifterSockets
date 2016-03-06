@@ -30,6 +30,11 @@
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
 // =====================================================================================================================
+//
+// History
+// w0.9.1 AcceptTelemetry now inherits from NSObject
+// v0.9.0 Initial release
+// =====================================================================================================================
 
 import Foundation
 
@@ -127,7 +132,7 @@ extension SwifterSockets {
     
     /// The telemetry that is available from the accept call. The values are read-only.
     
-    class AcceptTelemetry: CustomStringConvertible, CustomDebugStringConvertible {
+    class AcceptTelemetry: NSObject, CustomDebugStringConvertible {
         
         
         /// The number of times the accept loop has been run so far, updated 'life'.
@@ -227,7 +232,7 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        override var description: String {
             var str = ""
             str += "loopCounter = \(loopCounter)\n"
             str += "acceptedConnections = \(acceptedConnections)\n"
@@ -243,7 +248,7 @@ extension SwifterSockets {
         
         /// The CustomDebugStringConvertible protocol
         
-        var debugDescription: String { return description }
+        override var debugDescription: String { return description }
     }
 
     

@@ -24,6 +24,11 @@
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
 // =====================================================================================================================
+//
+// History
+// w0.9.1 Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
+// v0.9.0 Initial release
+// =====================================================================================================================
 
 
 import Foundation
@@ -406,8 +411,7 @@ extension SwifterSockets {
         address address: String,
         port: String,
         queue: dispatch_queue_t,
-        transmitData: UnsafePointer<UInt8>,
-        transmitDataLength: Int,
+        transmitData: UnsafeBufferPointer<UInt8>,
         transmitTimeout: NSTimeInterval,
         transmitTelemetry: TransmitTelemetry?,
         transmitPostProcessor: TransmitPostProcessing?) throws
@@ -415,7 +419,7 @@ extension SwifterSockets {
         try initClientOrThrowAsync(address: address, port: port, queue: queue, postProcessor: {
             (socket) -> Void in
             let localTransmitTelemetry = transmitTelemetry ?? TransmitTelemetry()
-            transmit(socket, buffer: transmitData, length: transmitDataLength, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
+            transmit(socket, buffer: transmitData, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
             if transmitPostProcessor != nil {
                 transmitPostProcessor!(socket: socket, telemetry: localTransmitTelemetry)
             } else {

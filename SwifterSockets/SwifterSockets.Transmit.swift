@@ -24,6 +24,12 @@
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
 // =====================================================================================================================
+//
+// History
+// w0.9.1 TransmitTelemetry now inherits from NSObject
+//        Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
+// v0.9.0 Initial release
+// =====================================================================================================================
 
 
 import Foundation
@@ -113,7 +119,7 @@ extension SwifterSockets {
     
     /// The telemetry that is available for the transmit calls.
     
-    class TransmitTelemetry: CustomStringConvertible, CustomDebugStringConvertible {
+    class TransmitTelemetry: NSObject, CustomDebugStringConvertible {
         
         
         /// The time the transfer was requested. Set only once during the start of the function.
@@ -189,14 +195,14 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        override var description: String {
             return "StartTime = \(startTime),\nEndTime = \(endTime),\nBlockCounter = \(blockCounter),\nLength = \(length),\nBytesTransferred = \(bytesTransferred),\ntimeoutTime = \(timeoutTime),\nresult = \(result)"
         }
         
         
         /// The CustomDebugStringConvertible protocol
 
-        var debugDescription: String { return description }
+        override var debugDescription: String { return description }
     }
 
 
@@ -205,7 +211,6 @@ extension SwifterSockets {
      
      - Parameter socket: The socket on which to transfer the given data.
      - Parameter buffer: A pointer to a buffer containing the bytes to be transferred.
-     - Parameter length: The number of bytes to transfer, should be > 0.
      - Parameter timeout: The time in seconds for the complete transfer attempt.
      
      - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
@@ -213,8 +218,7 @@ extension SwifterSockets {
     
     static func transmit(
         socket: Int32,
-        buffer: UnsafePointer<UInt8>,
-        length: Int,
+        buffer: UnsafeBufferPointer<UInt8>,
         timeout: NSTimeInterval,
         var telemetry: TransmitTelemetry?) -> TransmitResult
     {
@@ -223,13 +227,13 @@ extension SwifterSockets {
         let startTime = NSDate()
         if telemetry != nil {
             telemetry!.startTime = startTime
-            telemetry!.length = length
+            telemetry!.length = buffer.count
         }
         
         
         // Check if there is data to transmit
         
-        if length == 0 {
+        if buffer.count == 0 {
             if telemetry != nil {
                 telemetry!.blockCounter = 0
                 telemetry!.bytesTransferred = 0
@@ -335,8 +339,8 @@ extension SwifterSockets {
             // Save to use the send API now
             // =====================================================================================
             
-            let size = length - outOffset
-            let dataStart = buffer + outOffset
+            let size = buffer.count - outOffset
+            let dataStart = buffer.baseAddress + outOffset
             
             let bytesSend = send(socket, dataStart, size, 0)
             
@@ -374,7 +378,7 @@ extension SwifterSockets {
             blockCounter++
             bytesTransferred += bytesSend
             
-        } while (outOffset < length)
+        } while (outOffset < buffer.count)
         
         
         // All data was transferred
@@ -404,7 +408,8 @@ extension SwifterSockets {
         timeout: NSTimeInterval,
         telemetry: TransmitTelemetry?) -> TransmitResult
     {
-        return transmit(socket, buffer: UnsafePointer<UInt8>(data.bytes), length: data.length, timeout: timeout, telemetry: telemetry)
+        let buffer = UnsafeBufferPointer(start: UnsafePointer<UInt8>(data.bytes), count: data.length)
+        return transmit(socket, buffer: buffer, timeout: timeout, telemetry: telemetry)
     }
 
 
@@ -449,7 +454,6 @@ extension SwifterSockets {
      
      - Parameter socket: The socket on which to transfer the given data.
      - Parameter buffer: A pointer to a buffer containing the bytes to be transferred.
-     - Parameter length: The number of bytes to transfer, should be > 0.
      - Parameter timeout: The time in seconds for the complete transfer attempt.
      - Parameter telemetry: An optional pointer to a telemetry object that will be updated during execution of the transmit function. The telemetry will not be updated if the arguments have an error.
      
@@ -458,12 +462,11 @@ extension SwifterSockets {
 
     static func transmitOrThrow(
         socket: Int32,
-        buffer: UnsafePointer<UInt8>,
-        length: Int,
+        buffer: UnsafeBufferPointer<UInt8>,
         timeout: NSTimeInterval,
         telemetry: TransmitTelemetry?) throws
     {
-        let result = transmit(socket, buffer: buffer, length: length, timeout: timeout, telemetry: telemetry)
+        let result = transmit(socket, buffer: buffer, timeout: timeout, telemetry: telemetry)
         switch result {
         case .READY: break
         case .TIMEOUT: throw TransmitException.TIMEOUT
@@ -525,7 +528,6 @@ extension SwifterSockets {
      - Parameter queue: The queue on which the transfer will be executed.
      - Parameter socket: The socket to which the transfer will be directed. The socket will not be closed, if it should be closed after the transfer do so in the postProcessing closure.
      - Parameter buffer: A pointer to the first byte of data to be transferred.
-     - Parameter length: The number of bytes to transfer.
      - Parameter timeout: The maximum duration of the transfer in seconds. Note that the number used is not exact, just very close to the given duration.
      - Parameter telemetry: An optional pointer to a telemetry object that will be updated during the transfer.
      - Parameter postProcessor: An optional closure that will be started when the transfer ends. When present, this closure is responsible to close the socket.
@@ -534,15 +536,14 @@ extension SwifterSockets {
     static func transmitAsync(
         queue: dispatch_queue_t,
         socket: Int32,
-        buffer: UnsafePointer<UInt8>,
-        length: Int,
+        buffer: UnsafeBufferPointer<UInt8>,
         timeout: NSTimeInterval,
         telemetry: TransmitTelemetry?,
         postProcessor: TransmitPostProcessing?)
     {
         dispatch_async(queue, {
             let localTelemetry = telemetry ?? TransmitTelemetry()
-            transmit(socket, buffer: buffer, length: length, timeout: timeout, telemetry: localTelemetry)
+            transmit(socket, buffer: buffer, timeout: timeout, telemetry: localTelemetry)
             if postProcessor != nil {
                 postProcessor!(socket: socket, telemetry: localTelemetry)
             } else {
