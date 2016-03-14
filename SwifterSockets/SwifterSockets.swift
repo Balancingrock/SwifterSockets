@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.1
+//  Version:    0.9.2
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
@@ -26,8 +26,10 @@
 // =====================================================================================================================
 //
 // History
-// w0.9.1 Changed type of object in 'synchronized' from AnyObject to NSObject
-//        Added EXC_BAD_INSTRUCTION information to fd_set
+// w0.9.2 - Added closeSocket
+//        - Added 'logUnixSocketCalls'
+// v0.9.1 - Changed type of object in 'synchronized' from AnyObject to NSObject
+//        - Added EXC_BAD_INSTRUCTION information to fd_set
 // v0.9.0 Initial release
 // =====================================================================================================================
 
@@ -77,6 +79,14 @@ func synchronized(object: NSObject, _ closure: () -> Void) {
 
 
 final class SwifterSockets {
+    
+    
+    /**
+     Set this flag to 'true' in order to have the results of all UNIX socket calls logged at level 'debug'.
+     It logs the calls to 'bind', 'connect', 'listen', 'accept', 'recv', 'send' and 'close', but of course only when called through a SwifterSockets call. Note that it will not log the 'select' call as that would swamp the log.
+     Note: the 'SwifterLog' utility is used to do the actual logging.
+     */
+    static var logUnixSocketCalls = false
     
     
     /**
@@ -382,5 +392,27 @@ final class SwifterSockets {
         forFlagOptionAtLevel(IPPROTO_IPV6, withName: IPV6_V6ONLY, str: "IPV6_V6ONLY")
         forIntOptionAtLevel(IPPROTO_TCP, withName: TCP_MAXSEG, str: "TCP_MAXSEG")
         forFlagOptionAtLevel(IPPROTO_TCP, withName: TCP_NODELAY, str: "TCP_NODELAY")
+    }
+    
+    
+    /**
+     Closes the given socket if not nil. This entry point is supplied to have a single point that closes all your sockets. Durng debugging it is often good to have some logging facility that logs all calls on the unix sockets. This function allows to have a single point for that logging without having to look through your code to find all occurances of the close call.
+     */
+    
+    static func closeSocket(socket: Int32?) {
+        
+        if let s = socket {
+        
+            let result = close(s)
+            
+            if logUnixSocketCalls {
+                log.atLevelDebug(id: s, source: "SwifterSockets.closeSocket", message: "Socket closed")
+            }
+            
+            if result != 0 {
+                let message = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+                log.atLevelDebug(id: s, source: "SocketUtils.closeSocket", message: message)
+            }
+        }
     }
 }

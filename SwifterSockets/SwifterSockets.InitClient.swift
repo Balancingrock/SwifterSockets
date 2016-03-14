@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.InitClient.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9
+//  Version:    0.9.2
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
@@ -26,7 +26,9 @@
 // =====================================================================================================================
 //
 // History
-// w0.9.1 Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
+// w0.9.2 Added support for logUnixSocketCalls
+//        Moved closing of sockets to SwifterSockets.closeSocket
+// v0.9.1 Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
 // v0.9.0 Initial release
 // =====================================================================================================================
 
@@ -207,6 +209,13 @@ extension SwifterSockets {
             status = connect(socketDescriptor!, info.memory.ai_addr, info.memory.ai_addrlen)
         
             
+            // Conditional logging
+            
+            if SwifterSockets.logUnixSocketCalls {
+                log.atLevelDebug(id: socketDescriptor!, source: "SwifterSockets.InitServer", message: "Result of 'connect' is \(status)")
+            }
+            
+            
             // Break if successful, log on failure.
 
             if status == 0 {
@@ -220,7 +229,7 @@ extension SwifterSockets {
             
             // Close the socket that was opened, the next attempt must create a new socket descriptor because the protocol family may have changed
             
-            close(socketDescriptor!)
+            closeSocket(socketDescriptor!)
             socketDescriptor = nil // Set to nil to prevent a double closing in case the last connect attempt failed
         }
 
@@ -266,7 +275,7 @@ extension SwifterSockets {
         
         if status == -1 {
             let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-            close(socketDescriptor!)
+            closeSocket(socketDescriptor!)
             return .ERROR(strError)
         }
 
@@ -351,7 +360,7 @@ extension SwifterSockets {
             if transmitPostProcessor != nil {
                 transmitPostProcessor!(socket: socket, telemetry: localTransmitTelemetry)
             } else {
-                close(socket)
+                closeSocket(socket)
             }
         })
     }
@@ -387,7 +396,7 @@ extension SwifterSockets {
             if transmitPostProcessor != nil {
                 transmitPostProcessor!(socket: socket, telemetry: localTransmitTelemetry)
             } else {
-                close(socket)
+                closeSocket(socket)
             }
         })
     }
@@ -423,7 +432,7 @@ extension SwifterSockets {
             if transmitPostProcessor != nil {
                 transmitPostProcessor!(socket: socket, telemetry: localTransmitTelemetry)
             } else {
-                close(socket)
+                closeSocket(socket)
             }
         })
     }

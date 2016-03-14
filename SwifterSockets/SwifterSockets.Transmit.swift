@@ -26,7 +26,9 @@
 // =====================================================================================================================
 //
 // History
-// w0.9.1 TransmitTelemetry now inherits from NSObject
+// w0.9.2 Added support for logUnixSocketCalls
+//        Moved closing of sockets to SwifterSockets.closeSocket
+// v0.9.1 TransmitTelemetry now inherits from NSObject
 //        Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
 // v0.9.0 Initial release
 // =====================================================================================================================
@@ -312,7 +314,7 @@ extension SwifterSockets {
             fdSet(socket, set: &writeSet)
             let status = select(numOfFd, nil, &writeSet, nil, &availableTimeval)
             
-
+            
             // Evaluate the result form the select call
             
             if status == 0 { // No events reported equals timeout
@@ -343,8 +345,15 @@ extension SwifterSockets {
             let dataStart = buffer.baseAddress + outOffset
             
             let bytesSend = send(socket, dataStart, size, 0)
+        
             
+            // Conditional logging
             
+            if logUnixSocketCalls {
+                log.atLevelDebug(id: socket, source: "SwifterSockets.transmit-buffer", message: "Result of send is \(bytesSend)")
+            }
+            
+
             // Evaluate the result of the send
             
             if bytesSend == -1 { // An error occured
@@ -547,7 +556,7 @@ extension SwifterSockets {
             if postProcessor != nil {
                 postProcessor!(socket: socket, telemetry: localTelemetry)
             } else {
-                close(socket)
+                closeSocket(socket)
             }
         })
     }
@@ -578,7 +587,7 @@ extension SwifterSockets {
             if postProcessor != nil {
                 postProcessor!(socket: socket, telemetry: localTelemetry)
             } else {
-                close(socket)
+                closeSocket(socket)
             }
         })
     }
@@ -609,7 +618,7 @@ extension SwifterSockets {
             if postProcessor != nil {
                 postProcessor!(socket: socket, telemetry: localTelemetry)
             } else {
-                close(socket)
+                closeSocket(socket)
             }
         })
     }

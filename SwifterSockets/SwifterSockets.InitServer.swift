@@ -24,6 +24,12 @@
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
 // =====================================================================================================================
+//
+// History
+// w0.9.1 Added support for logUnixSocketCalls
+//        Moved closing of sockets to SwifterSockets.closeSocket
+// v0.9.0 Initial release
+// =====================================================================================================================
 
 
 import Foundation
@@ -139,7 +145,7 @@ extension SwifterSockets {
         
         status = getaddrinfo(
             nil,                        // Any interface
-            port,          // The port on which will be listenend
+            port,                       // The port on which will be listenend
             &hints,                     // Protocol configuration as per above
             &servinfo)                  // The created information
         
@@ -192,7 +198,7 @@ extension SwifterSockets {
         if status == -1 {
             let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
             freeaddrinfo(servinfo)
-            close(socketDescriptor)         // Ignore possible errors
+            closeSocket(socketDescriptor)
             return .ERROR(strError)
         }
         
@@ -207,12 +213,19 @@ extension SwifterSockets {
             servinfo.memory.ai_addrlen)     // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
         
         
+        // Conditional logging
+        
+        if logUnixSocketCalls {
+            log.atLevelDebug(id: socketDescriptor, source: "SwifterSockets.InitServer", message: "Result of 'bind' is \(status)")
+        }
+
+        
         // Cop out if there is an error
         
         if status != 0 {
             let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
             freeaddrinfo(servinfo)
-            close(socketDescriptor)         // Ignore possible errors
+            closeSocket(socketDescriptor)
             return .ERROR(strError)
         }
         
@@ -233,11 +246,17 @@ extension SwifterSockets {
             maxPendingConnectionRequest)   // The number of connections that will be allowed before they are accepted
         
         
+        // Conditional logging
+        
+        if logUnixSocketCalls {
+            log.atLevelDebug(id: socketDescriptor, source: "SwifterSockets.InitServer", message: "Result of 'listen' is \(status)")
+        }
+        
         // Cop out if there are any errors
         
         if status != 0 {
             let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-            close(socketDescriptor)         // Ignore possible errors
+            closeSocket(socketDescriptor)
             return .ERROR(strError)
         }
         

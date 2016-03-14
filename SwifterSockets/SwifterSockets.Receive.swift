@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Receive.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.1
+//  Version:    0.9.2
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
@@ -37,7 +37,9 @@
 //
 // History
 //
-// w0.9.1 ReceiveTelemetry now inherits from NSObject
+// w0.9.2 Added support for logUnixSocketCalls
+//        Moved closing of sockets to SwifterSockets.closeSocket
+// v0.9.1 ReceiveTelemetry now inherits from NSObject
 //        Replaced (UnsafeMutablePointer<UInt8>, length) with UnsafeMutableBufferPointer<UInt8>
 //        Added note on DataEndDetector that it can be used to receive the data also.
 // v0.9.0 Initial release
@@ -404,7 +406,6 @@ extension SwifterSockets {
             
             // Because we only specified 1 FD, we do not need to check on which FD the event was received
             
-            
             // =====================================================================================
             // Exit in case of a timeout
             // =====================================================================================
@@ -438,7 +439,14 @@ extension SwifterSockets {
             let start = buffer.baseAddress + inOffset
             
             let bytesRead = recv(socket, start, size, 0)
+
             
+            // Conditional logging
+            
+            if logUnixSocketCalls {
+                log.atLevelDebug(id: socket, source: "SwifterSockets.receive-buffer", message: "Result of recv is \(bytesRead)")
+            }
+
             
             // =====================================================================================
             // Exit in case of an error
@@ -855,7 +863,7 @@ extension SwifterSockets {
             if postProcessor != nil {
                 postProcessor!(socket: socket, telemetry: localTelemetry, data: data)
             } else {
-                close(socket)
+                closeSocket(socket)
             }
         })
     }

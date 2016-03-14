@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Accept.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9
+//  Version:    0.9.2
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
@@ -32,7 +32,9 @@
 // =====================================================================================================================
 //
 // History
-// w0.9.1 AcceptTelemetry now inherits from NSObject
+// w0.9.2 Added support for logUnixSocketCalls
+//        Moved closing of sockets to SwifterSockets.closeSocket
+// v0.9.1 AcceptTelemetry now inherits from NSObject
 // v0.9.0 Initial release
 // =====================================================================================================================
 
@@ -368,6 +370,14 @@ extension SwifterSockets {
             
             let receiveSocket = accept(socket, &connectedAddrInfo, &connectedAddrInfoLength)
             
+            
+            // Conditional logging
+            
+            if logUnixSocketCalls {
+                log.atLevelDebug(id: socket, source: "SwifterSockets.acceptNoThrow", message: "Result from accept is \(status)")
+            }
+            
+            
             // Evalute the result of the accept call
             
             if receiveSocket == -1 { // Error
@@ -396,7 +406,7 @@ extension SwifterSockets {
                 
                 if status == -1 {
                     let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-                    close(receiveSocket)
+                    closeSocket(receiveSocket)
                     return .ERROR(message: strError)
                 }
 
