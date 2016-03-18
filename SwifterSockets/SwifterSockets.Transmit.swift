@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Transmit.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9
+//  Version:    0.9.2
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
@@ -28,6 +28,7 @@
 // History
 // w0.9.2 Added support for logUnixSocketCalls
 //        Moved closing of sockets to SwifterSockets.closeSocket
+//        Added note on buffer capture to transmitAsync:buffer
 // v0.9.1 TransmitTelemetry now inherits from NSObject
 //        Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
 // v0.9.0 Initial release
@@ -533,6 +534,8 @@ extension SwifterSockets {
     
     /**
      Transmit the bytes in the given buffer asynchronously and -whether sucessfully or not- executes the given closure after the transmission ends. This is a conveniance "fire and forget" function that wraps around transmit(..UnsafePointer<UInt8>..).
+     
+     - Note: Make sure that the buffer that is pointed at is available when the transmit function is executed. One way to ensure this is to provide a postProcessor that uses the buffer for some dummy assignment. Just mentioning the buffer in a capture list without using it does not work (the capture is optimized away)
      
      - Parameter queue: The queue on which the transfer will be executed.
      - Parameter socket: The socket to which the transfer will be directed. The socket will not be closed, if it should be closed after the transfer do so in the postProcessing closure.
