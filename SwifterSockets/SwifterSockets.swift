@@ -28,6 +28,7 @@
 // History
 // w0.9.2 - Added closeSocket
 //        - Added 'logUnixSocketCalls'
+//        - Upgraded to Swift 2.2
 // v0.9.1 - Changed type of object in 'synchronized' from AnyObject to NSObject
 //        - Added EXC_BAD_INSTRUCTION information to fd_set
 // v0.9.0 Initial release
@@ -307,10 +308,13 @@ final class SwifterSockets {
         source: String = "SwifterSockets.logAddrInfoIPAddresses")
     {
         var count = 0
-        for (var info = infoPtr; info != nil; info = info.memory.ai_next) {
+        var info = infoPtr
+        while info != nil {
             let (clientIp, service) = sockaddrDescription(info.memory.ai_addr)
-            let message = "No: \(count++), HostIp: " + (clientIp ?? "?") + " at port: " + (service ?? "?")
+            let message = "No: \(count), HostIp: " + (clientIp ?? "?") + " at port: " + (service ?? "?")
             log.atLevel(logLevel, id: 0, source: source, message: message)
+            count += 1
+            info = info.memory.ai_next
         }
     }
     

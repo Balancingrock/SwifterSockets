@@ -34,6 +34,7 @@
 // History
 // w0.9.2 Added support for logUnixSocketCalls
 //        Moved closing of sockets to SwifterSockets.closeSocket
+//        Upgraded to Swift 2.2
 // v0.9.1 AcceptTelemetry now inherits from NSObject
 // v0.9.0 Initial release
 // =====================================================================================================================
@@ -134,7 +135,7 @@ extension SwifterSockets {
     
     /// The telemetry that is available from the accept call. The values are read-only.
     
-    class AcceptTelemetry: NSObject, CustomDebugStringConvertible {
+    class AcceptTelemetry: NSObject {
         
         
         /// The number of times the accept loop has been run so far, updated 'life'.

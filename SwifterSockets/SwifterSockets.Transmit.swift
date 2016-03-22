@@ -29,6 +29,7 @@
 // w0.9.2 Added support for logUnixSocketCalls
 //        Moved closing of sockets to SwifterSockets.closeSocket
 //        Added note on buffer capture to transmitAsync:buffer
+//        Upgraded to Swift 2.2
 // v0.9.1 TransmitTelemetry now inherits from NSObject
 //        Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
 // v0.9.0 Initial release
@@ -122,7 +123,7 @@ extension SwifterSockets {
     
     /// The telemetry that is available for the transmit calls.
     
-    class TransmitTelemetry: NSObject, CustomDebugStringConvertible {
+    class TransmitTelemetry: NSObject {
         
         
         /// The time the transfer was requested. Set only once during the start of the function.
@@ -223,7 +224,7 @@ extension SwifterSockets {
         socket: Int32,
         buffer: UnsafeBufferPointer<UInt8>,
         timeout: NSTimeInterval,
-        var telemetry: TransmitTelemetry?) -> TransmitResult
+        telemetry: TransmitTelemetry?) -> TransmitResult
     {
         // Prepare the telemetry
         
@@ -385,7 +386,7 @@ extension SwifterSockets {
             
             // Update telemetry
             
-            blockCounter++
+            blockCounter += 1
             bytesTransferred += bytesSend
             
         } while (outOffset < buffer.count)

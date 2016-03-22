@@ -39,6 +39,7 @@
 //
 // w0.9.2 Added support for logUnixSocketCalls
 //        Moved closing of sockets to SwifterSockets.closeSocket
+//        Upgraded to Swift 2.2
 // v0.9.1 ReceiveTelemetry now inherits from NSObject
 //        Replaced (UnsafeMutablePointer<UInt8>, length) with UnsafeMutableBufferPointer<UInt8>
 //        Added note on DataEndDetector that it can be used to receive the data also.
@@ -88,9 +89,9 @@ extension SwifterSockets {
                 switch scanPhase {
                 case .NORMAL:
                     if byte == 0x7B { // ASCII_BRACE_OPEN
-                        countOpeningBraces++
+                        countOpeningBraces += 1
                     } else if byte == 0x7D { // ASCII_BRACE_CLOSE
-                        countClosingBraces++
+                        countClosingBraces += 1
                         if countOpeningBraces == countClosingBraces {
                             return true
                         }
@@ -224,7 +225,7 @@ extension SwifterSockets {
     
     /// The telemetry that is available for the receive calls.
     
-    class ReceiveTelemetry: NSObject, CustomDebugStringConvertible {
+    class ReceiveTelemetry: NSObject {
         
         
         /// The time the transfer was requested. Set only once during the start of the function.
@@ -486,7 +487,7 @@ extension SwifterSockets {
 
             inOffset += bytesRead
 
-            if telemetry?.blockCounter != nil { telemetry!.blockCounter!++ }
+            if telemetry?.blockCounter != nil { telemetry!.blockCounter! += 1 }
             
             
             // =====================================================================================

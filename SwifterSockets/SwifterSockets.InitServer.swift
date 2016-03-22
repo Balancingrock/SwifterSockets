@@ -28,6 +28,7 @@
 // History
 // w0.9.1 Added support for logUnixSocketCalls
 //        Moved closing of sockets to SwifterSockets.closeSocket
+//        Upgraded to Swift 2.2
 // v0.9.0 Initial release
 // =====================================================================================================================
 
@@ -138,7 +139,7 @@ extension SwifterSockets {
         
         // For the information needed to create a socket (result from the getaddrinfo)
         
-        var servinfo = UnsafeMutablePointer<addrinfo>()
+        var servinfo: UnsafeMutablePointer<addrinfo> = nil
         
         
         // Get the info we need to create our socket descriptor

@@ -28,6 +28,7 @@
 // History
 // w0.9.2 Added support for logUnixSocketCalls
 //        Moved closing of sockets to SwifterSockets.closeSocket
+//        Upgraded to Swift 2.2
 // v0.9.1 Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
 // v0.9.0 Initial release
 // =====================================================================================================================
@@ -137,7 +138,7 @@ extension SwifterSockets {
         
         // For the information needed to create a socket (result from the getaddrinfo)
         
-        var servinfo = UnsafeMutablePointer<addrinfo>()
+        var servinfo: UnsafeMutablePointer<addrinfo> = nil
         
         
         // Get the info we need to create our socket descriptor
@@ -169,8 +170,8 @@ extension SwifterSockets {
         // ==================================================================================================
         
         var socketDescriptor: Int32?
-        for (var info = servinfo; info != nil; info = info.memory.ai_next) {
-
+        var info = servinfo
+        while info != nil {
         
             // ============================
             // Create the socket descriptor
@@ -231,6 +232,11 @@ extension SwifterSockets {
             
             closeSocket(socketDescriptor!)
             socketDescriptor = nil // Set to nil to prevent a double closing in case the last connect attempt failed
+            
+            
+            // Setup for the next try
+            
+            info = info.memory.ai_next
         }
 
         
