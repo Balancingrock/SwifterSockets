@@ -375,7 +375,7 @@ extension SwifterSockets {
             // Conditional logging
             
             if logUnixSocketCalls {
-                log.atLevelDebug(id: socket, source: "SwifterSockets.acceptNoThrow", message: "Result from accept is \(status)")
+                log.atLevelDebug(id: socket, source: "SwifterSockets.acceptNoThrow", message: "Result from accept is \(status)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
             }
             
             

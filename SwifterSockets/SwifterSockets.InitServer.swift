@@ -217,7 +217,7 @@ extension SwifterSockets {
         // Conditional logging
         
         if logUnixSocketCalls {
-            log.atLevelDebug(id: socketDescriptor, source: "SwifterSockets.InitServer", message: "Result of 'bind' is \(status)")
+            log.atLevelDebug(id: socketDescriptor, source: "SwifterSockets.InitServer", message: "Result of 'bind' is \(status)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
         }
 
         
@@ -250,7 +250,7 @@ extension SwifterSockets {
         // Conditional logging
         
         if logUnixSocketCalls {
-            log.atLevelDebug(id: socketDescriptor, source: "SwifterSockets.InitServer", message: "Result of 'listen' is \(status)")
+            log.atLevelDebug(id: socketDescriptor, source: "SwifterSockets.InitServer", message: "Result of 'listen' is \(status)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
         }
         
         // Cop out if there are any errors

@@ -312,7 +312,7 @@ final class SwifterSockets {
         while info != nil {
             let (clientIp, service) = sockaddrDescription(info.memory.ai_addr)
             let message = "No: \(count), HostIp: " + (clientIp ?? "?") + " at port: " + (service ?? "?")
-            log.atLevel(logLevel, id: 0, source: source, message: message)
+            log.atLevel(logLevel, id: 0, source: source, message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
             count += 1
             info = info.memory.ai_next
         }
@@ -343,7 +343,7 @@ final class SwifterSockets {
             var ovFlagLength: socklen_t = 4
             _ = getsockopt(socket, level, name, &optionValueFlag, &ovFlagLength)
             let message = "\(str) = " + (optionValueFlag == 0 ? "No" : "Yes")
-            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message)
+            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
         }
         
         func forIntOptionAtLevel(level: Int32, withName name: Int32, str: String) {
@@ -351,7 +351,7 @@ final class SwifterSockets {
             var ovIntLength: socklen_t = 4
             _ = getsockopt(socket, level, name, &optionValueInt, &ovIntLength)
             let message = "\(str) = \(optionValueInt)"
-            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message)
+            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
         }
         
         func forLingerOptionAtLevel(level: Int32, withName name: Int32, str: String) {
@@ -359,7 +359,7 @@ final class SwifterSockets {
             var ovLingerLength: socklen_t = 8
             _ = getsockopt(socket, level, name, &optionValueLinger, &ovLingerLength)
             let message = "\(str) onOff = \(optionValueLinger.l_onoff), linger = \(optionValueLinger.l_linger)"
-            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message)
+            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
         }
         
         func forTimeOptionAtLevel(level: Int32, withName name: Int32, str: String) {
@@ -367,7 +367,7 @@ final class SwifterSockets {
             var ovTimeLength: socklen_t = 8
             _ = getsockopt(socket, level, name, &optionValueTime, &ovTimeLength)
             let message = "\(str) seconds = \(optionValueTime.seconds), microseconds = \(optionValueTime.microseconds)"
-            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message)
+            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
         }
         
         
@@ -410,12 +410,12 @@ final class SwifterSockets {
             let result = close(s)
             
             if logUnixSocketCalls {
-                log.atLevelDebug(id: s, source: "SwifterSockets.closeSocket", message: "Socket closed")
+                log.atLevelDebug(id: s, source: "SwifterSockets.closeSocket", message: "Socket closed", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
             }
             
             if result != 0 {
                 let message = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-                log.atLevelDebug(id: s, source: "SocketUtils.closeSocket", message: message)
+                log.atLevelDebug(id: s, source: "SocketUtils.closeSocket", message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
             }
         }
     }

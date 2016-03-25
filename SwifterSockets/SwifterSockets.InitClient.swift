@@ -187,7 +187,7 @@ extension SwifterSockets {
             
             if socketDescriptor == -1 {
                 let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-                log.atLevelWarning(id: 0, source: "SwifterSockets.initClient", message: strError)
+                log.atLevelWarning(id: 0, source: "SwifterSockets.initClient", message: strError, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
                 continue
             }
             
@@ -202,7 +202,7 @@ extension SwifterSockets {
             let (address, service) = sockaddrDescription(info.memory.ai_addr)
             let laddress = address ?? "nil"
             let lservice = service ?? "nil"
-            log.atLevelNotice(id: socketDescriptor!, source: "SwifterSockets.initClient", message: "Trying to connect to \(laddress) at port \(lservice)")
+            log.atLevelNotice(id: socketDescriptor!, source: "SwifterSockets.initClient", message: "Trying to connect to \(laddress) at port \(lservice)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
             
             
             // Attempt to connect
@@ -213,18 +213,18 @@ extension SwifterSockets {
             // Conditional logging
             
             if SwifterSockets.logUnixSocketCalls {
-                log.atLevelDebug(id: socketDescriptor!, source: "SwifterSockets.InitServer", message: "Result of 'connect' is \(status)")
+                log.atLevelDebug(id: socketDescriptor!, source: "SwifterSockets.InitServer", message: "Result of 'connect' is \(status)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
             }
             
             
             // Break if successful, log on failure.
 
             if status == 0 {
-                log.atLevelNotice(id: socketDescriptor!, source: "SwifterSockets.initClient", message: "Connection established")
+                log.atLevelNotice(id: socketDescriptor!, source: "SwifterSockets.initClient", message: "Connection established", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
                 break
             } else {
                 let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-                log.atLevelNotice(id: socketDescriptor!, source: "SwifterSockets.initClient", message: "Failed to connect with error: \(strError)")
+                log.atLevelNotice(id: socketDescriptor!, source: "SwifterSockets.initClient", message: "Failed to connect with error: \(strError)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
             }
             
             

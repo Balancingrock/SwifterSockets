@@ -352,7 +352,7 @@ extension SwifterSockets {
             // Conditional logging
             
             if logUnixSocketCalls {
-                log.atLevelDebug(id: socket, source: "SwifterSockets.transmit-buffer", message: "Result of send is \(bytesSend)")
+                log.atLevelDebug(id: socket, source: "SwifterSockets.transmit-buffer", message: "Result of send is \(bytesSend)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
             }
             
 

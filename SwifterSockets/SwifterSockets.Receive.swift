@@ -445,7 +445,7 @@ extension SwifterSockets {
             // Conditional logging
             
             if logUnixSocketCalls {
-                log.atLevelDebug(id: socket, source: "SwifterSockets.receive-buffer", message: "Result of recv is \(bytesRead)")
+                log.atLevelDebug(id: socket, source: "SwifterSockets.receive-buffer", message: "Result of recv is \(bytesRead)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
             }
 
             
