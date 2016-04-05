@@ -40,6 +40,7 @@
 // w0.9.2 Added support for logUnixSocketCalls
 //        Moved closing of sockets to SwifterSockets.closeSocket
 //        Upgraded to Swift 2.2
+//        Changed DataEndDetector form a class to a protocol.
 // v0.9.1 ReceiveTelemetry now inherits from NSObject
 //        Replaced (UnsafeMutablePointer<UInt8>, length) with UnsafeMutableBufferPointer<UInt8>
 //        Added note on DataEndDetector that it can be used to receive the data also.
@@ -50,28 +51,28 @@
 import Foundation
 
 
+protocol DataEndDetector {
+    
+    /**
+     This function should only return 'true' when it detects that the received data is complete. It is likely that this function is called more than once for each data transfer. I.e. if the method to detect the end of the incoming data is not a unique single byte, a child implementation must be able to handle the chuncked reception. In other words, every received byte-block is only presented once to this function.
+     
+     - Note: It is possible to use this as a callback to receive data and leave the data that is returned by the receive function untouched.
+     
+     - Parameter buffer: A pointer to the received data. This will most likely be different for each block of data that is received.
+     - Parameter size: The number of bytes present at and after the buffer pointer.
+     
+     - Returns: Only return true of the end of the data has been found. Otherwise return false.
+     */
+    
+    func endReached(buffer: UnsafeBufferPointer<UInt8>) -> Bool
+}
+
+
 extension SwifterSockets {
     
     
     /// An child class of this is used to find the end of an incoming data stream.
     
-    class DataEndDetector {
-        
-        /**
-         This function should only return 'true' when it detects that the received data is complete. It is likely that this function is called more than once for each data transfer. I.e. if the method to detect the end of the incoming data is not a unique single byte, a child implementation must be able to handle the chuncked reception. In other words, every received byte-block is only presented once to this function.
-         
-         - Note: It is possible to use this as a callback to receive data and leave the data that is returned by the receive function untouched.
-         
-         - Parameter buffer: A pointer to the received data. This will most likely be different for each block of data that is received.
-         - Parameter size: The number of bytes present at and after the buffer pointer.
-
-         - Returns: Only return true of the end of the data has been found. Otherwise return false.
-         */
-        
-        func endReached(buffer: UnsafeBufferPointer<UInt8>) -> Bool {
-            return false
-        }
-    }
     
     
     /// An implementation of the End of Data detector that detects the completeness of a JSON message.
@@ -84,7 +85,7 @@ extension SwifterSockets {
         var countOpeningBraces = 0
         var countClosingBraces = 0
         
-        override func endReached(buffer: UnsafeBufferPointer<UInt8>) -> Bool {
+        func endReached(buffer: UnsafeBufferPointer<UInt8>) -> Bool {
             for byte in buffer {
                 switch scanPhase {
                 case .NORMAL:
