@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.InitServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9
+//  Version:    0.9.1
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
@@ -26,9 +26,9 @@
 // =====================================================================================================================
 //
 // History
-// w0.9.1 Added support for logUnixSocketCalls
-//        Moved closing of sockets to SwifterSockets.closeSocket
-//        Upgraded to Swift 2.2
+// v0.9.1 - Added support for logUnixSocketCalls
+//        - Moved closing of sockets to SwifterSockets.closeSocket
+//        - Upgraded to Swift 2.2
 // v0.9.0 Initial release
 // =====================================================================================================================
 

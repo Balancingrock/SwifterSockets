@@ -26,9 +26,9 @@
 // =====================================================================================================================
 //
 // History
-// w0.9.2 Added support for logUnixSocketCalls
-//        Moved closing of sockets to SwifterSockets.closeSocket
-//        Upgraded to Swift 2.2
+// v0.9.2 - Added support for logUnixSocketCalls
+//        - Moved closing of sockets to SwifterSockets.closeSocket
+//        - Upgraded to Swift 2.2
 // v0.9.1 Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
 // v0.9.0 Initial release
 // =====================================================================================================================

@@ -37,10 +37,13 @@
 //
 // History
 //
-// w0.9.2 Added support for logUnixSocketCalls
-//        Moved closing of sockets to SwifterSockets.closeSocket
-//        Upgraded to Swift 2.2
-//        Changed DataEndDetector form a class to a protocol.
+// v0.9.2 - Added support for logUnixSocketCalls
+//        - Moved closing of sockets to SwifterSockets.closeSocket
+//        - Upgraded to Swift 2.2
+//        - Changed DataEndDetector form a class to a protocol.
+//        - Added return result SERVER_CLOSED to cover the case where the server closed a connection while a receiver
+//        process is still waiting for data.
+//        - Replaced error numbers with #file.#function.#line
 // v0.9.1 ReceiveTelemetry now inherits from NSObject
 //        Replaced (UnsafeMutablePointer<UInt8>, length) with UnsafeMutableBufferPointer<UInt8>
 //        Added note on DataEndDetector that it can be used to receive the data also.
@@ -133,6 +136,7 @@ extension SwifterSockets {
       - READY(data: Any)
       - TIMEOUT
       - CLIENT_CLOSED(data: Any)
+      - SERVER_CLOSED(data: Any)
       - ERROR(message: String)
      */
     
@@ -159,6 +163,11 @@ extension SwifterSockets {
         case CLIENT_CLOSED(data: Any)
         
         
+        /// When the connection was closed by the server while waiting for data
+        
+        case SERVER_CLOSED(data: Any)
+        
+        
         /// The result when an error occured, the 'message' is a textual description of the error.
         
         case ERROR(message: String)
@@ -176,12 +185,16 @@ extension SwifterSockets {
             case let .CLIENT_CLOSED(data) where data is Int: return "Client closed, nof bytes read: \(data)"
             case let .CLIENT_CLOSED(data) where data is String: return "Client closed(String)"
             case let .CLIENT_CLOSED(data) where data is NSData: return "Client closed(NSData)"
+            case let .SERVER_CLOSED(data) where data is Int: return "Server closed, nof bytes read: \(data)"
+            case let .SERVER_CLOSED(data) where data is String: return "Server closed(String)"
+            case let .SERVER_CLOSED(data) where data is NSData: return "Server closed(NSData)"
             case let .ERROR(msg): return "Error(message: \(msg))"
             default:
                 switch self {
-                case .READY: return "A programming error occured SwifterSockets-000"
-                case .CLIENT_CLOSED: return "A programming error occured SwifterSockets-001"
-                default: return "A programming error occured SwifterSockets-002"
+                case .READY: return "A programming error occured \(#file).\(#function).\(#line)"
+                case .CLIENT_CLOSED: return "A programming error occured \(#file).\(#function).\(#line)"
+                case .SERVER_CLOSED: return "A programming error occured \(#file).\(#function).\(#line)"
+                default: return "A programming error occured \(#file).\(#function).\(#line)"
                 }
             }
         }
@@ -323,7 +336,7 @@ extension SwifterSockets {
      - Parameter dataEndDetector: This instance determines when the incoming data is complete. When the call to endReached() returns "true" reading will stop.
      - Parameter telemetry: A pointer to a telemetry object that -if present- will be updated with telemetry as the function progresses.
      
-     - Returns: READY(data as Int) or CLIENT_CLOSED(data as Int) with data beiing the number of bytes read, BUFFER_FULL, ERROR or TIMEOUT.
+     - Returns: CLOSED, READY(data as Int) or CLIENT_CLOSED(data as Int) with data beiing the number of bytes read, BUFFER_FULL, ERROR or TIMEOUT.
      */
     
     static func receiveBytes(
@@ -425,11 +438,29 @@ extension SwifterSockets {
             // =====================================================================================
             
             if status == -1 {
-                let errString = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-                telemetry?.endTime = NSDate()
-                telemetry?.length = inOffset
-                telemetry?.result = ReceiveResult.ERROR(message: errString)
-                return .ERROR(message: errString)
+                
+                switch errno {
+                
+                case EBADF:
+                    // Case 1: In a multi-threaded environment it can happen that one thread closes a socket while another thread is waiting for data on the same socket.
+                    // In that case this is not really an error, but simply a signal that the receiving thread should be terminated.
+                    // Case 2: Of course it could also happen that the programmer made a mistake and is using a socket that is not initialized.
+                    // The first case is more important, so as to avoid uneccesary error messages we return the CLOSED result case.
+                    // If the programmer made an error, it is presumed that this error will become appearant in other ways (during testing!).
+                    telemetry?.endTime = NSDate()
+                    telemetry?.length = inOffset
+                    telemetry?.result = .SERVER_CLOSED(data: inOffset)
+                    return .SERVER_CLOSED(data: inOffset)
+                    
+                case EINVAL, EAGAIN, EINTR: fallthrough // These are the other possible error's
+                
+                default: // Catch-all to satisfy the compiler
+                    let errString = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+                    telemetry?.endTime = NSDate()
+                    telemetry?.length = inOffset
+                    telemetry?.result = .ERROR(message: errString)
+                    return .ERROR(message: errString)
+                }
             }
             
             
@@ -645,11 +676,26 @@ extension SwifterSockets {
                 return ReceiveResult.CLIENT_CLOSED(data: data)
 
         
+            case let .SERVER_CLOSED(nofBytes) where nofBytes is Int:
+                
+                // Whatever happened, the socket is not available (anymore)
+                
+                data.appendBytes(buffer.baseAddress, length: (nofBytes as! Int))
+                bufferPtr.dealloc(bufferSize)
+                
+                telemetry?.endTime = NSDate()
+                telemetry?.length = data.length
+                telemetry?.result = ReceiveResult.SERVER_CLOSED(data: data)
+                
+                return ReceiveResult.SERVER_CLOSED(data: data)
+                
+
             default:
                 switch result {
-                case .READY: return ReceiveResult.ERROR(message: "A programming error occured SwifterSockets-003")
-                case .CLIENT_CLOSED: return ReceiveResult.ERROR(message: "A programming error occured SwifterSockets-004")
-                default: return ReceiveResult.ERROR(message: "A programming error occured SwifterSockets-005")
+                case .READY: return ReceiveResult.ERROR(message: "A programming error occured \(#file).\(#function).\(#line)")
+                case .CLIENT_CLOSED: return ReceiveResult.ERROR(message: "A programming error occured \(#file).\(#function).\(#line)")
+                case .SERVER_CLOSED: return ReceiveResult.ERROR(message: "A programming error occured \(#file).\(#function).\(#line)")
+                default: return ReceiveResult.ERROR(message: "A programming error occured \(#file).\(#function).\(#line)")
                 }
             }
         }
@@ -664,7 +710,7 @@ extension SwifterSockets {
      - Parameter dataEndDetector: This instance determines when the incoming data is complete. When the call to endReached() returns "true" reading will stop.
      - Parameter telemetry: A pointer to a telemetry buffer that -if present- will be updated with telemetry as the function progresses.
      
-     - Returns: READY(data as String) or CLIENT_CLOSED(data as String) with data beiing the received bytes intepreted as a UTF8 encoded string, BUFFER_FULL, ERROR or TIMEOUT.
+     - Returns: CLOSED, READY(data as String) or CLIENT_CLOSED(data as String) with data beiing the received bytes intepreted as a UTF8 encoded string, BUFFER_FULL, ERROR or TIMEOUT.
      */
     
     static func receiveString(
@@ -682,8 +728,19 @@ extension SwifterSockets {
         case let .CLIENT_CLOSED(data) where data is NSData:
             
             if let string = String(data: (data as! NSData), encoding: NSUTF8StringEncoding) {
-                telemetry?.result = .READY(data: string)
-                return .READY(data: string)
+                telemetry?.result = .CLIENT_CLOSED(data: string)
+                return .CLIENT_CLOSED(data: string)
+            } else {
+                telemetry?.result = .ERROR(message: "Could not convert the data to an UTF8 String")
+                return ReceiveResult.ERROR(message: "Could not convert the data to an UTF8 String")
+            }
+
+            
+        case let .SERVER_CLOSED(data) where data is NSData:
+            
+            if let string = String(data: (data as! NSData), encoding: NSUTF8StringEncoding) {
+                telemetry?.result = .SERVER_CLOSED(data: string)
+                return .SERVER_CLOSED(data: string)
             } else {
                 telemetry?.result = .ERROR(message: "Could not convert the data to an UTF8 String")
                 return ReceiveResult.ERROR(message: "Could not convert the data to an UTF8 String")
@@ -708,9 +765,10 @@ extension SwifterSockets {
 
         default:
             switch result {
-            case .READY: return ReceiveResult.ERROR(message: "A programming error occured SwifterSockets-006")
-            case .CLIENT_CLOSED: return ReceiveResult.ERROR(message: "A programming error occured SwifterSockets-007")
-            default: return ReceiveResult.ERROR(message: "A programming error occured SwifterSockets-008")
+            case .READY: return ReceiveResult.ERROR(message: "A programming error occured \(#file).\(#function).\(#line)")
+            case .CLIENT_CLOSED: return ReceiveResult.ERROR(message: "A programming error occured \(#file).\(#function).\(#line)")
+            case .SERVER_CLOSED: return ReceiveResult.ERROR(message: "A programming error occured \(#file).\(#function).\(#line)")
+            default: return ReceiveResult.ERROR(message: "A programming error occured \(#file).\(#function).\(#line)")
             }
         }
     }
@@ -744,6 +802,7 @@ extension SwifterSockets {
         
         switch result {
         case .TIMEOUT: throw ReceiveException.TIMEOUT
+        case let .SERVER_CLOSED(nofBytes) where nofBytes is Int: return nofBytes as! Int
         case let .CLIENT_CLOSED(nofBytes) where nofBytes is Int: return nofBytes as! Int
         case .BUFFER_FULL: return buffer.count
         case let .READY(nofBytes) where nofBytes is Int: return nofBytes as! Int
@@ -752,6 +811,7 @@ extension SwifterSockets {
             switch result {
             case .READY: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-009")
             case .CLIENT_CLOSED: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-010")
+            case .SERVER_CLOSED: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-021")
             default: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-011")
             }
         }
@@ -783,15 +843,17 @@ extension SwifterSockets {
         
         switch result {
         case .TIMEOUT: throw ReceiveException.TIMEOUT
-        case .BUFFER_FULL: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-012")
+        case .BUFFER_FULL: throw ReceiveException.MESSAGE("A programming error occured \(#file).\(#function).\(#line)")
         case let .ERROR(str): throw ReceiveException.MESSAGE(str)
         case let .READY(data) where data is NSData: return (data as! NSData)
         case let .CLIENT_CLOSED(data) where data is NSData: return (data as! NSData)
+        case let .SERVER_CLOSED(data) where data is NSData: return (data as! NSData)
         default:
             switch result {
-            case .READY: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-013")
-            case .CLIENT_CLOSED: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-014")
-            default: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-015")
+            case .READY: throw ReceiveException.MESSAGE("A programming error occured \(#file).\(#function).\(#line)")
+            case .CLIENT_CLOSED: throw ReceiveException.MESSAGE("A programming error occured \(#file).\(#function).\(#line)")
+            case .SERVER_CLOSED: throw ReceiveException.MESSAGE("A programming error occured \(#file).\(#function).\(#line)")
+            default: throw ReceiveException.MESSAGE("A programming error occured \(#file).\(#function).\(#line)")
             }
         }
     }
@@ -821,15 +883,17 @@ extension SwifterSockets {
         
         switch result {
         case .TIMEOUT: throw ReceiveException.TIMEOUT
-        case .BUFFER_FULL: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-016")
+        case .BUFFER_FULL: throw ReceiveException.MESSAGE("A programming error occured \(#file).\(#function).\(#line)")
         case let .ERROR(str): throw ReceiveException.MESSAGE(str)
         case let .READY(data) where data is String: return (data as! String)
         case let .CLIENT_CLOSED(data) where data is String: return (data as! String)
+        case let .SERVER_CLOSED(data) where data is String: return (data as! String)
         default:
             switch result {
-            case .READY: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-017")
-            case .CLIENT_CLOSED: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-018")
-            default: throw ReceiveException.MESSAGE("A programming error occured SwifterSockets-019")
+            case .READY: throw ReceiveException.MESSAGE("A programming error occured \(#file).\(#function).\(#line)")
+            case .CLIENT_CLOSED: throw ReceiveException.MESSAGE("A programming error occured \(#file).\(#function).\(#line)")
+            case .SERVER_CLOSED: throw ReceiveException.MESSAGE("A programming error occured \(#file).\(#function).\(#line)")
+            default: throw ReceiveException.MESSAGE("A programming error occured \(#file).\(#function).\(#line)")
             }
         }
     }

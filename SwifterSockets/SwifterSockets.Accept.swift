@@ -32,9 +32,12 @@
 // =====================================================================================================================
 //
 // History
-// w0.9.2 Added support for logUnixSocketCalls
-//        Moved closing of sockets to SwifterSockets.closeSocket
-//        Upgraded to Swift 2.2
+// v0.9.2 - Added support for logUnixSocketCalls
+//        - Moved closing of sockets to SwifterSockets.closeSocket
+//        - Upgraded to Swift 2.2
+//        - Added CLOSED as a possible result (this happens when a thread is accepting while another thread closes the
+//        associated socket)
+//        - Fixed a bug that missed the error return from the select call.
 // v0.9.1 AcceptTelemetry now inherits from NSObject
 // v0.9.0 Initial release
 // =====================================================================================================================
@@ -52,6 +55,7 @@ extension SwifterSockets {
      - ERROR(message: String)
      - TIMEOUT
      - ABORTED
+     - CLOSED
      
      */
     
@@ -78,12 +82,18 @@ extension SwifterSockets {
         case ABORTED
         
         
+        /// The socket the accept runs on is closed
+        
+        case CLOSED
+        
+        
         /// The CustomStringConvertible protocol
         
         var description: String {
             switch self {
             case .TIMEOUT: return "Timeout"
             case .ABORTED: return "Aborted"
+            case .CLOSED: return "Closed"
             case let .ERROR(message: msg): return "Error(message: \(msg))"
             case let .ACCEPTED(socket: num): return "Accepted(socket: \(num))"
             }
@@ -116,12 +126,18 @@ extension SwifterSockets {
         case ABORTED
         
         
+        /// The socket the accept runs on is closed
+        
+        case CLOSED
+
+        
         /// The CustomStringConvertible protocol
         
         var description: String {
             switch self {
             case .TIMEOUT: return "Timeout"
             case .ABORTED: return "Aborted"
+            case .CLOSED: return "Closed"
             case let .MESSAGE(msg): return "Message(\(msg))"
             }
         }
@@ -337,7 +353,9 @@ extension SwifterSockets {
             // Because we only specify 1 FD, we do not need to check on which FD the event was received
             
             
+            // =====================================================================================
             // Evaluate the result of the select call
+            // =====================================================================================
             
             if status == 0 { // nothing happened
                 
@@ -361,6 +379,34 @@ extension SwifterSockets {
                 continue
             }
             
+            // =====================================================================================
+            // Exit in case of an error
+            // =====================================================================================
+            
+            if status == -1 {
+                
+                switch errno {
+                    
+                case EBADF:
+                    // Case 1: In a multi-threaded environment it can happen that one thread closes a socket while another thread is waiting for accept on the same socket.
+                    // In that case this is not really an error, but simply a signal that the accepting thread should be terminated.
+                    // Case 2: Of course it could also happen that the programmer made a mistake and is using a socket that is not initialized.
+                    // The first case is more important, so as to avoid uneccesary error messages we return the CLOSED result case.
+                    // If the programmer made an error, it is presumed that this error will become appearant in other ways (during testing!).
+                    telemetry?.endTime = NSDate()
+                    telemetry?.result = .CLOSED
+                    return .CLOSED
+                    
+                case EINVAL, EAGAIN, EINTR: fallthrough // These are the other possible error's
+                    
+                default: // Catch-all to satisfy the compiler
+                    let errString = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+                    telemetry?.endTime = NSDate()
+                    telemetry?.result = .ERROR(message: errString)
+                    return .ERROR(message: errString)
+                }
+            }
+
             
             // =======================================
             // Accept the incoming connection request
@@ -466,6 +512,7 @@ extension SwifterSockets {
         switch result {
         case .TIMEOUT: throw AcceptException.TIMEOUT
         case .ABORTED: throw AcceptException.ABORTED
+        case .CLOSED: throw AcceptException.CLOSED
         case let .ERROR(message: msg): throw AcceptException.MESSAGE(msg)
         case let .ACCEPTED(socket: socket):
             return socket

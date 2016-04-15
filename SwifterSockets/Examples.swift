@@ -1,8 +1,8 @@
 //
 //  Examples.swift
 //
-// Just a couple of examples on how to use the SocketUtils.
-// Note That I have not done any testing of the code below, but I do use SocketUtils in the way suggested.
+// Just a couple of examples on how to use the SwifterSockets.
+// Note That I have not done any testing of the code below, but I do use SwifterSockets in the way suggested.
 
 import Foundation
 
@@ -15,8 +15,8 @@ func serverSetup_oldSchool() {
     
     // Assume that incoming data ends when a 0x00 byte is received
     
-    class DataEndsOnZeroByte: SwifterSockets.DataEndDetector {
-        private override func endReached(buffer: UnsafeBufferPointer<UInt8>) -> Bool {
+    class DataEndsOnZeroByte: DataEndDetector {
+        func endReached(buffer: UnsafeBufferPointer<UInt8>) -> Bool {
             for byte in buffer {
                 if byte == 0x00 { return true }
             }
@@ -73,8 +73,8 @@ func serverSetup_throwing() {
     
     // Assume that incoming data ends when a 0x00 byte is received
     
-    class DataEndsOnZeroByte: SwifterSockets.DataEndDetector {
-        private override func endReached(buffer: UnsafeBufferPointer<UInt8>) -> Bool {
+    class DataEndsOnZeroByte: DataEndDetector {
+        func endReached(buffer: UnsafeBufferPointer<UInt8>) -> Bool {
             for byte in buffer {
                 if byte == 0x00 { return true }
             }

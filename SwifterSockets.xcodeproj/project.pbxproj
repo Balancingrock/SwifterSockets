@@ -20,8 +20,8 @@
 		866EBE141C86F17E00FABD9A /* Examples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0D1C86F17E00FABD9A /* Examples.swift */; };
 		866EBE1C1C86F66C00FABD9A /* asl-bridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE1A1C86F66C00FABD9A /* asl-bridge.m */; };
 		866EBE1D1C86F66C00FABD9A /* SwifterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE1B1C86F66C00FABD9A /* SwifterLog.swift */; };
-		866EBE211C86F6B000FABD9A /* ASCII.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE1F1C86F6B000FABD9A /* ASCII.swift */; };
-		866EBE221C86F6B000FABD9A /* VJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE201C86F6B000FABD9A /* VJson.swift */; };
+		86A039091CC144CE00281FE6 /* ASCII.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86A039071CC144CE00281FE6 /* ASCII.swift */; };
+		86A0390A1CC144CE00281FE6 /* VJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86A039081CC144CE00281FE6 /* VJson.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,8 +54,8 @@
 		866EBE191C86F66C00FABD9A /* asl-bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "asl-bridge.h"; path = "../../../SwifterLog/xcode/SwifterLog/SwifterLog/asl-bridge.h"; sourceTree = "<group>"; };
 		866EBE1A1C86F66C00FABD9A /* asl-bridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "asl-bridge.m"; path = "../../../SwifterLog/xcode/SwifterLog/SwifterLog/asl-bridge.m"; sourceTree = "<group>"; };
 		866EBE1B1C86F66C00FABD9A /* SwifterLog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwifterLog.swift; path = ../../../SwifterLog/xcode/SwifterLog/SwifterLog/SwifterLog.swift; sourceTree = "<group>"; };
-		866EBE1F1C86F6B000FABD9A /* ASCII.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASCII.swift; path = ../../../SwifterJSON/xcode/SwifterJSON/SwifterJSON/ASCII.swift; sourceTree = "<group>"; };
-		866EBE201C86F6B000FABD9A /* VJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VJson.swift; path = ../../../SwifterJSON/xcode/SwifterJSON/SwifterJSON/VJson.swift; sourceTree = "<group>"; };
+		86A039071CC144CE00281FE6 /* ASCII.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASCII.swift; path = ../../../SwifterJSON/github/SwifterJSON/SwifterJSON/ASCII.swift; sourceTree = "<group>"; };
+		86A039081CC144CE00281FE6 /* VJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VJson.swift; path = ../../../SwifterJSON/github/SwifterJSON/SwifterJSON/VJson.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,8 +137,8 @@
 		866EBE231C86F6B600FABD9A /* SwifterJSON */ = {
 			isa = PBXGroup;
 			children = (
-				866EBE1F1C86F6B000FABD9A /* ASCII.swift */,
-				866EBE201C86F6B000FABD9A /* VJson.swift */,
+				86A039071CC144CE00281FE6 /* ASCII.swift */,
+				86A039081CC144CE00281FE6 /* VJson.swift */,
 			);
 			name = SwifterJSON;
 			sourceTree = "<group>";
@@ -248,8 +248,8 @@
 				866EBE111C86F17E00FABD9A /* SwifterSockets.Transmit.swift in Sources */,
 				866EBE131C86F17E00FABD9A /* SwifterSockets.Accept.swift in Sources */,
 				866EBE0E1C86F17E00FABD9A /* SwifterSockets.swift in Sources */,
-				866EBE211C86F6B000FABD9A /* ASCII.swift in Sources */,
-				866EBE221C86F6B000FABD9A /* VJson.swift in Sources */,
+				86A039091CC144CE00281FE6 /* ASCII.swift in Sources */,
+				86A0390A1CC144CE00281FE6 /* VJson.swift in Sources */,
 				866EBE1D1C86F66C00FABD9A /* SwifterLog.swift in Sources */,
 				866EBE141C86F17E00FABD9A /* Examples.swift in Sources */,
 				866EBE1C1C86F66C00FABD9A /* asl-bridge.m in Sources */,

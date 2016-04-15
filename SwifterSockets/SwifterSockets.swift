@@ -26,7 +26,7 @@
 // =====================================================================================================================
 //
 // History
-// w0.9.2 - Added closeSocket
+// v0.9.2 - Added closeSocket
 //        - Added 'logUnixSocketCalls'
 //        - Upgraded to Swift 2.2
 // v0.9.1 - Changed type of object in 'synchronized' from AnyObject to NSObject

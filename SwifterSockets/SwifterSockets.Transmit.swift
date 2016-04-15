@@ -26,10 +26,11 @@
 // =====================================================================================================================
 //
 // History
-// w0.9.2 Added support for logUnixSocketCalls
-//        Moved closing of sockets to SwifterSockets.closeSocket
-//        Added note on buffer capture to transmitAsync:buffer
-//        Upgraded to Swift 2.2
+// v0.9.2 - Added support for logUnixSocketCalls
+//        - Moved closing of sockets to SwifterSockets.closeSocket
+//        - Added note on buffer capture to transmitAsync:buffer
+//        - Upgraded to Swift 2.2
+//        - Added SERVER_CLOSED and CLIENT_CLOSED as possible results for harmonization with SwifterSockets.Receive
 // v0.9.1 TransmitTelemetry now inherits from NSObject
 //        Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
 // v0.9.0 Initial release
@@ -63,6 +64,16 @@ extension SwifterSockets {
         case TIMEOUT
         
         
+        /// The result when the client closed the connection
+        
+        case CLIENT_CLOSED
+        
+        
+        /// The result when the server closed the connection
+        
+        case SERVER_CLOSED
+        
+        
         /// The result when an error occured, the 'message' is a textual description of the error. This will usually be the string that corresponds to the 'errno' variable value.
         
         case ERROR(message: String)
@@ -74,6 +85,8 @@ extension SwifterSockets {
             switch self {
             case .READY: return "Ready"
             case .TIMEOUT: return "Timeout"
+            case .SERVER_CLOSED: return "Server closed"
+            case .CLIENT_CLOSED: return "Client closed"
             case let .ERROR(msg): return "Error(message: \(msg))"
             }
         }
@@ -327,13 +340,28 @@ extension SwifterSockets {
                 return .TIMEOUT
             }
             
-            if status == -1 { // An error occured
-                let errString = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-                if telemetry != nil {
-                    telemetry!.endTime = NSDate()
-                    telemetry!.result = .ERROR(message: errString)
+            if status == -1 {
+                
+                switch errno {
+                    
+                case EBADF:
+                    // Case 1: In a multi-threaded environment it can happen that one thread closes a socket while another thread is transmitting data on the same socket.
+                    // In that case this is not really an error, but simply a signal that the transmitting thread should be terminated.
+                    // Case 2: Of course it could also happen that the programmer made a mistake and is using a socket that is not initialized.
+                    // The first case is more important, so as to avoid uneccesary error messages we return the SERVER_CLOSED result case.
+                    // If the programmer made an error, it is presumed that this error will become appearant in other ways (during testing!).
+                    telemetry?.endTime = NSDate()
+                    telemetry?.result = .SERVER_CLOSED
+                    return .SERVER_CLOSED
+                    
+                case EINVAL, EAGAIN, EINTR: fallthrough // These are the other possible error's
+                    
+                default: // Catch-all to satisfy the compiler
+                    let errString = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+                    telemetry?.endTime = NSDate()
+                    telemetry?.result = .ERROR(message: errString)
+                    return .ERROR(message: errString)
                 }
-                return .ERROR(message: errString)
             }
             
             // Because we only specified 1 FD, we do not need to check on which FD the event was received
@@ -368,12 +396,11 @@ extension SwifterSockets {
             }
             
             if bytesSend == 0 { // Other side closed connection
-                let msg = "Client closed connection"
                 if telemetry != nil {
                     telemetry!.endTime = NSDate()
-                    telemetry!.result = .ERROR(message: msg)
+                    telemetry!.result = .CLIENT_CLOSED
                 }
-                return .ERROR(message:msg)
+                return .CLIENT_CLOSED
             }
             
             
@@ -479,7 +506,7 @@ extension SwifterSockets {
     {
         let result = transmit(socket, buffer: buffer, timeout: timeout, telemetry: telemetry)
         switch result {
-        case .READY: break
+        case .READY, .SERVER_CLOSED, .CLIENT_CLOSED: break
         case .TIMEOUT: throw TransmitException.TIMEOUT
         case let .ERROR(message: msg): throw TransmitException.MESSAGE(msg)
         }
@@ -503,7 +530,7 @@ extension SwifterSockets {
     {
         let result = transmit(socket, data: data, timeout: timeout, telemetry: telemetry)
         switch result {
-        case .READY: break
+        case .READY, .SERVER_CLOSED, .CLIENT_CLOSED: break
         case .TIMEOUT: throw TransmitException.TIMEOUT
         case let .ERROR(message: msg): throw TransmitException.MESSAGE(msg)
         }
@@ -526,7 +553,7 @@ extension SwifterSockets {
     {
         let result = transmit(socket, string: string, timeout: timeout, telemetry: telemetry)
         switch result {
-        case .READY: break
+        case .READY, .SERVER_CLOSED, .CLIENT_CLOSED: break
         case .TIMEOUT: throw TransmitException.TIMEOUT
         case let .ERROR(message: msg): throw TransmitException.MESSAGE(msg)
         }
