@@ -31,7 +31,7 @@
 //        - Upgraded to Swift 2.2
 // v0.9.1 - Changed type of object in 'synchronized' from AnyObject to NSObject
 //        - Added EXC_BAD_INSTRUCTION information to fd_set
-// v0.9.0 Initial release
+// v0.9.0 - Initial release
 // =====================================================================================================================
 
 

@@ -40,14 +40,14 @@
 // v0.9.2 - Added support for logUnixSocketCalls
 //        - Moved closing of sockets to SwifterSockets.closeSocket
 //        - Upgraded to Swift 2.2
-//        - Changed DataEndDetector form a class to a protocol.
+//        - Changed DataEndDetector from a class to a protocol.
 //        - Added return result SERVER_CLOSED to cover the case where the server closed a connection while a receiver
 //        process is still waiting for data.
 //        - Replaced error numbers with #file.#function.#line
-// v0.9.1 ReceiveTelemetry now inherits from NSObject
-//        Replaced (UnsafeMutablePointer<UInt8>, length) with UnsafeMutableBufferPointer<UInt8>
-//        Added note on DataEndDetector that it can be used to receive the data also.
-// v0.9.0 Initial release
+// v0.9.1 - ReceiveTelemetry now inherits from NSObject
+//        - Replaced (UnsafeMutablePointer<UInt8>, length) with UnsafeMutableBufferPointer<UInt8>
+//        - Added note on DataEndDetector that it can be used to receive the data also.
+// v0.9.0 - Initial release
 // =====================================================================================================================
 
 

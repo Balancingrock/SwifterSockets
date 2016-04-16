@@ -31,9 +31,9 @@
 //        - Added note on buffer capture to transmitAsync:buffer
 //        - Upgraded to Swift 2.2
 //        - Added SERVER_CLOSED and CLIENT_CLOSED as possible results for harmonization with SwifterSockets.Receive
-// v0.9.1 TransmitTelemetry now inherits from NSObject
-//        Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
-// v0.9.0 Initial release
+// v0.9.1 - TransmitTelemetry now inherits from NSObject
+//        - Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
+// v0.9.0 - Initial release
 // =====================================================================================================================
 
 
