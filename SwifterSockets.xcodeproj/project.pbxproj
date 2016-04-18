@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		864C6F831CC28DB600C60220 /* ASCII.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864C6F811CC28DB600C60220 /* ASCII.swift */; };
+		864C6F841CC28DB600C60220 /* VJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864C6F821CC28DB600C60220 /* VJson.swift */; };
+		864C6F881CC28DC900C60220 /* asl-bridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 864C6F861CC28DC900C60220 /* asl-bridge.m */; };
+		864C6F891CC28DC900C60220 /* SwifterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864C6F871CC28DC900C60220 /* SwifterLog.swift */; };
 		866EBDED1C86F0F500FABD9A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBDEC1C86F0F500FABD9A /* AppDelegate.swift */; };
 		866EBDEF1C86F0F500FABD9A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 866EBDEE1C86F0F500FABD9A /* Assets.xcassets */; };
 		866EBDF21C86F0F500FABD9A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 866EBDF01C86F0F500FABD9A /* MainMenu.xib */; };
@@ -18,10 +22,6 @@
 		866EBE121C86F17E00FABD9A /* SwifterSockets.Receive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0B1C86F17E00FABD9A /* SwifterSockets.Receive.swift */; };
 		866EBE131C86F17E00FABD9A /* SwifterSockets.Accept.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0C1C86F17E00FABD9A /* SwifterSockets.Accept.swift */; };
 		866EBE141C86F17E00FABD9A /* Examples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0D1C86F17E00FABD9A /* Examples.swift */; };
-		866EBE1C1C86F66C00FABD9A /* asl-bridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE1A1C86F66C00FABD9A /* asl-bridge.m */; };
-		866EBE1D1C86F66C00FABD9A /* SwifterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE1B1C86F66C00FABD9A /* SwifterLog.swift */; };
-		86A039091CC144CE00281FE6 /* ASCII.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86A039071CC144CE00281FE6 /* ASCII.swift */; };
-		86A0390A1CC144CE00281FE6 /* VJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86A039081CC144CE00281FE6 /* VJson.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +35,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		864C6F811CC28DB600C60220 /* ASCII.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASCII.swift; path = ../../SwifterJSON/SwifterJSON/SwifterJSON/ASCII.swift; sourceTree = "<group>"; };
+		864C6F821CC28DB600C60220 /* VJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VJson.swift; path = ../../SwifterJSON/SwifterJSON/SwifterJSON/VJson.swift; sourceTree = "<group>"; };
+		864C6F851CC28DC900C60220 /* asl-bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "asl-bridge.h"; path = "../../SwifterLog/SwifterLog/SwifterLog/asl-bridge.h"; sourceTree = "<group>"; };
+		864C6F861CC28DC900C60220 /* asl-bridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "asl-bridge.m"; path = "../../SwifterLog/SwifterLog/SwifterLog/asl-bridge.m"; sourceTree = "<group>"; };
+		864C6F871CC28DC900C60220 /* SwifterLog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwifterLog.swift; path = ../../SwifterLog/SwifterLog/SwifterLog/SwifterLog.swift; sourceTree = "<group>"; };
 		866EBDE91C86F0F500FABD9A /* SwifterSockets.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwifterSockets.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		866EBDEC1C86F0F500FABD9A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		866EBDEE1C86F0F500FABD9A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -51,11 +56,6 @@
 		866EBE0C1C86F17E00FABD9A /* SwifterSockets.Accept.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Accept.swift; sourceTree = "<group>"; };
 		866EBE0D1C86F17E00FABD9A /* Examples.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Examples.swift; sourceTree = "<group>"; };
 		866EBE151C86F64C00FABD9A /* SwifterSockets-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SwifterSockets-Bridging-Header.h"; sourceTree = "<group>"; };
-		866EBE191C86F66C00FABD9A /* asl-bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "asl-bridge.h"; path = "../../../SwifterLog/xcode/SwifterLog/SwifterLog/asl-bridge.h"; sourceTree = "<group>"; };
-		866EBE1A1C86F66C00FABD9A /* asl-bridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "asl-bridge.m"; path = "../../../SwifterLog/xcode/SwifterLog/SwifterLog/asl-bridge.m"; sourceTree = "<group>"; };
-		866EBE1B1C86F66C00FABD9A /* SwifterLog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwifterLog.swift; path = ../../../SwifterLog/xcode/SwifterLog/SwifterLog/SwifterLog.swift; sourceTree = "<group>"; };
-		86A039071CC144CE00281FE6 /* ASCII.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASCII.swift; path = ../../../SwifterJSON/github/SwifterJSON/SwifterJSON/ASCII.swift; sourceTree = "<group>"; };
-		86A039081CC144CE00281FE6 /* VJson.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VJson.swift; path = ../../../SwifterJSON/github/SwifterJSON/SwifterJSON/VJson.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,9 +127,9 @@
 		866EBE1E1C86F67200FABD9A /* SwifterLog */ = {
 			isa = PBXGroup;
 			children = (
-				866EBE191C86F66C00FABD9A /* asl-bridge.h */,
-				866EBE1A1C86F66C00FABD9A /* asl-bridge.m */,
-				866EBE1B1C86F66C00FABD9A /* SwifterLog.swift */,
+				864C6F851CC28DC900C60220 /* asl-bridge.h */,
+				864C6F861CC28DC900C60220 /* asl-bridge.m */,
+				864C6F871CC28DC900C60220 /* SwifterLog.swift */,
 			);
 			name = SwifterLog;
 			sourceTree = "<group>";
@@ -137,8 +137,8 @@
 		866EBE231C86F6B600FABD9A /* SwifterJSON */ = {
 			isa = PBXGroup;
 			children = (
-				86A039071CC144CE00281FE6 /* ASCII.swift */,
-				86A039081CC144CE00281FE6 /* VJson.swift */,
+				864C6F811CC28DB600C60220 /* ASCII.swift */,
+				864C6F821CC28DB600C60220 /* VJson.swift */,
 			);
 			name = SwifterJSON;
 			sourceTree = "<group>";
@@ -245,14 +245,14 @@
 			files = (
 				866EBE0F1C86F17E00FABD9A /* SwifterSockets.InitServer.swift in Sources */,
 				866EBE121C86F17E00FABD9A /* SwifterSockets.Receive.swift in Sources */,
+				864C6F881CC28DC900C60220 /* asl-bridge.m in Sources */,
 				866EBE111C86F17E00FABD9A /* SwifterSockets.Transmit.swift in Sources */,
 				866EBE131C86F17E00FABD9A /* SwifterSockets.Accept.swift in Sources */,
+				864C6F891CC28DC900C60220 /* SwifterLog.swift in Sources */,
 				866EBE0E1C86F17E00FABD9A /* SwifterSockets.swift in Sources */,
-				86A039091CC144CE00281FE6 /* ASCII.swift in Sources */,
-				86A0390A1CC144CE00281FE6 /* VJson.swift in Sources */,
-				866EBE1D1C86F66C00FABD9A /* SwifterLog.swift in Sources */,
+				864C6F831CC28DB600C60220 /* ASCII.swift in Sources */,
+				864C6F841CC28DB600C60220 /* VJson.swift in Sources */,
 				866EBE141C86F17E00FABD9A /* Examples.swift in Sources */,
-				866EBE1C1C86F66C00FABD9A /* asl-bridge.m in Sources */,
 				866EBE101C86F17E00FABD9A /* SwifterSockets.InitClient.swift in Sources */,
 				866EBDED1C86F0F500FABD9A /* AppDelegate.swift in Sources */,
 			);
