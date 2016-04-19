@@ -5,11 +5,13 @@
   },
   "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
     "39D294A3A0619F7440CBCF677E29AAE955CC1617" : 0,
+    "4112BE80E1590C6E997D243FD2B2107DD98EDD52" : 0,
     "5B20DC5A3688C85EB1A5785522EE90A45D6C6FB2" : 0
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "1EE5F526-97E3-46C2-985D-702ABA805AE4",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
     "39D294A3A0619F7440CBCF677E29AAE955CC1617" : "..\/..\/SwifterJSON\/github\/SwifterJSON",
+    "4112BE80E1590C6E997D243FD2B2107DD98EDD52" : "..\/SwifterLog\/SwifterLog",
     "5B20DC5A3688C85EB1A5785522EE90A45D6C6FB2" : "SwifterSockets\/"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "SwifterSockets",
@@ -20,6 +22,11 @@
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/Swiftrien\/SwifterJSON.git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "39D294A3A0619F7440CBCF677E29AAE955CC1617"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/starbase56.local\/git\/SwifterLog.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "4112BE80E1590C6E997D243FD2B2107DD98EDD52"
     },
     {
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/Swiftrien\/SwifterSockets.git",
