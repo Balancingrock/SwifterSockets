@@ -3,29 +3,51 @@
 //  File:       SwifterSockets.InitClient.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.2
+//  Version:    0.9.3
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
+//  Blog:       http://swiftrien.blogspot.com
+//  Git:        https://github.com/Swiftrien/SwifterSockets
 //
 //  Copyright:  (c) 2014-2016 Marinus van der Lugt, All rights reserved.
 //
-//  License:    Use this code any way you like with the following three provision:
+//  License:    Use or redistribute this code any way you like with the following two provision:
 //
-//  1) You are NOT ALLOWED to redistribute this source code.
-//
-//  2) You ACCEPT this source code AS IS without any guarantees that it will work as intended. Any liability from its
+//  1) You ACCEPT this source code AS IS without any guarantees that it will work as intended. Any liability from its
 //  use is YOURS.
 //
-//  3) Recompensation for any form of damage IS LIMITED to the price you paid for this source code.
+//  2) You WILL NOT seek damages from the author or balancingrock.nl.
 //
-//  Prices/Quotes for support, modifications or enhancements can be obtained from: sales@balancingrock.nl
+//  I also ask you to please leave this header with the source code.
+//
+//  I strongly believe that the Non Agression Principle is the way for societies to function optimally. I thus reject
+//  the implicit use of force to extract payment. Since I cannot negotiate with you about the price of this code, I
+//  have choosen to leave it up to you to determine its price. You pay me whatever you think this code is worth to you.
+//
+//   - You can send payment via paypal to: sales@balancingrock.nl
+//   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
+//
+//  I prefer the above two, but if these options don't suit you, you might also send me a gift from my amazon.co.uk
+//  whishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
+//
+//  If you like to pay in another way, please contact me at rien@balancingrock.nl
+//
+//  (It is always a good idea to visit the website/blog/google to ensure that you actually pay me and not some imposter)
+//
+//  For private and non-profit use the suggested price is the price of 1 good cup of coffee, say $4.
+//  For commercial use the suggested price is the price of 1 good meal, say $20.
+//
+//  You are however encouraged to pay more ;-)
+//
+//  Prices/Quotes for support, modifications or enhancements can be obtained from: rien@balancingrock.nl
 //
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
 // =====================================================================================================================
 //
 // History
+// v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added support for logUnixSocketCalls
 //        - Moved closing of sockets to SwifterSockets.closeSocket
 //        - Upgraded to Swift 2.2
@@ -37,7 +59,7 @@
 import Foundation
 
 
-extension SwifterSockets {
+public extension SwifterSockets {
     
     
     /**
@@ -47,7 +69,7 @@ extension SwifterSockets {
      - SOCKET(Int32)
      */
     
-    enum InitClientResult: CustomStringConvertible, CustomDebugStringConvertible {
+    public enum InitClientResult: CustomStringConvertible, CustomDebugStringConvertible {
         
         /// An error occured, enclosed is either errno or the getaddrinfo return value and the string is the textual representation of the error
         
@@ -61,7 +83,7 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        public var description: String {
             switch self {
             case let .SOCKET(num): return "Socket(\(num))"
             case let .ERROR(msg): return "Error(\(msg))"
@@ -71,20 +93,20 @@ extension SwifterSockets {
         
         /// The CustomDebugStringConvertible protocol
         
-        var debugDescription: String { return description }
+        public var debugDescription: String { return description }
     }
     
     
     /// The exception for the throwing functions.
     
-    enum InitClientException: ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum InitClientException: ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
         
         case MESSAGE(String)
         
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        public var description: String {
             switch self {
             case let .MESSAGE(msg): return "Message(\(msg))"
             }
@@ -93,13 +115,13 @@ extension SwifterSockets {
         
         /// The CustomDebugStringConvertible protocol
         
-        var debugDescription: String { return description }
+        public var debugDescription: String { return description }
     }
 
     
     /// Signature for the closure that can be started after the initialisation succeeds
     
-    typealias InitClientPostProcessing = (socket: Int32) -> Void
+    public typealias InitClientPostProcessing = (socket: Int32) -> Void
     
     
     /**
@@ -111,7 +133,7 @@ extension SwifterSockets {
      - Returns: Either an open socket or a string with error information.
      */
     
-    static func initClient(address address: String, port: String) -> InitClientResult {
+    public static func initClient(address address: String, port: String) -> InitClientResult {
         
         
         // General purpose status variable, used to detect error returns from socket functions
@@ -186,8 +208,6 @@ extension SwifterSockets {
             // Cop out if there is an error
             
             if socketDescriptor == -1 {
-                let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-                log.atLevelWarning(id: 0, source: "SwifterSockets.initClient", message: strError, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
                 continue
             }
             
@@ -195,36 +215,14 @@ extension SwifterSockets {
             // =====================
             // Connect to the server
             // =====================
-            
-            
-            // For logging only, remove if the SwifterLog instance "log" is not available or replace by your own logger.
-            
-            let (address, service) = sockaddrDescription(info.memory.ai_addr)
-            let laddress = address ?? "nil"
-            let lservice = service ?? "nil"
-            log.atLevelNotice(id: socketDescriptor!, source: "SwifterSockets.initClient", message: "Trying to connect to \(laddress) at port \(lservice)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
-            
-            
-            // Attempt to connect
-            
+                    
             status = connect(socketDescriptor!, info.memory.ai_addr, info.memory.ai_addrlen)
         
             
-            // Conditional logging
-            
-            if SwifterSockets.logUnixSocketCalls {
-                log.atLevelDebug(id: socketDescriptor!, source: "SwifterSockets.InitServer", message: "Result of 'connect' is \(status)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
-            }
-            
-            
-            // Break if successful, log on failure.
+            // Break if successful.
 
             if status == 0 {
-                log.atLevelNotice(id: socketDescriptor!, source: "SwifterSockets.initClient", message: "Connection established", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
                 break
-            } else {
-                let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-                log.atLevelNotice(id: socketDescriptor!, source: "SwifterSockets.initClient", message: "Failed to connect with error: \(strError)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
             }
             
             
@@ -303,7 +301,7 @@ extension SwifterSockets {
      - Throws: An InitServerException when something fails.
      */
     
-    static func initClientOrThrow(address address: String, port: String) throws -> Int32 {
+    public static func initClientOrThrow(address address: String, port: String) throws -> Int32 {
         let result = initClient(address: address, port: port)
         switch result {
         case let .ERROR(msg): throw InitClientException.MESSAGE(msg)
@@ -323,7 +321,7 @@ extension SwifterSockets {
      - Throws: An InitServerException when something fails during initialisation.
      */
     
-    static func initClientOrThrowAsync(
+    public static func initClientOrThrowAsync(
         address address: String,
         port: String,
         queue: dispatch_queue_t,
@@ -350,7 +348,7 @@ extension SwifterSockets {
      - Throws: An InitServerException when something fails during initialisation.
      */
     
-    static func initClientOrThrowTransmitAsync(
+    public static func initClientOrThrowTransmitAsync(
         address address: String,
         port: String,
         transmitQueue: dispatch_queue_t,
@@ -386,7 +384,7 @@ extension SwifterSockets {
      - Throws: An InitServerException when something fails during initialisation.
      */
     
-    static func initClientOrThrowTransmitAsync(
+    public static func initClientOrThrowTransmitAsync(
         address address: String,
         port: String,
         transmitQueue: dispatch_queue_t,
@@ -422,7 +420,7 @@ extension SwifterSockets {
      - Throws: An InitServerException when something fails during initialisation.
      */
     
-    static func initClientOrThrowTransmitAsync(
+    public static func initClientOrThrowTransmitAsync(
         address address: String,
         port: String,
         queue: dispatch_queue_t,

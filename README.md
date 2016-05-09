@@ -29,12 +29,20 @@ There is a 6th package called [SwiftfireTester](https://github.com/Swiftrien/Swi
 	- Synchronously with result codes.
 	- Synchronously with exceptions.
 	- Asynchronously for implicit multithreading.
-- Replacement operations for FD_SET, FD_CLR, FD_ZERO and FD_ISSET macro's.
+- Includes replacements for the FD_SET, FD_CLR, FD_ZERO and FD_ISSET macro's.
 - Comes with some example code.
 
 #Version history
 
-####V 0.9.2
+####v0.9.3
+
+- Changed target to framework
+- Made the necessary interfaces public
+- Removed the dependency on SwifterLog to prevent cross-usage
+- Added tags to mark releases
+- Removed other not used files/directories
+
+####v0.9.2
 
 - Upgraded to Swift 2.2.
 - Added closeSocket call.
@@ -48,7 +56,7 @@ There is a 6th package called [SwiftfireTester](https://github.com/Swiftrien/Swi
 - Fixed a bug that missed the error return from the select call in the accept functions.
 
 
-####V 0.9.1
+####v0.9.1
 
 - Changed type of object in 'synchronized' from AnyObject to NSObject
 - Added EXC_BAD_INSTRUCTION info to fd_set
@@ -56,6 +64,6 @@ There is a 6th package called [SwiftfireTester](https://github.com/Swiftrien/Swi
 - Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
 - Added note on DataEndDetector that it can be used to receive the data also.
 
-####V 0.9.0
+####v0.9.0
 
 - Initial release

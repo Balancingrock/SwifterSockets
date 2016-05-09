@@ -3,35 +3,52 @@
 //  File:       SwifterSockets.Accept.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.2
+//  Version:    0.9.3
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
+//  Blog:       http://swiftrien.blogspot.com
+//  Git:        https://github.com/Swiftrien/SwifterSockets
 //
 //  Copyright:  (c) 2014-2016 Marinus van der Lugt, All rights reserved.
 //
-//  License:    Use this code any way you like with the following three provision:
+//  License:    Use or redistribute this code any way you like with the following two provision:
 //
-//  1) You are NOT ALLOWED to redistribute this source code.
-//
-//  2) You ACCEPT this source code AS IS without any guarantees that it will work as intended. Any liability from its
+//  1) You ACCEPT this source code AS IS without any guarantees that it will work as intended. Any liability from its
 //  use is YOURS.
 //
-//  3) Recompensation for any form of damage IS LIMITED to the price you paid for this source code.
+//  2) You WILL NOT seek damages from the author or balancingrock.nl.
 //
-//  Prices/Quotes for support, modifications or enhancements can be obtained from: sales@balancingrock.nl
+//  I also ask you to please leave this header with the source code.
 //
-// =====================================================================================================================
+//  I strongly believe that the Non Agression Principle is the way for societies to function optimally. I thus reject
+//  the implicit use of force to extract payment. Since I cannot negotiate with you about the price of this code, I
+//  have choosen to leave it up to you to determine its price. You pay me whatever you think this code is worth to you.
 //
-// Note: The 'accept' functions are only needed for servers that need to handle more than one transfer after an 'init'.
-// The 'accept' calls return a socket descriptor that is different from the socket on which the accept function was
-// called. The callee is responsible for closing the returned socket descriptor.
+//   - You can send payment via paypal to: sales@balancingrock.nl
+//   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
+//
+//  I prefer the above two, but if these options don't suit you, you might also send me a gift from my amazon.co.uk
+//  whishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
+//
+//  If you like to pay in another way, please contact me at rien@balancingrock.nl
+//
+//  (It is always a good idea to visit the website/blog/google to ensure that you actually pay me and not some imposter)
+//
+//  For private and non-profit use the suggested price is the price of 1 good cup of coffee, say $4.
+//  For commercial use the suggested price is the price of 1 good meal, say $20.
+//
+//  You are however encouraged to pay more ;-)
+//
+//  Prices/Quotes for support, modifications or enhancements can be obtained from: rien@balancingrock.nl
 //
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
 // =====================================================================================================================
 //
 // History
+//
+// v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added support for logUnixSocketCalls
 //        - Moved closing of sockets to SwifterSockets.closeSocket
 //        - Upgraded to Swift 2.2
@@ -45,7 +62,7 @@
 import Foundation
 
 
-extension SwifterSockets {
+public extension SwifterSockets {
     
     
     /**
@@ -59,7 +76,7 @@ extension SwifterSockets {
      
      */
     
-    enum AcceptResult: CustomStringConvertible, CustomDebugStringConvertible {
+    public enum AcceptResult: CustomStringConvertible, CustomDebugStringConvertible {
         
         
         /// A connection was accepted, the socket descriptor is enclosed
@@ -89,7 +106,7 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        public var description: String {
             switch self {
             case .TIMEOUT: return "Timeout"
             case .ABORTED: return "Aborted"
@@ -102,13 +119,13 @@ extension SwifterSockets {
         
         /// The CustomDebugStringConvertible protocol
         
-        var debugDescription: String { return description }
+        public var debugDescription: String { return description }
     }
     
     
     /// This exception can be thrown by the _OrThrow functions. Notice that the ABORTED case is not an error per se but is always in response to an request to abort.
     
-    enum AcceptException: ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum AcceptException: ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
         
         
         /// The string contains a textual description of the error
@@ -133,7 +150,7 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        public var description: String {
             switch self {
             case .TIMEOUT: return "Timeout"
             case .ABORTED: return "Aborted"
@@ -145,28 +162,28 @@ extension SwifterSockets {
         
         /// The CustomDebugStringConvertible protocol
         
-        var debugDescription: String { return description }
+        public var debugDescription: String { return description }
     }
     
     
     /// The telemetry that is available from the accept call. The values are read-only.
     
-    class AcceptTelemetry: NSObject {
+    public class AcceptTelemetry: NSObject {
         
         
         /// The number of times the accept loop has been run so far, updated 'life'.
         
-        var loopCounter: Int = 0
+        public var loopCounter: Int = 0
         
         
         /// The number of accepted connection requests
         
-        var acceptedConnections: Int32 = 0
+        public var acceptedConnections: Int32 = 0
         
         
         /// The time the accept was started, set once at the start of the function call.
         
-        var startTime: NSDate? {
+        public var startTime: NSDate? {
             get {
                 return synchronized(self, { self._startTime })
             }
@@ -180,7 +197,7 @@ extension SwifterSockets {
         
         /// The time the timeout (if used) will terminate the accept call, set once at the start of the function call.
         
-        var timeoutTime: NSDate? {
+        public var timeoutTime: NSDate? {
             get {
                 return synchronized(self, { self._timeoutTime })
             }
@@ -195,7 +212,7 @@ extension SwifterSockets {
         
         /// The time the accept function exited, set once at the exit of the call.
         
-        var endTime: NSDate? {
+        public var endTime: NSDate? {
             get {
                 return synchronized(self, { self._endTime })
             }
@@ -209,7 +226,7 @@ extension SwifterSockets {
         
         /// A copy of the result of the return parameter.
         
-        var result: AcceptResult? {
+        public var result: AcceptResult? {
             get {
                 return synchronized(self, { self._result })
             }
@@ -223,7 +240,7 @@ extension SwifterSockets {
         
         /// Remote IP address
         
-        var clientAddress: String? {
+        public var clientAddress: String? {
             get {
                 return synchronized(self, { self._clientAddress })
             }
@@ -237,7 +254,7 @@ extension SwifterSockets {
         
         /// Remote port number
         
-        var clientPort: String? {
+        public var clientPort: String? {
             get {
                 return synchronized(self, { self._clientPort })
             }
@@ -251,7 +268,7 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        override var description: String {
+        override public var description: String {
             var str = ""
             str += "loopCounter = \(loopCounter)\n"
             str += "acceptedConnections = \(acceptedConnections)\n"
@@ -267,7 +284,7 @@ extension SwifterSockets {
         
         /// The CustomDebugStringConvertible protocol
         
-        override var debugDescription: String { return description }
+        override public var debugDescription: String { return description }
     }
 
     
@@ -283,7 +300,7 @@ extension SwifterSockets {
      - Returns: ACCEPTED with a socket descriptor, ERROR with an error message, TIMEOUT or ABORTED. When a socket descriptor is returned its SIGPIPE exception is disabled.
      */
     
-    static func acceptNoThrow(
+    public static func acceptNoThrow(
         socket: Int32,
         inout abortFlag: Bool,
         abortFlagPollInterval: NSTimeInterval?,
@@ -418,13 +435,6 @@ extension SwifterSockets {
             let receiveSocket = accept(socket, &connectedAddrInfo, &connectedAddrInfoLength)
             
             
-            // Conditional logging
-            
-            if logUnixSocketCalls {
-                log.atLevelDebug(id: socket, source: "SwifterSockets.acceptNoThrow", message: "Result from accept is \(status)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
-            }
-            
-            
             // Evalute the result of the accept call
             
             if receiveSocket == -1 { // Error
@@ -499,7 +509,7 @@ extension SwifterSockets {
      - Throws: The AcceptException when something fails.
      */
     
-    static func acceptOrThrow(
+    public static func acceptOrThrow(
         socket: Int32,
         inout abortFlag: Bool,
         abortFlagPollInterval: NSTimeInterval?,

@@ -3,33 +3,44 @@
 //  File:       SwifterSockets.Receive.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.2
+//  Version:    0.9.3
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
+//  Blog:       http://swiftrien.blogspot.com
+//  Git:        https://github.com/Swiftrien/SwifterSockets
 //
 //  Copyright:  (c) 2014-2016 Marinus van der Lugt, All rights reserved.
 //
-//  License:    Use this code any way you like with the following three provision:
+//  License:    Use or redistribute this code any way you like with the following two provision:
 //
-//  1) You are NOT ALLOWED to redistribute this source code.
-//
-//  2) You ACCEPT this source code AS IS without any guarantees that it will work as intended. Any liability from its
+//  1) You ACCEPT this source code AS IS without any guarantees that it will work as intended. Any liability from its
 //  use is YOURS.
 //
-//  3) Recompensation for any form of damage IS LIMITED to the price you paid for this source code.
+//  2) You WILL NOT seek damages from the author or balancingrock.nl.
 //
-//  Prices/Quotes for support, modifications or enhancements can be obtained from: sales@balancingrock.nl
+//  I also ask you to please leave this header with the source code.
 //
-// =====================================================================================================================
+//  I strongly believe that the Non Agression Principle is the way for societies to function optimally. I thus reject
+//  the implicit use of force to extract payment. Since I cannot negotiate with you about the price of this code, I
+//  have choosen to leave it up to you to determine its price. You pay me whatever you think this code is worth to you.
 //
-// The biggest problem when facing an incoming data stream on a socket is to know when to stop. For that purpose the
-// class DataEndDetector is provided. It should implement two functions: endReached and newObjectOfThisClass.
-// The endReached function is called once for every data block that is received as long as it does not return 'true'.
-// The nowObjectOfThisClass is used when auto-accepting multiple incoming data connections. A new DataEndDetector child
-// is necessary for each receiving thread and will be instantiated through this operation.
+//   - You can send payment via paypal to: sales@balancingrock.nl
+//   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
 //
-// An example of a DataEndDetector is given that can detect the end of a JSON stream.
+//  I prefer the above two, but if these options don't suit you, you might also send me a gift from my amazon.co.uk
+//  whishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
+//
+//  If you like to pay in another way, please contact me at rien@balancingrock.nl
+//
+//  (It is always a good idea to visit the website/blog/google to ensure that you actually pay me and not some imposter)
+//
+//  For private and non-profit use the suggested price is the price of 1 good cup of coffee, say $4.
+//  For commercial use the suggested price is the price of 1 good meal, say $20.
+//
+//  You are however encouraged to pay more ;-)
+//
+//  Prices/Quotes for support, modifications or enhancements can be obtained from: rien@balancingrock.nl
 //
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
@@ -37,6 +48,7 @@
 //
 // History
 //
+// v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added support for logUnixSocketCalls
 //        - Moved closing of sockets to SwifterSockets.closeSocket
 //        - Upgraded to Swift 2.2
@@ -54,7 +66,7 @@
 import Foundation
 
 
-protocol DataEndDetector {
+public protocol DataEndDetector {
     
     /**
      This function should only return 'true' when it detects that the received data is complete. It is likely that this function is called more than once for each data transfer. I.e. if the method to detect the end of the incoming data is not a unique single byte, a child implementation must be able to handle the chuncked reception. In other words, every received byte-block is only presented once to this function.
@@ -71,7 +83,7 @@ protocol DataEndDetector {
 }
 
 
-extension SwifterSockets {
+public extension SwifterSockets {
     
     
     /// An child class of this is used to find the end of an incoming data stream.
@@ -80,7 +92,7 @@ extension SwifterSockets {
     
     /// An implementation of the End of Data detector that detects the completeness of a JSON message.
     
-    class JsonEndDetector: DataEndDetector {
+    public class JsonEndDetector: DataEndDetector {
         
         enum ScanPhase { case NORMAL, IN_STRING, ESCAPED, HEX1, HEX2, HEX3, HEX4 }
         var scanPhase: ScanPhase = .NORMAL
@@ -88,7 +100,7 @@ extension SwifterSockets {
         var countOpeningBraces = 0
         var countClosingBraces = 0
         
-        func endReached(buffer: UnsafeBufferPointer<UInt8>) -> Bool {
+        public func endReached(buffer: UnsafeBufferPointer<UInt8>) -> Bool {
             for byte in buffer {
                 switch scanPhase {
                 case .NORMAL:
@@ -126,6 +138,9 @@ extension SwifterSockets {
             }
             return false
         }
+        
+        // Have to add a public initializer
+        public init() {}
     }
 
     
@@ -140,7 +155,7 @@ extension SwifterSockets {
       - ERROR(message: String)
      */
     
-    enum ReceiveResult: CustomStringConvertible, CustomDebugStringConvertible {
+    public enum ReceiveResult: CustomStringConvertible, CustomDebugStringConvertible {
         
         
         /// The result when the data buffer is full but no end of data has been detected
@@ -175,7 +190,7 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        public var description: String {
             switch self {
             case .BUFFER_FULL: return "Buffer Full"
             case let .READY(data) where data is Int: return "Ready(bytes: \(data))"
@@ -202,13 +217,13 @@ extension SwifterSockets {
         
         /// The CustomDebugStringConvertible protocol
         
-        var debugDescription: String { return description }
+        public var debugDescription: String { return description }
     }
     
     
     /// The error that may be thrown by some socket functions.
     
-    enum ReceiveException: ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum ReceiveException: ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
         
         
         /// The string contains a textual description of the error
@@ -223,7 +238,7 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        public var description: String {
             switch self {
             case .TIMEOUT: return "Timeout"
             case let .MESSAGE(msg): return "Message(\(msg))"
@@ -233,18 +248,18 @@ extension SwifterSockets {
         
         /// The CustomDebugStringConvertible protocol
         
-        var debugDescription: String { return description }
+        public var debugDescription: String { return description }
     }
     
     
     /// The telemetry that is available for the receive calls.
     
-    class ReceiveTelemetry: NSObject {
+    public class ReceiveTelemetry: NSObject {
         
         
         /// The time the transfer was requested. Set only once during the start of the function.
         
-        var startTime: NSDate? {
+        public var startTime: NSDate? {
             get {
                 return synchronized(self, { self._startTime })
             }
@@ -258,7 +273,7 @@ extension SwifterSockets {
         
         /// The time the transfer was terminated. Set only once at the end of the function.
         
-        var endTime: NSDate? {
+        public var endTime: NSDate? {
             get {
                 return synchronized(self, { self._endTime })
             }
@@ -272,17 +287,17 @@ extension SwifterSockets {
         
         /// The number of blocks used during the receipt. Updated life during the execution of the function.
         
-        var blockCounter: Int?
+        public var blockCounter: Int?
         
         
         /// The number of bytes received
         
-        var length: Int?
+        public var length: Int?
         
         
         /// The time for the timeout. Set only once during the start of the function.
         
-        var timeoutTime: NSDate? {
+        public var timeoutTime: NSDate? {
             get {
                 return synchronized(self, { self._timeoutTime })
             }
@@ -296,7 +311,7 @@ extension SwifterSockets {
         
         /// A copy of the result from the function. Set only once at the end of the function.
         
-        var result: ReceiveResult? {
+        public var result: ReceiveResult? {
             get {
                 return synchronized(self, { self._result })
             }
@@ -310,20 +325,20 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        override var description: String {
+        override public var description: String {
             return "StartTime = \(startTime), EndTime = \(endTime), BlockCounter = \(blockCounter), Length = \(length), timeoutTime = \(timeoutTime), resultBytes = \(result)"
         }
         
         
         /// The CustomDebugStringConvertible protocol
         
-        override var debugDescription: String { return description }
+        override public var debugDescription: String { return description }
     }
     
 
     /// The type definition for the postprocessing closure that is started when a receiveAsync transfer is completed.
     
-    typealias ReceivePostProcessing = (socket: Int32, telemetry: ReceiveTelemetry, data: NSData?) -> Void
+    public typealias ReceivePostProcessing = (socket: Int32, telemetry: ReceiveTelemetry, data: NSData?) -> Void
     
     
     /**
@@ -339,7 +354,7 @@ extension SwifterSockets {
      - Returns: CLOSED, READY(data as Int) or CLIENT_CLOSED(data as Int) with data beiing the number of bytes read, BUFFER_FULL, ERROR or TIMEOUT.
      */
     
-    static func receiveBytes(
+    public static func receiveBytes(
         socket: Int32,
         buffer: UnsafeMutableBufferPointer<UInt8>,
         timeout: NSTimeInterval,
@@ -474,13 +489,6 @@ extension SwifterSockets {
             let bytesRead = recv(socket, start, size, 0)
 
             
-            // Conditional logging
-            
-            if logUnixSocketCalls {
-                log.atLevelDebug(id: socket, source: "SwifterSockets.receive-buffer", message: "Result of recv is \(bytesRead)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
-            }
-
-            
             // =====================================================================================
             // Exit in case of an error
             // =====================================================================================
@@ -547,7 +555,7 @@ extension SwifterSockets {
      - Returns: READY(data as NSData) or CLIENT_CLOSED(data as NSData) with data beiing the NSData object containing the received data, BUFFER_FULL, ERROR or TIMEOUT.
      */
     
-    static func receiveNSData(
+    public static func receiveNSData(
         socket: Int32,
         timeout: NSTimeInterval,
         dataEndDetector: DataEndDetector,
@@ -713,7 +721,7 @@ extension SwifterSockets {
      - Returns: CLOSED, READY(data as String) or CLIENT_CLOSED(data as String) with data beiing the received bytes intepreted as a UTF8 encoded string, BUFFER_FULL, ERROR or TIMEOUT.
      */
     
-    static func receiveString(
+    public static func receiveString(
         socket: Int32,
         timeout: NSTimeInterval,
         dataEndDetector: DataEndDetector,
@@ -789,7 +797,7 @@ extension SwifterSockets {
      - Throws: A ReadFromSocket.ExcpetionExcepetion when an error or a timeout occurs.
      */
     
-    static func receiveBytesOrThrow(
+    public static func receiveBytesOrThrow(
         socket: Int32,
         buffer: UnsafeMutableBufferPointer<UInt8>,
         timeout: NSTimeInterval,
@@ -831,7 +839,7 @@ extension SwifterSockets {
      - Throws: A ReadFromSocket.ExcpetionExcepetion when an error or a timeout occurs.
      */
 
-    static func receiveNSDataOrThrow(
+    public static func receiveNSDataOrThrow(
         socket: Int32,
         timeout: NSTimeInterval,
         dataEndDetector: DataEndDetector,
@@ -871,7 +879,7 @@ extension SwifterSockets {
      - Throws: A ReadFromSocket.Excpetion when an error or a timeout occurs.
      */
     
-    static func receiveStringOrThrow(
+    public static func receiveStringOrThrow(
         socket: Int32,
         timeout: NSTimeInterval,
         dataEndDetector: DataEndDetector,
@@ -910,7 +918,7 @@ extension SwifterSockets {
      - Parameter postProcessor: An optional closure that will be started when the transfer ends. If present, this closure should close the socket if necessary. If it is not present the socket will be closed automatically.
      */
     
-    static func receiveAsync(
+    public static func receiveAsync(
         queue: dispatch_queue_t,
         socket: Int32,
         timeout: NSTimeInterval,

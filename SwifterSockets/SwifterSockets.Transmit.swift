@@ -3,29 +3,51 @@
 //  File:       SwifterSockets.Transmit.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.2
+//  Version:    0.9.3
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
+//  Blog:       http://swiftrien.blogspot.com
+//  Git:        https://github.com/Swiftrien/SwifterSockets
 //
 //  Copyright:  (c) 2014-2016 Marinus van der Lugt, All rights reserved.
 //
-//  License:    Use this code any way you like with the following three provision:
+//  License:    Use or redistribute this code any way you like with the following two provision:
 //
-//  1) You are NOT ALLOWED to redistribute this source code.
-//
-//  2) You ACCEPT this source code AS IS without any guarantees that it will work as intended. Any liability from its
+//  1) You ACCEPT this source code AS IS without any guarantees that it will work as intended. Any liability from its
 //  use is YOURS.
 //
-//  3) Recompensation for any form of damage IS LIMITED to the price you paid for this source code.
+//  2) You WILL NOT seek damages from the author or balancingrock.nl.
 //
-//  Prices/Quotes for support, modifications or enhancements can be obtained from: sales@balancingrock.nl
+//  I also ask you to please leave this header with the source code.
+//
+//  I strongly believe that the Non Agression Principle is the way for societies to function optimally. I thus reject
+//  the implicit use of force to extract payment. Since I cannot negotiate with you about the price of this code, I
+//  have choosen to leave it up to you to determine its price. You pay me whatever you think this code is worth to you.
+//
+//   - You can send payment via paypal to: sales@balancingrock.nl
+//   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
+//
+//  I prefer the above two, but if these options don't suit you, you might also send me a gift from my amazon.co.uk
+//  whishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
+//
+//  If you like to pay in another way, please contact me at rien@balancingrock.nl
+//
+//  (It is always a good idea to visit the website/blog/google to ensure that you actually pay me and not some imposter)
+//
+//  For private and non-profit use the suggested price is the price of 1 good cup of coffee, say $4.
+//  For commercial use the suggested price is the price of 1 good meal, say $20.
+//
+//  You are however encouraged to pay more ;-)
+//
+//  Prices/Quotes for support, modifications or enhancements can be obtained from: rien@balancingrock.nl
 //
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
 // =====================================================================================================================
 //
 // History
+// v0.9.3 - Changed target to Framework to support Carthage
 // v0.9.2 - Added support for logUnixSocketCalls
 //        - Moved closing of sockets to SwifterSockets.closeSocket
 //        - Added note on buffer capture to transmitAsync:buffer
@@ -40,7 +62,7 @@
 import Foundation
 
 
-extension SwifterSockets {
+public extension SwifterSockets {
     
     
     /**
@@ -51,7 +73,7 @@ extension SwifterSockets {
      - ERROR(message: String)
      */
     
-    enum TransmitResult: CustomStringConvertible, CustomDebugStringConvertible {
+    public enum TransmitResult: CustomStringConvertible, CustomDebugStringConvertible {
         
         
         /// The result when the buffer contents has been completely transfered without error.
@@ -81,7 +103,7 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        public var description: String {
             switch self {
             case .READY: return "Ready"
             case .TIMEOUT: return "Timeout"
@@ -94,13 +116,13 @@ extension SwifterSockets {
         
         /// The CustomDebugStringConvertible protocol
 
-        var debugDescription: String { return description }
+        public var debugDescription: String { return description }
     }
     
     
     /// The error that may be thrown by the exception based transmit functions.
     
-    enum TransmitException: ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum TransmitException: ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
         
         
         /// The string contains a textual description of the error
@@ -115,7 +137,7 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        var description: String {
+        public var description: String {
             switch self {
             case .TIMEOUT: return "Timeout"
             case let .MESSAGE(msg): return "Message(\(msg))"
@@ -125,23 +147,23 @@ extension SwifterSockets {
         
         /// The CustomDebugStringConvertible protocol
         
-        var debugDescription: String { return description }
+        public var debugDescription: String { return description }
     }
     
     
     /// The type definition for the postprocessing closure that is started when a transmitAsync transfer is completed.
     
-    typealias TransmitPostProcessing = (socket: Int32, telemetry: TransmitTelemetry) -> Void
+    public typealias TransmitPostProcessing = (socket: Int32, telemetry: TransmitTelemetry) -> Void
 
     
     /// The telemetry that is available for the transmit calls.
     
-    class TransmitTelemetry: NSObject {
+    public class TransmitTelemetry: NSObject {
         
         
         /// The time the transfer was requested. Set only once during the start of the function.
         
-        var startTime: NSDate? {
+        public var startTime: NSDate? {
             get {
                 return synchronized(self, { self._startTime })
             }
@@ -155,7 +177,7 @@ extension SwifterSockets {
         
         /// The time the transfer was terminated. Set only once at the end of the function.
         
-        var endTime: NSDate? {
+        public var endTime: NSDate? {
             get {
                 return synchronized(self, { self._endTime })
             }
@@ -169,22 +191,22 @@ extension SwifterSockets {
         
         /// The number of blocks used during the transfer. Updated life during the execution of the function.
         
-        var blockCounter: Int?
+        public var blockCounter: Int?
         
         
         /// The number of bytes to be transferred. Set only once during the start of the function.
         
-        var length: Int?
+        public var length: Int?
         
         
         /// The running number of bytes that have been transferred. Updated life during the execution of the function.
         
-        var bytesTransferred: Int?
+        public var bytesTransferred: Int?
         
         
         /// The time for the timeout. Set only once during the start of the function.
         
-        var timeoutTime: NSDate? {
+        public var timeoutTime: NSDate? {
             get {
                 return synchronized(self, { self._timeoutTime })
             }
@@ -198,7 +220,7 @@ extension SwifterSockets {
         
         /// A copy of the result from the function. Set only once at the end of the function.
         
-        var result: TransmitResult? {
+        public var result: TransmitResult? {
             get {
                 return synchronized(self, { self._result })
             }
@@ -212,14 +234,14 @@ extension SwifterSockets {
         
         /// The CustomStringConvertible protocol
         
-        override var description: String {
+        override public var description: String {
             return "StartTime = \(startTime),\nEndTime = \(endTime),\nBlockCounter = \(blockCounter),\nLength = \(length),\nBytesTransferred = \(bytesTransferred),\ntimeoutTime = \(timeoutTime),\nresult = \(result)"
         }
         
         
         /// The CustomDebugStringConvertible protocol
 
-        override var debugDescription: String { return description }
+        override public var debugDescription: String { return description }
     }
 
 
@@ -233,7 +255,7 @@ extension SwifterSockets {
      - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
      */
     
-    static func transmit(
+    public static func transmit(
         socket: Int32,
         buffer: UnsafeBufferPointer<UInt8>,
         timeout: NSTimeInterval,
@@ -377,13 +399,6 @@ extension SwifterSockets {
             let bytesSend = send(socket, dataStart, size, 0)
         
             
-            // Conditional logging
-            
-            if logUnixSocketCalls {
-                log.atLevelDebug(id: socket, source: "SwifterSockets.transmit-buffer", message: "Result of send is \(bytesSend)", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
-            }
-            
-
             // Evaluate the result of the send
             
             if bytesSend == -1 { // An error occured
@@ -440,7 +455,7 @@ extension SwifterSockets {
      - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
      */
     
-    static func transmit(
+    public static func transmit(
         socket: Int32,
         data: NSData,
         timeout: NSTimeInterval,
@@ -462,7 +477,7 @@ extension SwifterSockets {
      - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
      */
     
-    static func transmit(
+    public static func transmit(
         socket: Int32,
         string: String,
         timeout: NSTimeInterval,
@@ -498,7 +513,7 @@ extension SwifterSockets {
      - Throws: TransmitException, either MESSAGE or TIMEOUT.
      */
 
-    static func transmitOrThrow(
+    public static func transmitOrThrow(
         socket: Int32,
         buffer: UnsafeBufferPointer<UInt8>,
         timeout: NSTimeInterval,
@@ -522,7 +537,7 @@ extension SwifterSockets {
      - Parameter telemetry: An optional pointer to a telemetry stucture that will be updated during execution of the transmit function. The telemetry will not be updated if the arguments have an error.
      */
     
-    static func transmitOrThrow(
+    public static func transmitOrThrow(
         socket: Int32,
         data: NSData,
         timeout: NSTimeInterval,
@@ -545,7 +560,7 @@ extension SwifterSockets {
      - Parameter timeout: The time in seconds for the complete transfer attempt.
      - Parameter telemetry: An optional pointer to a telemetry stucture that will be updated during execution of the transmit function. The telemetry will not be updated if the arguments have an error.
      */
-    static func transmitOrThrow(
+    public static func transmitOrThrow(
         socket: Int32,
         string: String,
         timeout: NSTimeInterval,
@@ -573,7 +588,7 @@ extension SwifterSockets {
      - Parameter postProcessor: An optional closure that will be started when the transfer ends. When present, this closure is responsible to close the socket.
      */
     
-    static func transmitAsync(
+    public static func transmitAsync(
         queue: dispatch_queue_t,
         socket: Int32,
         buffer: UnsafeBufferPointer<UInt8>,
@@ -604,7 +619,7 @@ extension SwifterSockets {
      - Parameter postProcessor: An optional closure that will be started when the transfer ends. Though this closure may be nil, it is advised to at close the socket if the end of the transfer also ends the communication.
      */
     
-    static func transmitAsync(
+    public static func transmitAsync(
         queue: dispatch_queue_t,
         socket: Int32,
         data: NSData,
@@ -635,7 +650,7 @@ extension SwifterSockets {
      - Parameter postProcessor: An optional closure that will be started when the transfer ends. Though this closure may be nil, it is advised to at close the socket if the end of the transfer also ends the communication.
      */
     
-    static func transmitAsync(
+    public static func transmitAsync(
         queue: dispatch_queue_t,
         socket: Int32,
         string: String,

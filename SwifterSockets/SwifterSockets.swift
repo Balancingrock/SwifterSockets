@@ -3,29 +3,51 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.2
+//  Version:    0.9.3
 //
 //  Author:     Marinus van der Lugt
 //  Website:    http://www.balancingrock.nl/swiftersockets.html
+//  Blog:       http://swiftrien.blogspot.com
+//  Git:        https://github.com/Swiftrien/SwifterSockets
 //
 //  Copyright:  (c) 2014-2016 Marinus van der Lugt, All rights reserved.
 //
-//  License:    Use this code any way you like with the following three provision:
+//  License:    Use or redistribute this code any way you like with the following two provision:
 //
-//  1) You are NOT ALLOWED to redistribute this source code.
-//
-//  2) You ACCEPT this source code AS IS without any guarantees that it will work as intended. Any liability from its
+//  1) You ACCEPT this source code AS IS without any guarantees that it will work as intended. Any liability from its
 //  use is YOURS.
 //
-//  3) Recompensation for any form of damage IS LIMITED to the price you paid for this source code.
+//  2) You WILL NOT seek damages from the author or balancingrock.nl.
 //
-//  Prices/Quotes for support, modifications or enhancements can be obtained from: sales@balancingrock.nl
+//  I also ask you to please leave this header with the source code.
+//
+//  I strongly believe that the Non Agression Principle is the way for societies to function optimally. I thus reject
+//  the implicit use of force to extract payment. Since I cannot negotiate with you about the price of this code, I
+//  have choosen to leave it up to you to determine its price. You pay me whatever you think this code is worth to you.
+//
+//   - You can send payment via paypal to: sales@balancingrock.nl
+//   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
+//
+//  I prefer the above two, but if these options don't suit you, you might also send me a gift from my amazon.co.uk
+//  whishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
+//
+//  If you like to pay in another way, please contact me at rien@balancingrock.nl
+//
+//  (It is always a good idea to visit the website/blog/google to ensure that you actually pay me and not some imposter)
+//
+//  For private and non-profit use the suggested price is the price of 1 good cup of coffee, say $4.
+//  For commercial use the suggested price is the price of 1 good meal, say $20.
+//
+//  You are however encouraged to pay more ;-)
+//
+//  Prices/Quotes for support, modifications or enhancements can be obtained from: rien@balancingrock.nl
 //
 // =====================================================================================================================
 // PLEASE let me know about bugs, improvements and feature requests. (rien@balancingrock.nl)
 // =====================================================================================================================
 //
 // History
+// v0.9.3 - Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added closeSocket
 //        - Added 'logUnixSocketCalls'
 //        - Upgraded to Swift 2.2
@@ -53,7 +75,7 @@ import Foundation
  - Note: Calling this function from within the closure guarantees a deadlock.
  */
 
-func synchronized<R>(object: NSObject, _ closure: () -> R) -> R {
+public func synchronized<R>(object: NSObject, _ closure: () -> R) -> R {
     objc_sync_enter(object)
     let r = closure()
     objc_sync_exit(object)
@@ -72,22 +94,14 @@ func synchronized<R>(object: NSObject, _ closure: () -> R) -> R {
  - Note: Calling this function from within the closure guarantees a deadlock.
  */
 
-func synchronized(object: NSObject, _ closure: () -> Void) {
+public func synchronized(object: NSObject, _ closure: () -> Void) {
     objc_sync_enter(object)
     closure()
     objc_sync_exit(object)
 }
 
 
-final class SwifterSockets {
-    
-    
-    /**
-     Set this flag to 'true' in order to have the results of all UNIX socket calls logged at level 'debug'.
-     It logs the calls to 'bind', 'connect', 'listen', 'accept', 'recv', 'send' and 'close', but of course only when called through a SwifterSockets call. Note that it will not log the 'select' call as that would swamp the log.
-     Note: the 'SwifterLog' utility is used to do the actual logging.
-     */
-    static var logUnixSocketCalls = false
+public final class SwifterSockets {
     
     
     /**
@@ -98,7 +112,7 @@ final class SwifterSockets {
      - Returns: (nil, nil) on failure, (ipAddress, portNumber) on success.
      */
     
-    static func sockaddrDescription(addr: UnsafePointer<sockaddr>) -> (ipAddress: String?, portNumber: String?) {
+    public static func sockaddrDescription(addr: UnsafePointer<sockaddr>) -> (ipAddress: String?, portNumber: String?) {
         
         var host : String?
         var service : String?
@@ -132,7 +146,7 @@ final class SwifterSockets {
      - Returns: The set that is opinted at is filled with all zero's.
      */
     
-    static func fdZero(inout set: fd_set) {
+    public static func fdZero(inout set: fd_set) {
         set.fds_bits = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     }
     
@@ -148,7 +162,7 @@ final class SwifterSockets {
      - Note: If you receive an EXC_BAD_INSTRUCTION at the mask statement, then most likely the socket was already closed.
      */
     
-    static func fdSet(fd: Int32, inout set: fd_set) {
+    public static func fdSet(fd: Int32, inout set: fd_set) {
         let intOffset = Int(fd / 32)
         let bitOffset = fd % 32
         let mask = 1 << bitOffset
@@ -199,7 +213,7 @@ final class SwifterSockets {
      - Returns: The given set is updated in place, with the bit at offset 'fd' cleared to 0.
      */
 
-    static func fdClr(fd: Int32, inout set: fd_set) {
+    public static func fdClr(fd: Int32, inout set: fd_set) {
         let intOffset = Int(fd / 32)
         let bitOffset = fd % 32
         let mask = ~(1 << bitOffset)
@@ -250,7 +264,7 @@ final class SwifterSockets {
      - Returns: 'true' if the bit at offset 'fd' is 1, 'false' otherwise.
      */
 
-    static func fdIsSet(fd: Int32, inout set: fd_set) -> Bool {
+    public static func fdIsSet(fd: Int32, inout set: fd_set) -> Bool {
         let intOffset = Int(fd / 32)
         let bitOffset = fd % 32
         let mask = 1 << bitOffset
@@ -293,47 +307,45 @@ final class SwifterSockets {
     
     
     /**
-     Output of all IP addresses in the addrinfo structure to the logger.
+     Returns all IP addresses in the addrinfo structure as a String.
      
-     - Note: The output is written to a logger instance called 'log' of type 'SwifterLog'. Only uncomment this function if that log instance is available. For more about SwifterLog (free) see http://www.balancingrock.nl/swifterlog
-    
      - Parameter infoPtr: A pointer to an addrinfo structure of which the IP addresses should be logged.
-     - Parameter atLogLevel: The logleven at which the IP addresses will be logged, defaults to DEBUG.
      - Parameter source: The source to be logged for the log entry, defaults to "SwifterSockets.logAddrInfoIPAddresses".
+     
+     - Returns: A string with the IP Addresses of all entries in the infoPtr addrinfo structure chain.
      */
     
-    static func logAddrInfoIPAddresses(
-        infoPtr: UnsafeMutablePointer<addrinfo>,
-        atLogLevel logLevel: SwifterLog.Level = SwifterLog.Level.DEBUG,
-        source: String = "SwifterSockets.logAddrInfoIPAddresses")
+    public static func logAddrInfoIPAddresses(infoPtr: UnsafeMutablePointer<addrinfo>) -> String
     {
         var count = 0
         var info = infoPtr
+        var str = ""
         while info != nil {
             let (clientIp, service) = sockaddrDescription(info.memory.ai_addr)
-            let message = "No: \(count), HostIp: " + (clientIp ?? "?") + " at port: " + (service ?? "?")
-            log.atLevel(logLevel, id: 0, source: source, message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
+            str += "No: \(count), HostIp: " + (clientIp ?? "?") + " at port: " + (service ?? "?") + "\n"
             count += 1
             info = info.memory.ai_next
         }
+        
+        return str
     }
     
     
     /**
-     Output of all socket options to the logger.
+     A string with all socket options.
      
-     - Note: The output is written to a logger instance called 'log' of type 'SwifterLog'. Only uncomment this function if that log instance is available. For more about SwifterLog (free) see http://www.balancingrock.nl/swifterlog
-
      - Parameter socket: The socket of which to log the options.
      - Parameter atLogLevel: The logleven at which the options will be logged.
+     
+     - Returns: A string with all socket options of the given socket.
      */
     
-    static func logSocketOptions(socket: Int32, atLogLevel: SwifterLog.Level) {
+    public static func logSocketOptions(socket: Int32) -> String {
         
         
         // To identify the logging source
         
-        let SOURCE = "SwifterSockets - logSocketOptions(fd = \(socket))"
+        var res = ""
         
         
         // Assist functions do the actual logging
@@ -342,32 +354,28 @@ final class SwifterSockets {
             var optionValueFlag: Int32 = 0
             var ovFlagLength: socklen_t = 4
             _ = getsockopt(socket, level, name, &optionValueFlag, &ovFlagLength)
-            let message = "\(str) = " + (optionValueFlag == 0 ? "No" : "Yes")
-            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
+            res += "\(str) = " + (optionValueFlag == 0 ? "No" : "Yes")
         }
         
         func forIntOptionAtLevel(level: Int32, withName name: Int32, str: String) {
             var optionValueInt: Int32 = 0
             var ovIntLength: socklen_t = 4
             _ = getsockopt(socket, level, name, &optionValueInt, &ovIntLength)
-            let message = "\(str) = \(optionValueInt)"
-            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
+            res += "\(str) = \(optionValueInt)"
         }
         
         func forLingerOptionAtLevel(level: Int32, withName name: Int32, str: String) {
             var optionValueLinger = linger(l_onoff: 0, l_linger: 0)
             var ovLingerLength: socklen_t = 8
             _ = getsockopt(socket, level, name, &optionValueLinger, &ovLingerLength)
-            let message = "\(str) onOff = \(optionValueLinger.l_onoff), linger = \(optionValueLinger.l_linger)"
-            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
+            res += "\(str) onOff = \(optionValueLinger.l_onoff), linger = \(optionValueLinger.l_linger)"
         }
         
         func forTimeOptionAtLevel(level: Int32, withName name: Int32, str: String) {
             var optionValueTime = time_value(seconds: 0, microseconds: 0)
             var ovTimeLength: socklen_t = 8
             _ = getsockopt(socket, level, name, &optionValueTime, &ovTimeLength)
-            let message = "\(str) seconds = \(optionValueTime.seconds), microseconds = \(optionValueTime.microseconds)"
-            log.atLevel(atLogLevel, id: socket, source: SOURCE, message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
+            res += "\(str) seconds = \(optionValueTime.seconds), microseconds = \(optionValueTime.microseconds)"
         }
         
         
@@ -396,27 +404,21 @@ final class SwifterSockets {
         forFlagOptionAtLevel(IPPROTO_IPV6, withName: IPV6_V6ONLY, str: "IPV6_V6ONLY")
         forIntOptionAtLevel(IPPROTO_TCP, withName: TCP_MAXSEG, str: "TCP_MAXSEG")
         forFlagOptionAtLevel(IPPROTO_TCP, withName: TCP_NODELAY, str: "TCP_NODELAY")
+        
+        return res
     }
     
     
     /**
      Closes the given socket if not nil. This entry point is supplied to have a single point that closes all your sockets. Durng debugging it is often good to have some logging facility that logs all calls on the unix sockets. This function allows to have a single point for that logging without having to look through your code to find all occurances of the close call.
+     
+     - Returns: True if the port was closed, nil if it was closed already and false if an error occured (errno will contain an error reason).
      */
     
-    static func closeSocket(socket: Int32?) {
+    public static func closeSocket(socket: Int32?) -> Bool? {
         
-        if let s = socket {
+        guard let s = socket else { return nil }
         
-            let result = close(s)
-            
-            if logUnixSocketCalls {
-                log.atLevelDebug(id: s, source: "SwifterSockets.closeSocket", message: "Socket closed", targets: SwifterLog.Target.ALL_NON_RECURSIVE)
-            }
-            
-            if result != 0 {
-                let message = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-                log.atLevelDebug(id: s, source: "SocketUtils.closeSocket", message: message, targets: SwifterLog.Target.ALL_NON_RECURSIVE)
-            }
-        }
+        return close(s) == 0
     }
 }

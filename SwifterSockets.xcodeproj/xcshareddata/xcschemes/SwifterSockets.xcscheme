@@ -14,8 +14,8 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "866EBDE81C86F0F500FABD9A"
-               BuildableName = "SwifterSockets.app"
+               BlueprintIdentifier = "866F6C701CDCCB4200557ACE"
+               BuildableName = "SwifterSockets.framework"
                BlueprintName = "SwifterSockets"
                ReferencedContainer = "container:SwifterSockets.xcodeproj">
             </BuildableReference>
@@ -32,7 +32,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "866EBDF71C86F0F500FABD9A"
+               BlueprintIdentifier = "866F6C791CDCCB4200557ACE"
                BuildableName = "SwifterSocketsTests.xctest"
                BlueprintName = "SwifterSocketsTests"
                ReferencedContainer = "container:SwifterSockets.xcodeproj">
@@ -42,8 +42,8 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "866EBDE81C86F0F500FABD9A"
-            BuildableName = "SwifterSockets.app"
+            BlueprintIdentifier = "866F6C701CDCCB4200557ACE"
+            BuildableName = "SwifterSockets.framework"
             BlueprintName = "SwifterSockets"
             ReferencedContainer = "container:SwifterSockets.xcodeproj">
          </BuildableReference>
@@ -65,8 +65,8 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "866EBDE81C86F0F500FABD9A"
-            BuildableName = "SwifterSockets.app"
+            BlueprintIdentifier = "866F6C701CDCCB4200557ACE"
+            BuildableName = "SwifterSockets.framework"
             BlueprintName = "SwifterSockets"
             ReferencedContainer = "container:SwifterSockets.xcodeproj">
          </BuildableReference>
@@ -84,8 +84,8 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "866EBDE81C86F0F500FABD9A"
-            BuildableName = "SwifterSockets.app"
+            BlueprintIdentifier = "866F6C701CDCCB4200557ACE"
+            BuildableName = "SwifterSockets.framework"
             BlueprintName = "SwifterSockets"
             ReferencedContainer = "container:SwifterSockets.xcodeproj">
          </BuildableReference>
