@@ -1,7 +1,7 @@
 # SwifterSockets
 A collection of socket utilities in pure Swift
 
-SwifterSockets is part of the 5 packages that make up the Swiftfire webserver:
+SwifterSockets is part of the 5 packages that make up the [Swiftfire](http://swiftfire.nl) webserver:
 
 #####[Swiftfire](https://github.com/Swiftrien/Swiftfire)
 

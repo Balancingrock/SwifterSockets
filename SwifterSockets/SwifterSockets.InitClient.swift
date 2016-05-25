@@ -3,10 +3,11 @@
 //  File:       SwifterSockets.InitClient.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.3
+//  Version:    0.9.4
 //
 //  Author:     Marinus van der Lugt
-//  Website:    http://www.balancingrock.nl/swiftersockets.html
+//  Company:    http://balancingrock.nl
+//  Website:    http://swiftfire.nl/pages/projects/swiftersockets/
 //  Blog:       http://swiftrien.blogspot.com
 //  Git:        https://github.com/Swiftrien/SwifterSockets
 //
@@ -47,6 +48,8 @@
 // =====================================================================================================================
 //
 // History
+//
+// v0.9.4 - Header update
 // v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added support for logUnixSocketCalls
 //        - Moved closing of sockets to SwifterSockets.closeSocket
