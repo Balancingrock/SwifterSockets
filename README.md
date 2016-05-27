@@ -34,6 +34,10 @@ There is a 6th package called [SwiftfireTester](https://github.com/Swiftrien/Swi
 
 #Version history
 
+####v0.9.4
+
+- Header update to include new website: [swiftfire.nl](http://swiftfire.nl)
+
 ####v0.9.3
 
 - Changed target to framework
