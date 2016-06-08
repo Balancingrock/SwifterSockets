@@ -34,6 +34,11 @@ There is a 6th package called [SwiftfireTester](https://github.com/Swiftrien/Swi
 
 #Version history
 
+####v0.9.5
+
+- Fixed a bug where accepting an IPv6 connection would fill an IPv4 sockaddr structure.
+- Added SocketAddress enum adopted from Marco Masser: http://blog.obdev.at/representing-socket-addresses-in-swift-using-enums
+
 ####v0.9.4
 
 - Header update to include new website: [swiftfire.nl](http://swiftfire.nl)
