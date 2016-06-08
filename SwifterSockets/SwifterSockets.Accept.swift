@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Accept.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.4
+//  Version:    0.9.5
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.5 - Fixed a bug where accepting an IPv6 connection would fill an IPv4 sockaddr structure.
 // v0.9.4 - Header update
 // v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added support for logUnixSocketCalls
@@ -431,15 +432,14 @@ public extension SwifterSockets {
             // Accept the incoming connection request
             // =======================================
             
-            var connectedAddrInfo = sockaddr(sa_len: 0, sa_family: 0, sa_data: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-            var connectedAddrInfoLength = socklen_t(sizeof(sockaddr))
-            
-            let receiveSocket = accept(socket, &connectedAddrInfo, &connectedAddrInfoLength)
-            
+            var clientSocket: Int32 = 0
+            let clientSocketAddress = SocketAddress { sockAddrPointer, sockAddrLength in
+                clientSocket = accept(socket, sockAddrPointer, sockAddrLength)
+            }
             
             // Evalute the result of the accept call
             
-            if receiveSocket == -1 { // Error
+            if clientSocket == -1 { // Error
                 
                 let strerr = String(UTF8String: strerror(errno)) ?? "Unknown error code"
                 telemetry?.endTime = NSDate()
@@ -457,7 +457,7 @@ public extension SwifterSockets {
                 var optval = 1;
                 
                 let status = setsockopt(
-                    receiveSocket,
+                    clientSocket,
                     SOL_SOCKET,
                     SO_NOSIGPIPE,
                     &optval,
@@ -465,7 +465,7 @@ public extension SwifterSockets {
                 
                 if status == -1 {
                     let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
-                    closeSocket(receiveSocket)
+                    closeSocket(clientSocket)
                     return .ERROR(message: strError)
                 }
 
@@ -474,15 +474,18 @@ public extension SwifterSockets {
                 // get Ip Addres and Port number of the client
                 // ===========================================
                 
-                let (ipOrNil, portOrNil) = sockaddrDescription(&connectedAddrInfo)
-                    
-                telemetry?.clientAddress = ipOrNil ?? "Unknown client address"
-                telemetry?.clientPort = portOrNil ?? "Unknown client port"
+                if let (ipOrNil, portOrNil) = clientSocketAddress?.doWithPtr({ addr, _ in sockaddrDescription(addr) }) {
+                    telemetry?.clientAddress = ipOrNil ?? "Unknown client address"
+                    telemetry?.clientPort = portOrNil ?? "Unknown client port"
+                } else {
+                    telemetry?.clientAddress = "Unknown client address"
+                    telemetry?.clientPort = "Unknown client port"
+                }
                 telemetry?.endTime = NSDate()
-                telemetry?.result = .ACCEPTED(socket: receiveSocket)
+                telemetry?.result = .ACCEPTED(socket: clientSocket)
                 telemetry?.acceptedConnections += 1
                 
-                return .ACCEPTED(socket: receiveSocket)
+                return .ACCEPTED(socket: clientSocket)
             }
         }
         

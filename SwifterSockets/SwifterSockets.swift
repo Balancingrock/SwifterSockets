@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.4
+//  Version:    0.9.5
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.5 - Added SocketAddress enum adopted from Marco Masser: http://blog.obdev.at/representing-socket-addresses-in-swift-using-enums
 // v0.9.4 - Header update
 // v0.9.3 - Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added closeSocket
@@ -105,7 +106,62 @@ public func synchronized(object: NSObject, _ closure: () -> Void) {
 
 
 public final class SwifterSockets {
+
     
+    /**
+     A Swift wrapper and extensions for sockaddr.
+     This wrapper was described on the blog from Marco Masser: http://blog.obdev.at/representing-socket-addresses-in-swift-using-enums/
+     */
+    
+    public enum SocketAddress {
+        case Version4(address: sockaddr_in)
+        case Version6(address: sockaddr_in6)
+        
+        public init(addrInfo: addrinfo) {
+            switch addrInfo.ai_family {
+            case AF_INET:  self = .Version4(address: UnsafePointer(addrInfo.ai_addr).memory)
+            case AF_INET6: self = .Version6(address: UnsafePointer(addrInfo.ai_addr).memory)
+            default: fatalError("Unknown address family")
+            }
+        }
+        
+        public init?(@noescape addressProvider: (UnsafeMutablePointer<sockaddr>, UnsafeMutablePointer<socklen_t>) throws -> Void) rethrows {
+            
+            var addressStorage = sockaddr_storage()
+            var addressStorageLength = socklen_t(sizeofValue(addressStorage))
+            
+            try withUnsafeMutablePointers(&addressStorage, &addressStorageLength) {
+                try addressProvider(UnsafeMutablePointer<sockaddr>($0), $1)
+            }
+            
+            switch Int32(addressStorage.ss_family) {
+            case AF_INET:
+                self = withUnsafePointer(&addressStorage) { .Version4(address: UnsafePointer<sockaddr_in>($0).memory) }
+                
+            case AF_INET6:
+                self = withUnsafePointer(&addressStorage) { .Version6(address: UnsafePointer<sockaddr_in6>($0).memory) }
+                
+            default:
+                return nil
+            }
+        }
+        
+        public func doWithPtr<Result>(@noescape body: (UnsafePointer<sockaddr>, socklen_t) throws -> Result) rethrows -> Result {
+            
+            func castAndCall<T>(address: T, @noescape _ body: (UnsafePointer<sockaddr>, socklen_t) throws -> Result) rethrows -> Result {
+                var localAddress = address // We need a `var` here for the `&`.
+                return try withUnsafePointer(&localAddress) {
+                    try body(UnsafePointer<sockaddr>($0), socklen_t(sizeof(T)))
+                }
+            }
+            
+            switch self {
+            case .Version4(let address): return try castAndCall(address, body)
+            case .Version6(let address): return try castAndCall(address, body)
+            }
+        }
+    }
+
     
     /**
      Returns the (ipAddress, portNumber) tuple for a given sockaddr (if possible)
