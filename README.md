@@ -1,15 +1,11 @@
 # SwifterSockets
 A collection of socket utilities in pure Swift
 
-SwifterSockets is part of the 5 packages that make up the [Swiftfire](http://swiftfire.nl) webserver:
+SwifterSockets is part of the 4 packages that make up the [Swiftfire](http://swiftfire.nl) webserver:
 
 #####[Swiftfire](https://github.com/Swiftrien/Swiftfire)
 
 An open source web server in Swift.
-
-#####[SwiftfireConsole](https://github.com/Swiftrien/SwiftfireConsole)
-
-A GUI application for Swiftfire.
 
 #####[SwifterLog](https://github.com/Swiftrien/SwifterLog)
 
@@ -19,7 +15,7 @@ General purpose logging utility.
 
 General purpose JSON framework.
 
-There is a 6th package called [SwiftfireTester](https://github.com/Swiftrien/SwiftfireTester) that can be used to challenge a webserver (any webserver) and see/verify the response.
+There is a 5th package called [SwiftfireTester](https://github.com/Swiftrien/SwiftfireTester) that can be used to challenge a webserver (any webserver) and see/verify the response.
 
 #Features
 - Shields the Swift application from the complexity of the Unix socket calls.
@@ -33,6 +29,12 @@ There is a 6th package called [SwiftfireTester](https://github.com/Swiftrien/Swi
 - Comes with some example code.
 
 #Version history
+
+Note: Planned releases are for information only, they are subject to change without notice.
+
+####v1.0.0 (Planned)
+
+- Upgrade to Swift 3
 
 ####v0.9.5
 
