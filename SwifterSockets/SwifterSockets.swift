@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.5
+//  Version:    0.9.6
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.6 - Upgraded to Swift 3 beta
 // v0.9.5 - Added SocketAddress enum adopted from Marco Masser: http://blog.obdev.at/representing-socket-addresses-in-swift-using-enums
 // v0.9.4 - Header update
 // v0.9.3 - Changed target to Framework, added public declarations, removed SwifterLog.
@@ -64,47 +65,6 @@
 import Foundation
 
 
-// Since the socket functions will often use multi-threading for maximum performance two synchronization functions are defined to ease safe communication between threads. If necessary move or rename these functions as necessary (i.e. if these names are already used in the project)
-
-/**
- Ensures that the closure is only executed when no other thread has a lock on the given object.
-
- Usage example: let lock = NSString(); let i = synchronized(lock, { () -> Int? in ... })
-
- - Parameter object: The object to be used as the locking-object.
- - Parameter closure: The closure to be executed when the locking object is not locked.
-
- - Returns: The result from the closure.
-
- - Note: Calling this function from within the closure guarantees a deadlock.
- */
-
-public func synchronized<R>(object: NSObject, _ closure: () -> R) -> R {
-    objc_sync_enter(object)
-    let r = closure()
-    objc_sync_exit(object)
-    return r
-}
-
-
-/**
- Ensures that the closure is only executed when no other thread has a lock on the given object.
- 
- Usage example: let lock = NSString(); synchronized(lock, { ... })
-
- - Parameter object: The object to be used as the locking-object.
- - Parameter closure: The closure to be executed when the locking object is not locked.
- 
- - Note: Calling this function from within the closure guarantees a deadlock.
- */
-
-public func synchronized(object: NSObject, _ closure: () -> Void) {
-    objc_sync_enter(object)
-    closure()
-    objc_sync_exit(object)
-}
-
-
 public final class SwifterSockets {
 
     
@@ -114,18 +74,18 @@ public final class SwifterSockets {
      */
     
     public enum SocketAddress {
-        case Version4(address: sockaddr_in)
-        case Version6(address: sockaddr_in6)
+        case version4(address: sockaddr_in)
+        case version6(address: sockaddr_in6)
         
         public init(addrInfo: addrinfo) {
             switch addrInfo.ai_family {
-            case AF_INET:  self = .Version4(address: UnsafePointer(addrInfo.ai_addr).memory)
-            case AF_INET6: self = .Version6(address: UnsafePointer(addrInfo.ai_addr).memory)
+            case AF_INET:  self = .version4(address: UnsafePointer(addrInfo.ai_addr).pointee)
+            case AF_INET6: self = .version6(address: UnsafePointer(addrInfo.ai_addr).pointee)
             default: fatalError("Unknown address family")
             }
         }
         
-        public init?(@noescape addressProvider: (UnsafeMutablePointer<sockaddr>, UnsafeMutablePointer<socklen_t>) throws -> Void) rethrows {
+        public init?(addressProvider: @noescape (UnsafeMutablePointer<sockaddr>, UnsafeMutablePointer<socklen_t>) throws -> Void) rethrows {
             
             var addressStorage = sockaddr_storage()
             var addressStorageLength = socklen_t(sizeofValue(addressStorage))
@@ -136,28 +96,28 @@ public final class SwifterSockets {
             
             switch Int32(addressStorage.ss_family) {
             case AF_INET:
-                self = withUnsafePointer(&addressStorage) { .Version4(address: UnsafePointer<sockaddr_in>($0).memory) }
+                self = withUnsafePointer(&addressStorage) { .version4(address: UnsafePointer<sockaddr_in>($0).pointee) }
                 
             case AF_INET6:
-                self = withUnsafePointer(&addressStorage) { .Version6(address: UnsafePointer<sockaddr_in6>($0).memory) }
+                self = withUnsafePointer(&addressStorage) { .version6(address: UnsafePointer<sockaddr_in6>($0).pointee) }
                 
             default:
                 return nil
             }
         }
         
-        public func doWithPtr<Result>(@noescape body: (UnsafePointer<sockaddr>, socklen_t) throws -> Result) rethrows -> Result {
+        public func doWithPtr<Result>(body: @noescape (UnsafePointer<sockaddr>, socklen_t) throws -> Result) rethrows -> Result {
             
-            func castAndCall<T>(address: T, @noescape _ body: (UnsafePointer<sockaddr>, socklen_t) throws -> Result) rethrows -> Result {
+            func castAndCall<T>(_ address: T, _ body: @noescape (UnsafePointer<sockaddr>, socklen_t) throws -> Result) rethrows -> Result {
                 var localAddress = address // We need a `var` here for the `&`.
                 return try withUnsafePointer(&localAddress) {
-                    try body(UnsafePointer<sockaddr>($0), socklen_t(sizeof(T)))
+                    try body(UnsafePointer<sockaddr>($0), socklen_t(sizeof(T.self)))
                 }
             }
             
             switch self {
-            case .Version4(let address): return try castAndCall(address, body)
-            case .Version6(let address): return try castAndCall(address, body)
+            case .version4(let address): return try castAndCall(address, body)
+            case .version6(let address): return try castAndCall(address, body)
             }
         }
     }
@@ -171,17 +131,17 @@ public final class SwifterSockets {
      - Returns: (nil, nil) on failure, (ipAddress, portNumber) on success.
      */
     
-    public static func sockaddrDescription(addr: UnsafePointer<sockaddr>) -> (ipAddress: String?, portNumber: String?) {
+    public static func sockaddrDescription(_ addr: UnsafePointer<sockaddr>) -> (ipAddress: String?, portNumber: String?) {
         
         var host : String?
         var service : String?
         
-        var hostBuffer = [CChar](count: Int(NI_MAXHOST), repeatedValue: 0)
-        var serviceBuffer = [CChar](count: Int(NI_MAXSERV), repeatedValue: 0)
+        var hostBuffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+        var serviceBuffer = [CChar](repeating: 0, count: Int(NI_MAXSERV))
         
         if getnameinfo(
             addr,
-            socklen_t(addr.memory.sa_len),
+            socklen_t(addr.pointee.sa_len),
             &hostBuffer,
             socklen_t(hostBuffer.count),
             &serviceBuffer,
@@ -190,8 +150,8 @@ public final class SwifterSockets {
             
             == 0 {
                 
-                host = String.fromCString(hostBuffer)
-                service = String.fromCString(serviceBuffer)
+                host = String(cString: hostBuffer)
+                service = String(cString: serviceBuffer)
         }
         return (host, service)
     }
@@ -205,7 +165,7 @@ public final class SwifterSockets {
      - Returns: The set that is opinted at is filled with all zero's.
      */
     
-    public static func fdZero(inout set: fd_set) {
+    public static func fdZero(_ set: inout fd_set) {
         set.fds_bits = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     }
     
@@ -221,7 +181,7 @@ public final class SwifterSockets {
      - Note: If you receive an EXC_BAD_INSTRUCTION at the mask statement, then most likely the socket was already closed.
      */
     
-    public static func fdSet(fd: Int32, inout set: fd_set) {
+    public static func fdSet(_ fd: Int32, set: inout fd_set) {
         let intOffset = Int(fd / 32)
         let bitOffset = fd % 32
         let mask = 1 << bitOffset
@@ -272,7 +232,7 @@ public final class SwifterSockets {
      - Returns: The given set is updated in place, with the bit at offset 'fd' cleared to 0.
      */
 
-    public static func fdClr(fd: Int32, inout set: fd_set) {
+    public static func fdClr(_ fd: Int32, set: inout fd_set) {
         let intOffset = Int(fd / 32)
         let bitOffset = fd % 32
         let mask = ~(1 << bitOffset)
@@ -323,7 +283,7 @@ public final class SwifterSockets {
      - Returns: 'true' if the bit at offset 'fd' is 1, 'false' otherwise.
      */
 
-    public static func fdIsSet(fd: Int32, inout set: fd_set) -> Bool {
+    public static func fdIsSet(_ fd: Int32, set: inout fd_set) -> Bool {
         let intOffset = Int(fd / 32)
         let bitOffset = fd % 32
         let mask = 1 << bitOffset
@@ -374,16 +334,17 @@ public final class SwifterSockets {
      - Returns: A string with the IP Addresses of all entries in the infoPtr addrinfo structure chain.
      */
     
-    public static func logAddrInfoIPAddresses(infoPtr: UnsafeMutablePointer<addrinfo>) -> String
+    public static func logAddrInfoIPAddresses(_ infoPtr: UnsafeMutablePointer<addrinfo>) -> String
     {
+        let addrInfoNil: UnsafeMutablePointer<addrinfo>? = nil
         var count = 0
         var info = infoPtr
         var str = ""
-        while info != nil {
-            let (clientIp, service) = sockaddrDescription(info.memory.ai_addr)
+        while info != addrInfoNil {
+            let (clientIp, service) = sockaddrDescription(info.pointee.ai_addr)
             str += "No: \(count), HostIp: " + (clientIp ?? "?") + " at port: " + (service ?? "?") + "\n"
             count += 1
-            info = info.memory.ai_next
+            info = info.pointee.ai_next
         }
         
         return str
@@ -399,7 +360,7 @@ public final class SwifterSockets {
      - Returns: A string with all socket options of the given socket.
      */
     
-    public static func logSocketOptions(socket: Int32) -> String {
+    public static func logSocketOptions(_ socket: Int32) -> String {
         
         
         // To identify the logging source
@@ -409,28 +370,28 @@ public final class SwifterSockets {
         
         // Assist functions do the actual logging
         
-        func forFlagOptionAtLevel(level: Int32, withName name: Int32, str: String) {
+        func forFlagOptionAtLevel(_ level: Int32, withName name: Int32, str: String) {
             var optionValueFlag: Int32 = 0
             var ovFlagLength: socklen_t = 4
             _ = getsockopt(socket, level, name, &optionValueFlag, &ovFlagLength)
             res += "\(str) = " + (optionValueFlag == 0 ? "No" : "Yes")
         }
         
-        func forIntOptionAtLevel(level: Int32, withName name: Int32, str: String) {
+        func forIntOptionAtLevel(_ level: Int32, withName name: Int32, str: String) {
             var optionValueInt: Int32 = 0
             var ovIntLength: socklen_t = 4
             _ = getsockopt(socket, level, name, &optionValueInt, &ovIntLength)
             res += "\(str) = \(optionValueInt)"
         }
         
-        func forLingerOptionAtLevel(level: Int32, withName name: Int32, str: String) {
+        func forLingerOptionAtLevel(_ level: Int32, withName name: Int32, str: String) {
             var optionValueLinger = linger(l_onoff: 0, l_linger: 0)
             var ovLingerLength: socklen_t = 8
             _ = getsockopt(socket, level, name, &optionValueLinger, &ovLingerLength)
             res += "\(str) onOff = \(optionValueLinger.l_onoff), linger = \(optionValueLinger.l_linger)"
         }
         
-        func forTimeOptionAtLevel(level: Int32, withName name: Int32, str: String) {
+        func forTimeOptionAtLevel(_ level: Int32, withName name: Int32, str: String) {
             var optionValueTime = time_value(seconds: 0, microseconds: 0)
             var ovTimeLength: socklen_t = 8
             _ = getsockopt(socket, level, name, &optionValueTime, &ovTimeLength)
@@ -474,7 +435,8 @@ public final class SwifterSockets {
      - Returns: True if the port was closed, nil if it was closed already and false if an error occured (errno will contain an error reason).
      */
     
-    public static func closeSocket(socket: Int32?) -> Bool? {
+    @discardableResult
+    public static func closeSocket(_ socket: Int32?) -> Bool? {
         
         guard let s = socket else { return nil }
         

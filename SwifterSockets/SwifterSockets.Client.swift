@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.InitClient.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.4
+//  Version:    0.9.6
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.6 - Upgraded to Swift 3 beta
 // v0.9.4 - Header update
 // v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added support for logUnixSocketCalls
@@ -68,28 +69,28 @@ public extension SwifterSockets {
     /**
      The return type for the initClient functions. Possible values are:
      
-     - ERROR(String)
-     - SOCKET(Int32)
+     - error(String)
+     - socket(Int32)
      */
     
-    public enum InitClientResult: CustomStringConvertible, CustomDebugStringConvertible {
+    public enum ClientResult: CustomStringConvertible, CustomDebugStringConvertible {
         
         /// An error occured, enclosed is either errno or the getaddrinfo return value and the string is the textual representation of the error
         
-        case ERROR(String)
+        case error(String)
         
         
         /// The socket descriptor of the open socket
         
-        case SOCKET(Int32)
+        case socket(Int32)
         
         
         /// The CustomStringConvertible protocol
         
         public var description: String {
             switch self {
-            case let .SOCKET(num): return "Socket(\(num))"
-            case let .ERROR(msg): return "Error(\(msg))"
+            case let .socket(num): return "Socket(\(num))"
+            case let .error(msg): return "Error(\(msg))"
             }
         }
         
@@ -102,16 +103,16 @@ public extension SwifterSockets {
     
     /// The exception for the throwing functions.
     
-    public enum InitClientException: ErrorType, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum ClientException: ErrorProtocol, CustomStringConvertible, CustomDebugStringConvertible {
         
-        case MESSAGE(String)
+        case message(String)
         
         
         /// The CustomStringConvertible protocol
         
         public var description: String {
             switch self {
-            case let .MESSAGE(msg): return "Message(\(msg))"
+            case let .message(msg): return "Message(\(msg))"
             }
         }
         
@@ -124,7 +125,7 @@ public extension SwifterSockets {
     
     /// Signature for the closure that can be started after the initialisation succeeds
     
-    public typealias InitClientPostProcessing = (socket: Int32) -> Void
+    public typealias ClientPostProcessing = (socket: Int32) -> Void
     
     
     /**
@@ -136,7 +137,7 @@ public extension SwifterSockets {
      - Returns: Either an open socket or a string with error information.
      */
     
-    public static func initClient(address address: String, port: String) -> InitClientResult {
+    public static func connectToServer(atAddress address: String, atPort port: String) -> ClientResult {
         
         
         // General purpose status variable, used to detect error returns from socket functions
@@ -163,7 +164,7 @@ public extension SwifterSockets {
         
         // For the information needed to create a socket (result from the getaddrinfo)
         
-        var servinfo: UnsafeMutablePointer<addrinfo> = nil
+        var servinfo: UnsafeMutablePointer<addrinfo>? = nil
         
         
         // Get the info we need to create our socket descriptor
@@ -182,11 +183,11 @@ public extension SwifterSockets {
         if status != 0 {
             var strError: String
             if status == EAI_SYSTEM {
-                strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+                strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             } else {
-                strError = String(UTF8String: gai_strerror(status)) ?? "Unknown error code"
+                strError = String(validatingUTF8: gai_strerror(status)) ?? "Unknown error code"
             }
-            return .ERROR(strError)
+            return .error(strError)
         }
 
         
@@ -203,9 +204,9 @@ public extension SwifterSockets {
             // ============================
             
             socketDescriptor = socket(
-                info.memory.ai_family,      // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
-                info.memory.ai_socktype,    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
-                info.memory.ai_protocol)    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
+                (info?.pointee.ai_family)!,      // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
+                (info?.pointee.ai_socktype)!,    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
+                (info?.pointee.ai_protocol)!)    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
             
             
             // Cop out if there is an error
@@ -219,7 +220,7 @@ public extension SwifterSockets {
             // Connect to the server
             // =====================
                     
-            status = connect(socketDescriptor!, info.memory.ai_addr, info.memory.ai_addrlen)
+            status = connect(socketDescriptor!, info?.pointee.ai_addr, (info?.pointee.ai_addrlen)!)
         
             
             // Break if successful.
@@ -237,26 +238,26 @@ public extension SwifterSockets {
             
             // Setup for the next try
             
-            info = info.memory.ai_next
+            info = info?.pointee.ai_next
         }
 
         
         // Cop out if there is a status error
         
         if status != 0 {
-            let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             freeaddrinfo(servinfo)
             if socketDescriptor != nil { close(socketDescriptor!) }
-            return .ERROR(strError)
+            return .error(strError)
         }
         
         
         // Cop out if there was a socketDescriptor error
         
         if socketDescriptor == nil {
-            let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             freeaddrinfo(servinfo)
-            return .ERROR(strError)
+            return .error(strError)
         }
 
         
@@ -278,37 +279,37 @@ public extension SwifterSockets {
             SOL_SOCKET,
             SO_NOSIGPIPE,
             &optval,
-            socklen_t(sizeof(Int)))
+            socklen_t(sizeof(Int.self)))
         
         if status == -1 {
-            let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             closeSocket(socketDescriptor!)
-            return .ERROR(strError)
+            return .error(strError)
         }
 
         
         // Ready to start calling send(), return the socket
         
-        return .SOCKET(socketDescriptor!)
+        return .socket(socketDescriptor!)
     }
 
     
     /**
      A throw based variant of the initClient operation. Sets up a socket to transmit data to the specified server on the specified port.
      
-     - Parameter serverAddress: A string with either the server URL or its IP address.
-     - Parameter serverPort: A string with the port on which to connect to the server.
+     - Parameter atAddress: A string with either the server URL or its IP address.
+     - Parameter atPort: A string with the port on which to connect to the server.
      
      - Returns: Socket descriptor.
      
-     - Throws: An InitServerException when something fails.
+     - Throws: An ClientException when something fails.
      */
     
-    public static func initClientOrThrow(address address: String, port: String) throws -> Int32 {
-        let result = initClient(address: address, port: port)
+    public static func connectToServerOrThrow(atAddress address: String, atPort port: String) throws -> Int32 {
+        let result = connectToServer(atAddress: address, atPort: port)
         switch result {
-        case let .ERROR(msg): throw InitClientException.MESSAGE(msg)
-        case let .SOCKET(socket): return socket
+        case let .error(msg): throw ClientException.message(msg)
+        case let .socket(socket): return socket
         }
     }
     
@@ -316,22 +317,22 @@ public extension SwifterSockets {
     /**
      A fire-and-forget variant of the initClientOrThrow operation. This operation initializes a socket for transmission of data to a server. Once complete it starts the given closure on the given queue and returns before the closure is finished. This operation only throws when an error happens during initialisation. The socket must be closed by the given closure.
      
-     - Parameter serverAddress: A string with either the server URL or its IP address.
-     - Parameter serverPort: A string with the port on which to connect to the server.
+     - Parameter atAddress: A string with either the server URL or its IP address.
+     - Parameter atPort: A string with the port on which to connect to the server.
      - Parameter queue: The queue on which to start the closure.
      - Parameter postProcessor: The closure to start once the client socket is successfully opened.
      
-     - Throws: An InitServerException when something fails during initialisation.
+     - Throws: An ClientException when something fails during initialisation.
      */
     
-    public static func initClientOrThrowAsync(
-        address address: String,
-        port: String,
-        queue: dispatch_queue_t,
-        postProcessor: InitClientPostProcessing) throws
+    public static func connectToServerOrThrowAsync(
+        atAddress address: String,
+        atPort port: String,
+        onQueue queue: DispatchQueue,
+        postProcessor: ClientPostProcessing) throws
     {
-        let socket = try initClientOrThrow(address: address, port: port)
-        dispatch_async(queue, {
+        let socket = try connectToServerOrThrow(atAddress: address, atPort: port)
+        queue.async(execute: {
             postProcessor(socket: socket)
         })
     }
@@ -340,30 +341,30 @@ public extension SwifterSockets {
     /**
      This variant sets up a fire-and-forget String transfer that is handled asynchronously on the given queue. First a client socket is initialised, an exception is thrown when this fails. On success the string is transmitted asynchrounsly and after the transmission completes (either successfully or with an error) the transmit post processor closure is started on the same queue as the transmission was. If the closure is present then it is responsible for closing the socket. If it is not present the socket will be closed automatically.
      
-     - Parameter serverAddress: A string with either the server URL or its IP address.
-     - Parameter serverPort: A string with the port on which to connect to the server.
+     - Parameter atAddress: A string with either the server URL or its IP address.
+     - Parameter atPort: A string with the port on which to connect to the server.
      - Parameter transmitQueue: The queue on which to start the closure.
      - Parameter transmitData: The string to be transmitted. It will be coded in UTF8.
      - Parameter transmitTimeout: The interval in which the transfer should be completed. In seconds.
      - Parameter transmitTelemetry: An object that will receive telemtry updates when it is present.
      - Parameter transmitPostProcessor: The closure to start once the client socket is successfully opened. If present it must close the socket.
      
-     - Throws: An InitServerException when something fails during initialisation.
+     - Throws: An ClientException when something fails during initialisation.
      */
     
-    public static func initClientOrThrowTransmitAsync(
-        address address: String,
-        port: String,
-        transmitQueue: dispatch_queue_t,
+    public static func connectToServerOrThrowTransmitAsync(
+        atAddress address: String,
+        atPort port: String,
+        transmitQueue: DispatchQueue,
         transmitData: String,
-        transmitTimeout: NSTimeInterval,
+        transmitTimeout: TimeInterval,
         transmitTelemetry: TransmitTelemetry?,
         transmitPostProcessor: TransmitPostProcessing?) throws
     {
-        try initClientOrThrowAsync(address: address, port: port, queue: transmitQueue, postProcessor: {
+        try connectToServerOrThrowAsync(atAddress: address, atPort: port, onQueue: transmitQueue, postProcessor: {
             (socket) -> Void in
             let localTransmitTelemetry = transmitTelemetry ?? TransmitTelemetry()
-            transmit(socket, string: transmitData, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
+            transmit(toSocket: socket, string: transmitData, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
             if transmitPostProcessor != nil {
                 transmitPostProcessor!(socket: socket, telemetry: localTransmitTelemetry)
             } else {
@@ -376,30 +377,30 @@ public extension SwifterSockets {
     /**
      This variant sets up a fire-and-forget NSData transfer that is handled asynchronously on the given queue. First a client socket is initialised, an exception is thrown when this fails. On success the string is transmitted asynchrounsly and after the transmission completes (either successfully or with an error) the transmit post processor closure is started on the same queue as the transmission was. If the closure is present then it is responsible for closing the socket. If it is not present the socket will be closed automatically.
      
-     - Parameter serverAddress: A string with either the server URL or its IP address.
-     - Parameter serverPort: A string with the port on which to connect to the server.
+     - Parameter atAddress: A string with either the server URL or its IP address.
+     - Parameter atPort: A string with the port on which to connect to the server.
      - Parameter transmitQueue: The queue on which to start the closure.
      - Parameter transmitData: The NSData object to be transmitted.
      - Parameter transmitTimeout: The interval in which the transfer should be completed. In seconds.
      - Parameter transmitTelemetry: An object that will receive telemtry updates when it is present.
      - Parameter transmitPostProcessor: The closure to start once the client socket is successfully opened.
      
-     - Throws: An InitServerException when something fails during initialisation.
+     - Throws: An ClientException when something fails during initialisation.
      */
     
-    public static func initClientOrThrowTransmitAsync(
-        address address: String,
-        port: String,
-        transmitQueue: dispatch_queue_t,
-        transmitData: NSData,
-        transmitTimeout: NSTimeInterval,
+    public static func connectToServerOrThrowTransmitAsync(
+        atAddress address: String,
+        atPort port: String,
+        transmitQueue: DispatchQueue,
+        transmitData: Data,
+        transmitTimeout: TimeInterval,
         transmitTelemetry: TransmitTelemetry?,
         transmitPostProcessor: TransmitPostProcessing?) throws
     {
-        try initClientOrThrowAsync(address: address, port: port, queue: transmitQueue, postProcessor: {
+        try connectToServerOrThrowAsync(atAddress: address, atPort: port, onQueue: transmitQueue, postProcessor: {
             (socket) -> Void in
             let localTransmitTelemetry = transmitTelemetry ?? TransmitTelemetry()
-            transmit(socket, data: transmitData, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
+            transmit(toSocket: socket, data: transmitData, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
             if transmitPostProcessor != nil {
                 transmitPostProcessor!(socket: socket, telemetry: localTransmitTelemetry)
             } else {
@@ -412,8 +413,8 @@ public extension SwifterSockets {
     /**
      This variant sets up a fire-and-forget byte-buffer transfer that is handled asynchronously on the given queue. First a client socket is initialised, an exception is thrown when this fails. On success the string is transmitted asynchrounsly and after the transmission completes (either successfully or with an error) the transmit post processor closure is started on the same queue as the transmission was. If the closure is present then it is responsible for closing the socket. If it is not present the socket will be closed automatically.
      
-     - Parameter serverAddress: A string with either the server URL or its IP address.
-     - Parameter serverPort: A string with the port on which to connect to the server.
+     - Parameter atAddress: A string with either the server URL or its IP address.
+     - Parameter atPort: A string with the port on which to connect to the server.
      - Parameter queue: The queue on which to start the transmit.
      - Parameter transmitData: A pointer to the data to be transmitted.
      - Parameter transmitTimeout: The interval in which the transfer should be completed. In seconds.
@@ -423,19 +424,19 @@ public extension SwifterSockets {
      - Throws: An InitServerException when something fails during initialisation.
      */
     
-    public static func initClientOrThrowTransmitAsync(
-        address address: String,
-        port: String,
-        queue: dispatch_queue_t,
+    public static func connectToServerOrThrowTransmitAsync(
+        atAddress address: String,
+        atPort port: String,
+        queue: DispatchQueue,
         transmitData: UnsafeBufferPointer<UInt8>,
-        transmitTimeout: NSTimeInterval,
+        transmitTimeout: TimeInterval,
         transmitTelemetry: TransmitTelemetry?,
         transmitPostProcessor: TransmitPostProcessing?) throws
     {
-        try initClientOrThrowAsync(address: address, port: port, queue: queue, postProcessor: {
+        try connectToServerOrThrowAsync(atAddress: address, atPort: port, onQueue: queue, postProcessor: {
             (socket) -> Void in
             let localTransmitTelemetry = transmitTelemetry ?? TransmitTelemetry()
-            transmit(socket, buffer: transmitData, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
+            transmit(toSocket: socket, fromBuffer: transmitData, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
             if transmitPostProcessor != nil {
                 transmitPostProcessor!(socket: socket, telemetry: localTransmitTelemetry)
             } else {

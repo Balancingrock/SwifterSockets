@@ -27,9 +27,9 @@ func serverSetup_oldSchool() {
     
     // Setup a socket for usage as the server socket
     
-    let initResult = SwifterSockets.initServer(port: "80", maxPendingConnectionRequest: 10)
+    let setupResult = SwifterSockets.setupServer(onPort: "80", maxPendingConnectionRequest: 10)
     
-    guard case let SwifterSockets.InitServerReturn.SOCKET(serverSocket) = initResult else { return }
+    guard case let SwifterSockets.SetupServerReturn.SOCKET(serverSocket) = setupResult else { return }
     
     
     
@@ -42,7 +42,7 @@ func serverSetup_oldSchool() {
         
         // Accept a (the next) connection request
         
-        let acceptResult = SwifterSockets.acceptNoThrow(serverSocket, abortFlag: &neverAborts, abortFlagPollInterval: 10.0, timeout: nil, telemetry: nil)
+        let acceptResult = SwifterSockets.acceptNoThrow(onSocket: serverSocket, abortFlag: &neverAborts, abortFlagPollInterval: 10.0, timeout: nil, telemetry: nil)
         
         guard case let SwifterSockets.AcceptResult.ACCEPTED(socket: receiveSocket) = acceptResult else { break }
         
@@ -51,7 +51,7 @@ func serverSetup_oldSchool() {
         
         let dataEndsOnZeroByte = DataEndsOnZeroByte()
         
-        let receiveResult = SwifterSockets.receiveNSData(receiveSocket, timeout: 10.0, dataEndDetector: dataEndsOnZeroByte, telemetry: nil)
+        let receiveResult = SwifterSockets.receiveData(fromSocket: receiveSocket, timeout: 10.0, dataEndDetector: dataEndsOnZeroByte, telemetry: nil)
         
         guard case let SwifterSockets.ReceiveResult.READY(data: receivedData) = receiveResult else { break }
         
@@ -89,7 +89,7 @@ func serverSetup_throwing() {
         
         // Initialize the server socket
         
-        serverSocket = try SwifterSockets.initServerOrThrow(port: "80", maxPendingConnectionRequest: 10)
+        serverSocket = try SwifterSockets.setupServerOrThrow(onPort: "80", maxPendingConnectionRequest: 10)
         
         var neverAborts: Bool = false
         
@@ -98,14 +98,14 @@ func serverSetup_throwing() {
             
             // Accept a (the next) incoming connection
             
-            receiveSocket = try SwifterSockets.acceptOrThrow(serverSocket!, abortFlag: &neverAborts, abortFlagPollInterval: 10.0, timeout: nil, telemetry: nil)
+            receiveSocket = try SwifterSockets.acceptOrThrow(onSocket: serverSocket!, abortFlag: &neverAborts, abortFlagPollInterval: 10.0, timeout: nil, telemetry: nil)
             
             
             // Receive data
             
             let dataEndsOnZeroByte = DataEndsOnZeroByte()
 
-            let receivedData = try SwifterSockets.receiveNSDataOrThrow(receiveSocket!, timeout: 10.0, dataEndDetector: dataEndsOnZeroByte, telemetry: nil)
+            let receivedData = try SwifterSockets.receiveNSDataOrThrow(fromSocket: receiveSocket!, timeout: 10.0, dataEndDetector: dataEndsOnZeroByte, telemetry: nil)
             
             
             // Process the data that was received
@@ -126,13 +126,13 @@ func serverSetup_throwing() {
 
 func clientSetup_oldSchool() {
     
-    let clientResult = SwifterSockets.initClient(address: "127.0.0.1", port: "80")
+    let clientResult = SwifterSockets.connectToServer(atAddress: "127.0.0.1", atPort: "80")
     
-    guard case let SwifterSockets.InitClientResult.SOCKET(clientSocket) = clientResult else { return }
+    guard case let SwifterSockets.SetupClientResult.SOCKET(clientSocket) = clientResult else { return }
     
     let transmitData = "{\"Parameter\":true}"
     
-    let transmitResult = SwifterSockets.transmit(clientSocket, string: transmitData, timeout: 10.0, telemetry: nil)
+    let transmitResult = SwifterSockets.transmit(onSocket: clientSocket, string: transmitData, timeout: 10.0, telemetry: nil)
     
     guard case SwifterSockets.TransmitResult.READY = transmitResult else { close(clientSocket); return }
     
@@ -147,9 +147,9 @@ func clientSetup_throwing() {
 
     do {
     
-        clientSocket = try SwifterSockets.initClientOrThrow(address: "127.0.0.1", port: "80")
+        clientSocket = try SwifterSockets.connectToServerOrThrow(address: "127.0.0.1", port: "80")
         
-        try SwifterSockets.transmitOrThrow(clientSocket!, string: transmitData, timeout: 10.0, telemetry: nil)
+        try SwifterSockets.transmitOrThrow(onSocket: clientSocket!, string: transmitData, timeout: 10.0, telemetry: nil)
         
         close(clientSocket!)
         

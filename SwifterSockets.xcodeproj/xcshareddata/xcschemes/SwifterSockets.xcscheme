@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0720"
+   LastUpgradeVersion = "0800"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "866F6C701CDCCB4200557ACE"
+               BlueprintIdentifier = "866F6C8C1CDCCCBA00557ACE"
                BuildableName = "SwifterSockets.framework"
                BlueprintName = "SwifterSockets"
                ReferencedContainer = "container:SwifterSockets.xcodeproj">
@@ -42,7 +42,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "866F6C701CDCCB4200557ACE"
+            BlueprintIdentifier = "866F6C8C1CDCCCBA00557ACE"
             BuildableName = "SwifterSockets.framework"
             BlueprintName = "SwifterSockets"
             ReferencedContainer = "container:SwifterSockets.xcodeproj">
@@ -65,7 +65,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "866F6C701CDCCB4200557ACE"
+            BlueprintIdentifier = "866F6C8C1CDCCCBA00557ACE"
             BuildableName = "SwifterSockets.framework"
             BlueprintName = "SwifterSockets"
             ReferencedContainer = "container:SwifterSockets.xcodeproj">
@@ -84,7 +84,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "866F6C701CDCCB4200557ACE"
+            BlueprintIdentifier = "866F6C8C1CDCCCBA00557ACE"
             BuildableName = "SwifterSockets.framework"
             BlueprintName = "SwifterSockets"
             ReferencedContainer = "container:SwifterSockets.xcodeproj">

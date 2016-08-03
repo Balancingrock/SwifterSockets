@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		866F6C901CDCCCBA00557ACE /* SwifterSockets.h in Headers */ = {isa = PBXBuildFile; fileRef = 866F6C8F1CDCCCBA00557ACE /* SwifterSockets.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		866F6CA81CDCD04000557ACE /* SwifterSockets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE071C86F17E00FABD9A /* SwifterSockets.swift */; };
-		866F6CA91CDCD04000557ACE /* SwifterSockets.InitServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE081C86F17E00FABD9A /* SwifterSockets.InitServer.swift */; };
-		866F6CAA1CDCD04000557ACE /* SwifterSockets.InitClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE091C86F17E00FABD9A /* SwifterSockets.InitClient.swift */; };
+		866F6CA91CDCD04000557ACE /* SwifterSockets.Server.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE081C86F17E00FABD9A /* SwifterSockets.Server.swift */; };
+		866F6CAA1CDCD04000557ACE /* SwifterSockets.Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE091C86F17E00FABD9A /* SwifterSockets.Client.swift */; };
 		866F6CAB1CDCD04000557ACE /* SwifterSockets.Transmit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0A1C86F17E00FABD9A /* SwifterSockets.Transmit.swift */; };
 		866F6CAC1CDCD04000557ACE /* SwifterSockets.Receive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0B1C86F17E00FABD9A /* SwifterSockets.Receive.swift */; };
 		866F6CAD1CDCD04000557ACE /* SwifterSockets.Accept.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0C1C86F17E00FABD9A /* SwifterSockets.Accept.swift */; };
@@ -18,8 +18,8 @@
 
 /* Begin PBXFileReference section */
 		866EBE071C86F17E00FABD9A /* SwifterSockets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.swift; sourceTree = "<group>"; };
-		866EBE081C86F17E00FABD9A /* SwifterSockets.InitServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.InitServer.swift; sourceTree = "<group>"; };
-		866EBE091C86F17E00FABD9A /* SwifterSockets.InitClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.InitClient.swift; sourceTree = "<group>"; };
+		866EBE081C86F17E00FABD9A /* SwifterSockets.Server.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Server.swift; sourceTree = "<group>"; };
+		866EBE091C86F17E00FABD9A /* SwifterSockets.Client.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Client.swift; sourceTree = "<group>"; };
 		866EBE0A1C86F17E00FABD9A /* SwifterSockets.Transmit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Transmit.swift; sourceTree = "<group>"; };
 		866EBE0B1C86F17E00FABD9A /* SwifterSockets.Receive.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Receive.swift; sourceTree = "<group>"; };
 		866EBE0C1C86F17E00FABD9A /* SwifterSockets.Accept.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Accept.swift; sourceTree = "<group>"; };
@@ -61,8 +61,8 @@
 			isa = PBXGroup;
 			children = (
 				866EBE071C86F17E00FABD9A /* SwifterSockets.swift */,
-				866EBE081C86F17E00FABD9A /* SwifterSockets.InitServer.swift */,
-				866EBE091C86F17E00FABD9A /* SwifterSockets.InitClient.swift */,
+				866EBE081C86F17E00FABD9A /* SwifterSockets.Server.swift */,
+				866EBE091C86F17E00FABD9A /* SwifterSockets.Client.swift */,
 				866EBE0A1C86F17E00FABD9A /* SwifterSockets.Transmit.swift */,
 				866EBE0B1C86F17E00FABD9A /* SwifterSockets.Receive.swift */,
 				866EBE0C1C86F17E00FABD9A /* SwifterSockets.Accept.swift */,
@@ -119,11 +119,12 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0720;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Marinus van der Lugt";
 				TargetAttributes = {
 					866F6C8C1CDCCCBA00557ACE = {
 						CreatedOnToolsVersion = 7.3.1;
+						LastSwiftMigration = 0800;
 					};
 				};
 			};
@@ -162,8 +163,8 @@
 			files = (
 				866F6CAB1CDCD04000557ACE /* SwifterSockets.Transmit.swift in Sources */,
 				866F6CA81CDCD04000557ACE /* SwifterSockets.swift in Sources */,
-				866F6CAA1CDCD04000557ACE /* SwifterSockets.InitClient.swift in Sources */,
-				866F6CA91CDCD04000557ACE /* SwifterSockets.InitServer.swift in Sources */,
+				866F6CAA1CDCD04000557ACE /* SwifterSockets.Client.swift in Sources */,
+				866F6CA91CDCD04000557ACE /* SwifterSockets.Server.swift in Sources */,
 				866F6CAD1CDCD04000557ACE /* SwifterSockets.Accept.swift in Sources */,
 				866F6CAC1CDCD04000557ACE /* SwifterSockets.Receive.swift in Sources */,
 			);
@@ -270,6 +271,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = nl.balancingrock.SwifterSockets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -293,6 +295,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = nl.balancingrock.SwifterSockets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};

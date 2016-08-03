@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.InitServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.4
+//  Version:    0.9.6
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.6 - Upgraded to Swift 3 beta
 // v0.9.4 - Header update
 // v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added support for logUnixSocketCalls
@@ -66,30 +67,30 @@ public extension SwifterSockets {
     
     
     /**
-     The return type for the initServer functions. Possible values are:
+     The return type for the setupServer functions. Possible values are:
     
-     - ERROR(String)
-     - SOCKET(Int32)
+     - error(String)
+     - socket(Int32)
      */
     
-    public enum InitServerReturn: CustomStringConvertible, CustomDebugStringConvertible {
+    public enum SetupServerReturn: CustomStringConvertible, CustomDebugStringConvertible {
         
         /// An error occured, enclosed is either errno or the getaddrinfo return value and the string is the textual representation of the error
         
-        case ERROR(String)
+        case error(String)
         
         
         /// The socket descriptor of the open socket
         
-        case SOCKET(Int32)
+        case socket(Int32)
         
         
         /// The CustomStringConvertible protocol
         
         public var description: String {
             switch self {
-            case let .SOCKET(num): return "Socket(\(num))"
-            case let .ERROR(msg): return "Error(\(msg))"
+            case let .socket(num): return "Socket(\(num))"
+            case let .error(msg): return "Error(\(msg))"
             }
         }
         
@@ -102,16 +103,16 @@ public extension SwifterSockets {
     
     /// The exception for the throwing functions.
     
-    public enum InitServerException: ErrorType, CustomStringConvertible, CustomDebugStringConvertible  {
+    public enum SetupServerException: ErrorProtocol, CustomStringConvertible, CustomDebugStringConvertible  {
         
-        case MESSAGE(String)
+        case message(String)
         
         
         /// The CustomStringConvertible protocol
         
         public var description: String {
             switch self {
-            case let .MESSAGE(msg): return "Message(\(msg))"
+            case let .message(msg): return "Message(\(msg))"
             }
         }
         
@@ -124,21 +125,21 @@ public extension SwifterSockets {
     
     /// Signature for the closure that can be started after the initialisation succeeds
     
-    public typealias InitServerPostProcessing = (socket: Int32) -> Void
+    public typealias SetupServerPostProcessing = (socket: Int32) -> Void
 
     
     /**
      Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6. This function implements the basic functionality offered in this file. All other functions can be considered convenience functions.
      
-     - Parameter portNumber: A string containing the number of the port to listen on.
+     - Parameter onPort: A string containing the number of the port to listen on.
      - Parameter maxPendingConnectionRequest: The number of connections that can be kept pending before they are accepted. A connection request can be put into a queue before it is accepted or rejected. This argument specifies the size of the queue. If the queue is full further connection requests will be rejected.
      
      - Returns: Either the socket descriptor or a string with the error description.
      */
     
-    public static func initServer(
-        port port: String,
-        maxPendingConnectionRequest: Int32) -> InitServerReturn
+    public static func setupServer(
+        onPort port: String,
+        maxPendingConnectionRequest: Int32) -> SetupServerReturn
     {
         
         // General purpose status variable, used to detect error returns from socket functions
@@ -165,14 +166,14 @@ public extension SwifterSockets {
         
         // For the information needed to create a socket (result from the getaddrinfo)
         
-        var servinfo: UnsafeMutablePointer<addrinfo> = nil
+        var servinfo: UnsafeMutablePointer<addrinfo>? = nil
         
         
         // Get the info we need to create our socket descriptor
         
         status = getaddrinfo(
             nil,                        // Any interface
-            port,                       // The port on which will be listenend
+            port,                     // The port on which will be listenend
             &hints,                     // Protocol configuration as per above
             &servinfo)                  // The created information
         
@@ -182,11 +183,11 @@ public extension SwifterSockets {
         if status != 0 {
             var strError: String
             if status == EAI_SYSTEM {
-                strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+                strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             } else {
-                strError = String(UTF8String: gai_strerror(status)) ?? "Unknown error code"
+                strError = String(validatingUTF8: gai_strerror(status)) ?? "Unknown error code"
             }
-            return .ERROR(strError)
+            return .error(strError)
         }
         
         
@@ -195,17 +196,17 @@ public extension SwifterSockets {
         // ============================
         
         let socketDescriptor = socket(
-            servinfo.memory.ai_family,      // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
-            servinfo.memory.ai_socktype,    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
-            servinfo.memory.ai_protocol)    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
+            (servinfo?.pointee.ai_family)!,      // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
+            (servinfo?.pointee.ai_socktype)!,    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
+            (servinfo?.pointee.ai_protocol)!)    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
         
         
         // Cop out if there is an error
         
         if socketDescriptor == -1 {
-            let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             freeaddrinfo(servinfo)
-            return .ERROR(strError)
+            return .error(strError)
         }
         
         
@@ -220,13 +221,13 @@ public extension SwifterSockets {
             SOL_SOCKET,                     // Type of socket options
             SO_REUSEADDR,                   // The socket option id
             &optval,                        // The socket option value
-            socklen_t(sizeof(Int)))         // The size of the socket option value
+            socklen_t(sizeof(Int.self)))         // The size of the socket option value
         
         if status == -1 {
-            let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             freeaddrinfo(servinfo)
             closeSocket(socketDescriptor)
-            return .ERROR(strError)
+            return .error(strError)
         }
         
         
@@ -236,16 +237,16 @@ public extension SwifterSockets {
         
         status = bind(
             socketDescriptor,               // The socket descriptor of the socket to bind
-            servinfo.memory.ai_addr,        // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
-            servinfo.memory.ai_addrlen)     // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
+            servinfo?.pointee.ai_addr,        // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
+            (servinfo?.pointee.ai_addrlen)!)     // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
         
         // Cop out if there is an error
         
         if status != 0 {
-            let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             freeaddrinfo(servinfo)
             closeSocket(socketDescriptor)
-            return .ERROR(strError)
+            return .error(strError)
         }
         
         
@@ -268,9 +269,9 @@ public extension SwifterSockets {
         // Cop out if there are any errors
         
         if status != 0 {
-            let strError = String(UTF8String: strerror(errno)) ?? "Unknown error code"
+            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             closeSocket(socketDescriptor)
-            return .ERROR(strError)
+            return .error(strError)
         }
         
         
@@ -278,55 +279,55 @@ public extension SwifterSockets {
         // Return the socket descriptor
         // ============================
         
-        return .SOCKET(socketDescriptor)
+        return .socket(socketDescriptor)
     }
 
     
     /**
-     A throw based wrapper for the initServer. Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6. This function implements the basic functionality offered in this file. All other functions can be considered convenience functions.
+     A throw based wrapper for the setupServer. Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6. This function implements the basic functionality offered in this file. All other functions can be considered convenience functions.
      
-     - Parameter portNumber: A string containing the number of the port to listen on.
+     - Parameter onPort: A string containing the number of the port to listen on.
      - Parameter maxPendingConnectionRequest: The number of connections that can be kept pending before they are accepted. A connection request can be put into a queue before it is accepted or rejected. This argument specifies the size of the queue. If the queue is full further connection requests will be rejected.
      
      - Returns: The socket descriptor.
      
-     - Throws: InitServerException on error.
+     - Throws: SetupServerException on error.
      */
     
-    public static func initServerOrThrow(
-        port port: String,
+    public static func setupServerOrThrow(
+        onPort port: String,
         maxPendingConnectionRequest: Int32) throws -> Int32
     {
-        let result = initServer(port: port, maxPendingConnectionRequest: maxPendingConnectionRequest)
+        let result = setupServer(onPort: port, maxPendingConnectionRequest: maxPendingConnectionRequest)
         switch result {
-        case let .ERROR(msg):
-            throw InitServerException.MESSAGE(msg)
-        case let .SOCKET(sock):
+        case let .error(msg):
+            throw SetupServerException.message(msg)
+        case let .socket(sock):
             return sock
         }
     }
 
     
     /**
-     Dispatch based wrapper for initServer. Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6. When complete the postProcessing closure is started on the specified queue. If an error occurs during the initialisation an error will be thrown.
+     Dispatch based wrapper for setupServer. Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6. When complete the postProcessing closure is started on the specified queue. If an error occurs during the setup an error will be thrown.
      
-     - Parameter portNumber: A string containing the port number of the port to listen on.
+     - Parameter onPort: A string containing the port number of the port to listen on.
      - Parameter maxPendingConnectionRequest: The maximum number of connections that are allowed to remain pending before they are accepted. If more than this number of connection requests arrive, they will be rejected and reported to the client as "Server Busy"
      - Parameter postProcessingQueue: The dispatch queue on which the postProcessor will be executed.
      - Parameter postProcessor: The closure to be started when the initialisation was successful. This closure is responsible for closing the socket.
      
-     - Throws: InitServerException on error during initialisation.
+     - Throws: SetupServerException on error during initialisation.
      */
     
-    public static func initServerOrThrowAsync(
-        port port: String,
+    public static func setupServerOrThrowAsync(
+        onPort port: String,
         maxPendingConnectionRequest: Int32,
-        postProcessingQueue: dispatch_queue_t,
-        postProcessor: InitServerPostProcessing) throws
+        postProcessingQueue: DispatchQueue,
+        postProcessor: SetupServerPostProcessing) throws
     {
-        let socket = try initServerOrThrow(port: port, maxPendingConnectionRequest: maxPendingConnectionRequest)
-        dispatch_async(postProcessingQueue, {
+        let socket = try setupServerOrThrow(onPort: port, maxPendingConnectionRequest: maxPendingConnectionRequest)
+        postProcessingQueue.async() {
             postProcessor(socket: socket)
-        })
+        }
     }
 }
