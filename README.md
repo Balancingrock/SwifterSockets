@@ -32,9 +32,18 @@ There is a 5th package called [SwiftfireTester](https://github.com/Swiftrien/Swi
 
 Note: Planned releases are for information only, they are subject to change without notice.
 
+####v1.1.0 (Open)
+
+- No new features planned. Features and bugfixes will be made on an ad-hoc basis as needed to support Swiftfire development.
+- For feature requests and bugfixes please contact rien@balancingrock.nl
+
 ####v1.0.0 (Planned)
 
 - Upgrade to Swift 3
+
+####v0.9.6 (Current)
+
+- Upgraded to Swift 3 beta (Xcode 8 beta)
 
 ####v0.9.5
 
