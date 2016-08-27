@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.InitServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.6
+//  Version:    0.9.7
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,7 +49,8 @@
 //
 // History
 //
-// v0.9.6 - Upgraded to Swift 3 beta
+// v0.9.7 - Upgraded to Xcode 8 beta 6
+// v0.9.6 - Upgraded to Xcode 8 beta 3 Swift 3)
 // v0.9.4 - Header update
 // v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added support for logUnixSocketCalls
@@ -103,7 +104,7 @@ public extension SwifterSockets {
     
     /// The exception for the throwing functions.
     
-    public enum SetupServerException: ErrorProtocol, CustomStringConvertible, CustomDebugStringConvertible  {
+    public enum SetupServerException: Error, CustomStringConvertible, CustomDebugStringConvertible  {
         
         case message(String)
         
@@ -125,7 +126,7 @@ public extension SwifterSockets {
     
     /// Signature for the closure that can be started after the initialisation succeeds
     
-    public typealias SetupServerPostProcessing = (socket: Int32) -> Void
+    public typealias SetupServerPostProcessing = (_ socket: Int32) -> Void
 
     
     /**
@@ -221,7 +222,7 @@ public extension SwifterSockets {
             SOL_SOCKET,                     // Type of socket options
             SO_REUSEADDR,                   // The socket option id
             &optval,                        // The socket option value
-            socklen_t(sizeof(Int.self)))         // The size of the socket option value
+            socklen_t(MemoryLayout<Int>.size))         // The size of the socket option value
         
         if status == -1 {
             let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
@@ -327,7 +328,7 @@ public extension SwifterSockets {
     {
         let socket = try setupServerOrThrow(onPort: port, maxPendingConnectionRequest: maxPendingConnectionRequest)
         postProcessingQueue.async() {
-            postProcessor(socket: socket)
+            postProcessor(socket)
         }
     }
 }

@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.6
+//  Version:    0.9.7
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -29,7 +29,7 @@
 //   - You can send payment via paypal to: sales@balancingrock.nl
 //   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
 //
-//  I prefer the above two, but if these options don't suit you, you might also send me a gift from my amazon.co.uk
+//  I prefer the above two, but if these options don't suit you, you can also send me a gift from my amazon.co.uk
 //  whishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
 //
 //  If you like to pay in another way, please contact me at rien@balancingrock.nl
@@ -49,7 +49,9 @@
 //
 // History
 //
-// v0.9.6 - Upgraded to Swift 3 beta
+// v0.9.7 - Upgraded to Xcode 8 beta 6
+//        - Added isValidIpAddress
+// v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
 // v0.9.5 - Added SocketAddress enum adopted from Marco Masser: http://blog.obdev.at/representing-socket-addresses-in-swift-using-enums
 // v0.9.4 - Header update
 // v0.9.3 - Changed target to Framework, added public declarations, removed SwifterLog.
@@ -79,47 +81,74 @@ public final class SwifterSockets {
         
         public init(addrInfo: addrinfo) {
             switch addrInfo.ai_family {
-            case AF_INET:  self = .version4(address: UnsafePointer(addrInfo.ai_addr).pointee)
-            case AF_INET6: self = .version6(address: UnsafePointer(addrInfo.ai_addr).pointee)
+            case AF_INET:  self = .version4(address: UnsafeRawPointer(addrInfo.ai_addr!).bindMemory(to: sockaddr_in.self, capacity: 1).pointee)
+            case AF_INET6: self = .version6(address: UnsafeRawPointer(addrInfo.ai_addr!).bindMemory(to: sockaddr_in6.self, capacity: 1).pointee)
             default: fatalError("Unknown address family")
             }
         }
         
-        public init?(addressProvider: @noescape (UnsafeMutablePointer<sockaddr>, UnsafeMutablePointer<socklen_t>) throws -> Void) rethrows {
+        public init?(addressProvider: @escaping (UnsafeMutablePointer<sockaddr>, UnsafeMutablePointer<socklen_t>) throws -> Void) rethrows {
             
             var addressStorage = sockaddr_storage()
-            var addressStorageLength = socklen_t(sizeofValue(addressStorage))
+            var addressStorageLength = socklen_t(MemoryLayout<sockaddr_storage>.size)
             
-            try withUnsafeMutablePointers(&addressStorage, &addressStorageLength) {
-                try addressProvider(UnsafeMutablePointer<sockaddr>($0), $1)
-            }
+            let sockaddrPtr: UnsafeMutablePointer<sockaddr> = UnsafeMutableRawPointer(&addressStorage)!.bindMemory(to: sockaddr.self, capacity: 1)
+            
+            try addressProvider(sockaddrPtr, &addressStorageLength)
             
             switch Int32(addressStorage.ss_family) {
-            case AF_INET:
-                self = withUnsafePointer(&addressStorage) { .version4(address: UnsafePointer<sockaddr_in>($0).pointee) }
-                
-            case AF_INET6:
-                self = withUnsafePointer(&addressStorage) { .version6(address: UnsafePointer<sockaddr_in6>($0).pointee) }
-                
-            default:
-                return nil
+            case AF_INET:  self = .version4(address: UnsafeMutableRawPointer(&addressStorage).bindMemory(to: sockaddr_in.self, capacity: 1).pointee)
+            case AF_INET6: self = .version6(address: UnsafeMutableRawPointer(&addressStorage).bindMemory(to: sockaddr_in6.self, capacity: 1).pointee)
+            default: return nil
             }
         }
         
-        public func doWithPtr<Result>(body: @noescape (UnsafePointer<sockaddr>, socklen_t) throws -> Result) rethrows -> Result {
-            
-            func castAndCall<T>(_ address: T, _ body: @noescape (UnsafePointer<sockaddr>, socklen_t) throws -> Result) rethrows -> Result {
-                var localAddress = address // We need a `var` here for the `&`.
-                return try withUnsafePointer(&localAddress) {
-                    try body(UnsafePointer<sockaddr>($0), socklen_t(sizeof(T.self)))
-                }
-            }
-            
+        public func doWithPtr<Result>(body: (UnsafePointer<sockaddr>, socklen_t) throws -> Result) rethrows -> Result {
+                        
             switch self {
-            case .version4(let address): return try castAndCall(address, body)
-            case .version6(let address): return try castAndCall(address, body)
+            case .version4(var address):
+                let sockaddrMutablePtr = UnsafeMutableRawPointer(&address).bindMemory(to: sockaddr.self, capacity: 1)
+                let sockaddrPtr = UnsafePointer(sockaddrMutablePtr)
+                return try body(sockaddrPtr, socklen_t(MemoryLayout<sockaddr_in>.size))
+                
+            case .version6(var address):
+                let sockaddrMutablePtr = UnsafeMutableRawPointer(&address).bindMemory(to: sockaddr.self, capacity: 1)
+                let sockaddrPtr = UnsafePointer(sockaddrMutablePtr)
+                return try body(sockaddrPtr, socklen_t(MemoryLayout<sockaddr_in6>.size))
             }
         }
+    }
+
+    
+    /// Verifies if the given string is a valid IPv4 or IPv6 address by converting it to a network address and back again. If the result equals the input, it must be correct.
+    /// - Returns: True if the string is a valid inet address, false otherwise
+    
+    public static func isValidIpAddress(_ address: String) -> Bool {
+        
+        // Test IPv6 first, since it may also contain dots
+        
+        if address.contains(":") {
+            var ipv6n = sockaddr_in6()
+            inet_pton(AF_INET6, address, &ipv6n)
+            var ipv6p = Array<CChar>(repeating: 0, count: Int(INET6_ADDRSTRLEN))
+            inet_ntop(AF_INET6, &ipv6n, &ipv6p, socklen_t(INET6_ADDRSTRLEN))
+            let ipv6str = String(cString: ipv6p)
+            return address.lowercased() == ipv6str
+        }
+        
+        
+        // Test if it is an IPv4 address
+        
+        if address.contains(".") {
+            var ipv4n = sockaddr_in()
+            inet_pton(AF_INET, address, &ipv4n)
+            var ipv4p = Array<CChar>(repeating: 0, count: Int(INET_ADDRSTRLEN))
+            inet_ntop(AF_INET, &ipv4n, &ipv4p, socklen_t(INET_ADDRSTRLEN))
+            let ipv4str = String(cString: ipv4p)
+            return address.lowercased() == ipv4str
+        }
+        
+        return false
     }
 
     

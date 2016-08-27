@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Accept.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.6
+//  Version:    0.9.7
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,7 +49,8 @@
 //
 // History
 //
-// v0.9.6 - Upgraded to Swift 3 beta
+// v0.9.7 - Upgraded to Xcode 8 beta 6
+// v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
 // v0.9.5 - Fixed a bug where accepting an IPv6 connection would fill an IPv4 sockaddr structure.
 // v0.9.4 - Header update
 // v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
@@ -129,7 +130,7 @@ public extension SwifterSockets {
     
     /// This exception can be thrown by the _OrThrow functions. Notice that the ABORTED case is not an error per se but is always in response to an request to abort.
     
-    public enum AcceptException: ErrorProtocol, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum AcceptException: Error, CustomStringConvertible, CustomDebugStringConvertible {
         
         
         /// The string contains a textual description of the error
@@ -464,7 +465,7 @@ public extension SwifterSockets {
                     SOL_SOCKET,
                     SO_NOSIGPIPE,
                     &optval,
-                    socklen_t(sizeof(Int.self)))
+                    socklen_t(MemoryLayout<Int>.size))
                 
                 if status == -1 {
                     let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
@@ -524,7 +525,6 @@ public extension SwifterSockets {
         timeout: TimeInterval? = nil,
         telemetry: AcceptTelemetry?) throws -> Int32
     {
-        
         let result = acceptNoThrow(onSocket: socket, abortFlag: &abortFlag, abortFlagPollInterval: abortFlagPollInterval, timeout: timeout, telemetry: telemetry)
         
         switch result {

@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.InitClient.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.6
+//  Version:    0.9.7
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,7 +49,8 @@
 //
 // History
 //
-// v0.9.6 - Upgraded to Swift 3 beta
+// v0.9.7 - Upgraded to Xcode 8 beta 6
+// v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
 // v0.9.4 - Header update
 // v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added support for logUnixSocketCalls
@@ -103,7 +104,7 @@ public extension SwifterSockets {
     
     /// The exception for the throwing functions.
     
-    public enum ClientException: ErrorProtocol, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum ClientException: Error, CustomStringConvertible, CustomDebugStringConvertible {
         
         case message(String)
         
@@ -125,7 +126,7 @@ public extension SwifterSockets {
     
     /// Signature for the closure that can be started after the initialisation succeeds
     
-    public typealias ClientPostProcessing = (socket: Int32) -> Void
+    public typealias ClientPostProcessing = (_ socket: Int32) -> Void
     
     
     /**
@@ -279,7 +280,7 @@ public extension SwifterSockets {
             SOL_SOCKET,
             SO_NOSIGPIPE,
             &optval,
-            socklen_t(sizeof(Int.self)))
+            socklen_t(MemoryLayout<Int>.size))
         
         if status == -1 {
             let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
@@ -333,7 +334,7 @@ public extension SwifterSockets {
     {
         let socket = try connectToServerOrThrow(atAddress: address, atPort: port)
         queue.async(execute: {
-            postProcessor(socket: socket)
+            postProcessor(socket)
         })
     }
     
@@ -366,7 +367,7 @@ public extension SwifterSockets {
             let localTransmitTelemetry = transmitTelemetry ?? TransmitTelemetry()
             transmit(toSocket: socket, string: transmitData, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
             if transmitPostProcessor != nil {
-                transmitPostProcessor!(socket: socket, telemetry: localTransmitTelemetry)
+                transmitPostProcessor!(socket, localTransmitTelemetry)
             } else {
                 closeSocket(socket)
             }
@@ -402,7 +403,7 @@ public extension SwifterSockets {
             let localTransmitTelemetry = transmitTelemetry ?? TransmitTelemetry()
             transmit(toSocket: socket, data: transmitData, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
             if transmitPostProcessor != nil {
-                transmitPostProcessor!(socket: socket, telemetry: localTransmitTelemetry)
+                transmitPostProcessor!(socket, localTransmitTelemetry)
             } else {
                 closeSocket(socket)
             }
@@ -438,7 +439,7 @@ public extension SwifterSockets {
             let localTransmitTelemetry = transmitTelemetry ?? TransmitTelemetry()
             transmit(toSocket: socket, fromBuffer: transmitData, timeout: transmitTimeout, telemetry: localTransmitTelemetry)
             if transmitPostProcessor != nil {
-                transmitPostProcessor!(socket: socket, telemetry: localTransmitTelemetry)
+                transmitPostProcessor!(socket, localTransmitTelemetry)
             } else {
                 closeSocket(socket)
             }

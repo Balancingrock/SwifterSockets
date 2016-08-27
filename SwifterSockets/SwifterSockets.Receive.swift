@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Receive.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.6
+//  Version:    0.9.7
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,7 +49,9 @@
 //
 // History
 //
-// v0.9.6 - Upgraded to Swift 3 beta
+// v0.9.7 - Upgraded to Xcode 8 beta 6
+//        - Fixed type in receiveDataOrThrow (was receiveNSDataOrThrow)
+// v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
 // v0.9.4 - Header update
 // v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
 // v0.9.2 - Added support for logUnixSocketCalls
@@ -87,10 +89,6 @@ public protocol DataEndDetector {
 
 
 public extension SwifterSockets {
-    
-    
-    /// An child class of this is used to find the end of an incoming data stream.
-    
     
     
     /// An implementation of the End of Data detector that detects the completeness of a JSON message.
@@ -226,7 +224,7 @@ public extension SwifterSockets {
     
     /// The error that may be thrown by some socket functions.
     
-    public enum ReceiveException: ErrorProtocol, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum ReceiveException: Error, CustomStringConvertible, CustomDebugStringConvertible {
         
         
         /// The string contains a textual description of the error
@@ -259,7 +257,7 @@ public extension SwifterSockets {
     
     public class ReceiveTelemetry: CustomStringConvertible, CustomDebugStringConvertible {
         
-        private var syncQueue = DispatchQueue(label: "Receive Telemetry Synchronization", attributes: [.serial])
+        private var syncQueue = DispatchQueue(label: "Receive Telemetry Synchronization")
 
         
         /// The time the transfer was requested. Set only once during the start of the function.
@@ -343,7 +341,7 @@ public extension SwifterSockets {
 
     /// The type definition for the postprocessing closure that is started when a receiveAsync transfer is completed.
     
-    public typealias ReceivePostProcessing = (socket: Int32, telemetry: ReceiveTelemetry, data: Data?) -> Void
+    public typealias ReceivePostProcessing = (_ socket: Int32, _ telemetry: ReceiveTelemetry, _ data: Data?) -> Void
     
     
     /**
@@ -580,7 +578,7 @@ public extension SwifterSockets {
         
         // Use alloc to avoid initialization of the allocated memory. Note: This means we must use dealloc() before exiting this function.
         
-        let bufferPtr = UnsafeMutablePointer<UInt8>(allocatingCapacity: bufferSize)
+        let bufferPtr = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
         let buffer = UnsafeMutableBufferPointer(start: bufferPtr, count: bufferSize)
         
         
@@ -610,7 +608,7 @@ public extension SwifterSockets {
             let availableTime = timeoutTime.timeIntervalSinceNow // Negative result if the cutOffTime has not yet been reached.
             
             if availableTime < 0.0 {
-                bufferPtr.deallocateCapacity(bufferSize)
+                bufferPtr.deallocate(capacity: bufferSize)
                 telemetry?.endTime = Date()
                 telemetry?.result = ReceiveResult.timeout
                 return ReceiveResult.timeout
@@ -639,7 +637,7 @@ public extension SwifterSockets {
                 // The end was found, copy the data to the NSMutableData object and return it.
                 
                 data.append(buffer.baseAddress!, length: (nofBytes as! Int))
-                bufferPtr.deallocateCapacity(bufferSize)
+                bufferPtr.deallocate(capacity: bufferSize)
                 
                 telemetry?.endTime = Date()
                 telemetry?.length = data.length
@@ -652,7 +650,7 @@ public extension SwifterSockets {
                 
                 // An error occured, raise an exception
                 
-                bufferPtr.deallocateCapacity(bufferSize)
+                bufferPtr.deallocate(capacity: bufferSize)
                 
                 telemetry?.endTime = Date()
                 telemetry?.length = data.length
@@ -665,7 +663,7 @@ public extension SwifterSockets {
                 
                 // A timeout occured, raise an exception
                 
-                bufferPtr.deallocateCapacity(bufferSize)
+                bufferPtr.deallocate(capacity: bufferSize)
                 
                 telemetry?.endTime = Date()
                 telemetry?.length = data.length
@@ -679,7 +677,7 @@ public extension SwifterSockets {
                 // The client closed the connection, copy received data to the NSMutableData object and return it.
                 
                 data.append(buffer.baseAddress!, length: (nofBytes as! Int))
-                bufferPtr.deallocateCapacity(bufferSize)
+                bufferPtr.deallocate(capacity: bufferSize)
                 
                 telemetry?.endTime = Date()
                 telemetry?.length = data.length
@@ -693,7 +691,7 @@ public extension SwifterSockets {
                 // Whatever happened, the socket is not available (anymore)
                 
                 data.append(buffer.baseAddress!, length: (nofBytes as! Int))
-                bufferPtr.deallocateCapacity(bufferSize)
+                bufferPtr.deallocate(capacity: bufferSize)
                 
                 telemetry?.endTime = Date()
                 telemetry?.length = data.length
@@ -842,7 +840,7 @@ public extension SwifterSockets {
      - Throws: A ReadFromSocket.ExcpetionExcepetion when an error or a timeout occurs.
      */
 
-    public static func receiveNSDataOrThrow(
+    public static func receiveDataOrThrow(
         fromSocket socket: Int32,
         timeout: TimeInterval,
         dataEndDetector: DataEndDetector,
@@ -933,12 +931,12 @@ public extension SwifterSockets {
             let localTelemetry = telemetry ?? ReceiveTelemetry()
             let data: Data?
             do {
-                data = try receiveNSDataOrThrow(fromSocket: socket, timeout: timeout, dataEndDetector: dataEndDetector, telemetry: localTelemetry)
+                data = try receiveDataOrThrow(fromSocket: socket, timeout: timeout, dataEndDetector: dataEndDetector, telemetry: localTelemetry)
             } catch {
                 data = nil
             }
             if postProcessor != nil {
-                postProcessor!(socket: socket, telemetry: localTelemetry, data: data)
+                postProcessor!(socket, localTelemetry, data)
             } else {
                 closeSocket(socket)
             }

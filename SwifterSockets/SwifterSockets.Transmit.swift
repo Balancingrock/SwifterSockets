@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Transmit.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.6
+//  Version:    0.9.7
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,7 +49,8 @@
 //
 // History
 //
-// v0.9.6 - Upgraded to Swift 3 beta
+// v0.9.7 - Upgraded to Xcode 8 beta 6
+// v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
 // v0.9.4 - Header update
 // v0.9.3 - Changed target to Framework to support Carthage
 // v0.9.2 - Added support for logUnixSocketCalls
@@ -128,7 +129,7 @@ public extension SwifterSockets {
     
     /// The error that may be thrown by the exception based transmit functions.
     
-    public enum TransmitException: ErrorProtocol, CustomStringConvertible, CustomDebugStringConvertible {
+    public enum TransmitException: Error, CustomStringConvertible, CustomDebugStringConvertible {
         
         
         /// The string contains a textual description of the error
@@ -159,7 +160,7 @@ public extension SwifterSockets {
     
     /// The type definition for the postprocessing closure that is started when a transmitAsync transfer is completed.
     
-    public typealias TransmitPostProcessing = (socket: Int32, telemetry: TransmitTelemetry) -> Void
+    public typealias TransmitPostProcessing = (_ socket: Int32, _ telemetry: TransmitTelemetry) -> Void
 
     
     /// The telemetry that is available for the transmit calls.
@@ -471,8 +472,10 @@ public extension SwifterSockets {
         timeout: TimeInterval,
         telemetry: TransmitTelemetry?) -> TransmitResult
     {
-        let buffer = UnsafeBufferPointer(start: UnsafePointer<UInt8>((data as NSData).bytes), count: data.count)
-        return transmit(toSocket: socket, fromBuffer: buffer, timeout: timeout, telemetry: telemetry)
+        let uint8ptr = (data as NSData).bytes.bindMemory(to: UInt8.self, capacity: 1)
+        let bufptr = UnsafeBufferPointer<UInt8>(start: uint8ptr, count: data.count)
+        
+        return transmit(toSocket: socket, fromBuffer: bufptr, timeout: timeout, telemetry: telemetry)
     }
 
 
@@ -611,7 +614,7 @@ public extension SwifterSockets {
             let localTelemetry = telemetry ?? TransmitTelemetry()
             transmit(toSocket: socket, fromBuffer: buffer, timeout: timeout, telemetry: localTelemetry)
             if postProcessor != nil {
-                postProcessor!(socket: socket, telemetry: localTelemetry)
+                postProcessor!(socket, localTelemetry)
             } else {
                 closeSocket(socket)
             }
@@ -642,7 +645,7 @@ public extension SwifterSockets {
             let localTelemetry = telemetry ?? TransmitTelemetry()
             transmit(toSocket: socket, data: data, timeout: timeout, telemetry: localTelemetry)
             if postProcessor != nil {
-                postProcessor!(socket: socket, telemetry: localTelemetry)
+                postProcessor!(socket, localTelemetry)
             } else {
                 closeSocket(socket)
             }
@@ -673,7 +676,7 @@ public extension SwifterSockets {
             let localTelemetry = telemetry ?? TransmitTelemetry()
             transmit(toSocket: socket, string: string, timeout: timeout, telemetry: localTelemetry)
             if postProcessor != nil {
-                postProcessor!(socket: socket, telemetry: localTelemetry)
+                postProcessor!(socket, localTelemetry)
             } else {
                 closeSocket(socket)
             }

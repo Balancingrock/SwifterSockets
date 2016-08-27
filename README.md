@@ -41,9 +41,13 @@ Note: Planned releases are for information only, they are subject to change with
 
 - Upgrade to Swift 3
 
-####v0.9.6 (Current)
+####v0.9.7 (Current)
 
-- Upgraded to Swift 3 beta (Xcode 8 beta)
+- Upgraded to Xcode 8 beta 6 (Swift 3)
+
+####v0.9.6
+
+- Upgraded to Xcode 8 beta 3 (swift 3)
 
 ####v0.9.5
 

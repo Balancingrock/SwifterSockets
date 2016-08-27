@@ -14,6 +14,7 @@
 		866F6CAB1CDCD04000557ACE /* SwifterSockets.Transmit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0A1C86F17E00FABD9A /* SwifterSockets.Transmit.swift */; };
 		866F6CAC1CDCD04000557ACE /* SwifterSockets.Receive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0B1C86F17E00FABD9A /* SwifterSockets.Receive.swift */; };
 		866F6CAD1CDCD04000557ACE /* SwifterSockets.Accept.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0C1C86F17E00FABD9A /* SwifterSockets.Accept.swift */; };
+		86FDF9681D5DACE800BA20DD /* Examples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866EBE0D1C86F17E00FABD9A /* Examples.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -161,6 +162,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				86FDF9681D5DACE800BA20DD /* Examples.swift in Sources */,
 				866F6CAB1CDCD04000557ACE /* SwifterSockets.Transmit.swift in Sources */,
 				866F6CA81CDCD04000557ACE /* SwifterSockets.swift in Sources */,
 				866F6CAA1CDCD04000557ACE /* SwifterSockets.Client.swift in Sources */,
