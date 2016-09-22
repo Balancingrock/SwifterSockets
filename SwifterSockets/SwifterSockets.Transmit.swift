@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Transmit.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.7
+//  Version:    0.9.8
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
 // v0.9.7 - Upgraded to Xcode 8 beta 6
 // v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
 // v0.9.4 - Header update
@@ -70,37 +71,29 @@ import Foundation
 public extension SwifterSockets {
     
     
-    /**
-     The return type for the transmit functions. Possible values are:
-     
-     - ready
-     - timeout
-     - clientClosed
-     - serverClosed
-     - error(message: String)
-     */
-    
-    public enum TransmitResult: CustomStringConvertible, CustomDebugStringConvertible {
+    /// The return type for the transmit functions. Possible values are:
+    ///
+    /// - ready
+    /// - timeout
+    /// - closed
+    /// - error(message: String)
+
+    public enum TransferResult: CustomStringConvertible, CustomDebugStringConvertible {
         
         
-        /// The result when the buffer contents has been completely transfered without error.
+        /// The buffer contents has been completely transfered without error.
         
         case ready
         
         
-        /// The result when a timeout occured
+        /// A timeout occured, status of the data transfer is uncertain.
         
         case timeout
         
         
-        /// The result when the client closed the connection
+        /// The connection was closed by the other side or a parallel thread.
         
-        case clientClosed
-        
-        
-        /// The result when the server closed the connection
-        
-        case serverClosed
+        case closed
         
         
         /// The result when an error occured, the 'message' is a textual description of the error. This will usually be the string that corresponds to the 'errno' variable value.
@@ -114,209 +107,53 @@ public extension SwifterSockets {
             switch self {
             case .ready: return "Ready"
             case .timeout: return "Timeout"
-            case .serverClosed: return "Server closed"
-            case .clientClosed: return "Client closed"
+            case .closed: return "Closed"
             case let .error(msg): return "Error(message: \(msg))"
             }
         }
         
         
         /// The CustomDebugStringConvertible protocol
-
-        public var debugDescription: String { return description }
-    }
-    
-    
-    /// The error that may be thrown by the exception based transmit functions.
-    
-    public enum TransmitException: Error, CustomStringConvertible, CustomDebugStringConvertible {
-        
-        
-        /// The string contains a textual description of the error
-        
-        case message(String)
-        
-        
-        /// A timeout occured
-        
-        case timeout
-        
-        
-        /// The CustomStringConvertible protocol
-        
-        public var description: String {
-            switch self {
-            case .timeout: return "Timeout"
-            case let .message(msg): return "Message(\(msg))"
-            }
-        }
-        
-        
-        /// The CustomDebugStringConvertible protocol
         
         public var debugDescription: String { return description }
     }
     
     
-    /// The type definition for the postprocessing closure that is started when a transmitAsync transfer is completed.
-    
-    public typealias TransmitPostProcessing = (_ socket: Int32, _ telemetry: TransmitTelemetry) -> Void
-
-    
-    /// The telemetry that is available for the transmit calls.
-    
-    public class TransmitTelemetry: CustomStringConvertible, CustomDebugStringConvertible {
-        
-        private var syncQueue = DispatchQueue(label: "Transmit Telemetry Synchronization")
-        
-        
-        /// The time the transfer was requested. Set only once during the start of the function.
-        
-        public var startTime: Date? {
-            get {
-                return syncQueue.sync(execute: { return self._startTime })
-            }
-            set {
-                syncQueue.sync(execute: { self._startTime = newValue })
-            }
-        }
-        
-        private var _startTime: Date?
-
-        
-        /// The time the transfer was terminated. Set only once at the end of the function.
-        
-        public var endTime: Date? {
-            get {
-                return syncQueue.sync(execute: { return self._endTime })
-            }
-            set {
-                syncQueue.sync(execute: { self._endTime = newValue })
-            }
-        }
-        
-        private var _endTime: Date?
-
-        
-        /// The number of blocks used during the transfer. Updated life during the execution of the function.
-        
-        public var blockCounter: Int?
-        
-        
-        /// The number of bytes to be transferred. Set only once during the start of the function.
-        
-        public var length: Int?
-        
-        
-        /// The running number of bytes that have been transferred. Updated life during the execution of the function.
-        
-        public var bytesTransferred: Int?
-        
-        
-        /// The time for the timeout. Set only once during the start of the function.
-        
-        public var timeoutTime: Date? {
-            get {
-                return syncQueue.sync(execute: { return self._timeoutTime })
-            }
-            set {
-                syncQueue.sync(execute: { self._timeoutTime = newValue })
-            }
-        }
-        
-        private var _timeoutTime: Date?
-
-        
-        /// A copy of the result from the function. Set only once at the end of the function.
-        
-        public var result: TransmitResult? {
-            get {
-                return syncQueue.sync(execute: { return self._result })
-            }
-            set {
-                syncQueue.sync(execute: { self._result = newValue })
-            }
-        }
-        
-        private var _result: TransmitResult?
-
-        
-        /// The CustomStringConvertible protocol
-        
-        public var description: String {
-            return "StartTime = \(startTime),\nEndTime = \(endTime),\nBlockCounter = \(blockCounter),\nLength = \(length),\nBytesTransferred = \(bytesTransferred),\ntimeoutTime = \(timeoutTime),\nresult = \(result)"
-        }
-        
-        
-        /// The CustomDebugStringConvertible protocol
-
-        public var debugDescription: String { return description }
-    }
-
-
-    /**
-     Transmits the data from the given buffer to the specified socket. The socket will remain open after the transfer (succesful or not). This is the primitive for all other functions in this file.
-     
-     - Parameter toSocket: The socket on which to transfer the given data.
-     - Parameter fromBuffer: A pointer to a buffer containing the bytes to be transferred.
-     - Parameter timeout: The time in seconds for the complete transfer attempt.
-     
-     - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
-     */
+    /// Transmits the data from the given buffer to the specified socket. The socket will remain open after the transfer (succesful or not).
+    ///
+    /// - Parameter socket: The socket on which to transfer the given data.
+    /// - Parameter buffer: A pointer to a buffer containing the bytes to be transferred.
+    /// - Parameter timeout: The time in seconds for the complete transfer attempt.
+    /// - Parameter callback: An object that will receive the SwifterSocketsTransmitterCallback protocol operations.
+    /// - Parameter progress: A closure that will be activated to keep tracks of the progress of the transfer.
+    ///
+    /// - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
     
     @discardableResult
-    public static func transmit(
-        toSocket socket: Int32,
-        fromBuffer buffer: UnsafeBufferPointer<UInt8>,
+    public static func transfer(
+        socket: Int32,
+        buffer: UnsafeBufferPointer<UInt8>,
         timeout: TimeInterval,
-        telemetry: TransmitTelemetry?) -> TransmitResult
-    {
-        // Prepare the telemetry
-        
-        let startTime = Date()
-        if telemetry != nil {
-            telemetry!.startTime = startTime
-            telemetry!.length = buffer.count
-        }
-        
-        
+        callback: SwifterSocketsTransmitterCallback?,
+        progress: TransmitterProgressMonitor?) -> TransferResult {
+                
         // Check if there is data to transmit
         
         if buffer.count == 0 {
-            if telemetry != nil {
-                telemetry!.blockCounter = 0
-                telemetry!.bytesTransferred = 0
-                telemetry!.endTime = Date()
-                telemetry!.result = .ready
-            }
+            _ = progress?(0, 0)
+            callback?.transmitterReady()
             return .ready
         }
+
         
+        // Prepare the timeout
         
-        // Set the cut-off for the timeout
-        
-        let timeoutTime = startTime.addingTimeInterval(timeout)
-        if telemetry != nil { telemetry!.timeoutTime = timeoutTime }
-        
-        
-        // The block counter
-        
-        var blockCounter: Int = 0 {
-            didSet {
-                if telemetry != nil { telemetry!.blockCounter = blockCounter }
-            }
-        }
-        if telemetry != nil { telemetry!.blockCounter = blockCounter }
+        let timeoutTime = Date().addingTimeInterval(timeout)
         
         
         // Total size transferred
         
-        var bytesTransferred: Int = 0 {
-            didSet {
-                if telemetry != nil { telemetry!.bytesTransferred = bytesTransferred }
-            }
-        }
-        if telemetry != nil { telemetry!.bytesTransferred = bytesTransferred }
+        var bytesTransferred: Int = 0
         
         
         // The offset in the buffer from where to start/continue transmitting
@@ -330,73 +167,30 @@ public extension SwifterSockets {
         
         repeat {
             
+            // =============================================================
+            // Wait until select signals available buffer space (or timeout)
+            // =============================================================
             
-            // =====================================================================================
-            // Check timeout interval and calculate remainder
-            // =====================================================================================
+            let selres = waitForSelect(socket: socket, timeout: timeoutTime, forRead: false, forWrite: true)
             
-            let availableTime = timeoutTime.timeIntervalSinceNow
-            
-            if availableTime < 0.0 {
-                if telemetry != nil {
-                    telemetry!.endTime = Date()
-                    telemetry!.result = .timeout
-                }
+            switch selres {
+            case .timeout:
+                _ = progress?(bytesTransferred, buffer.count)
+                callback?.transmitterTimeout()
                 return .timeout
+
+            case let .error(message):
+                _ = progress?(bytesTransferred, buffer.count)
+                callback?.transmitterError(message)
+                return .error(message: message)
+
+            case .closed:
+                _ = progress?(bytesTransferred, buffer.count)
+                callback?.transmitterClosed()
+                return .closed
+
+            case .ready: break
             }
-            
-            let availableSeconds = Int(availableTime)
-            let availableUSeconds = Int32((availableTime - Double(availableSeconds)) * 1_000_000.0)
-            var availableTimeval = timeval(tv_sec: availableSeconds, tv_usec: availableUSeconds)
-            
-            
-            // =====================================================================================
-            // Use the select API to wait for anything to happen on our socket within the timeout
-            // period
-            // =====================================================================================
-            
-            let numOfFd:Int32 = socket + 1
-            var writeSet:fd_set = fd_set(fds_bits: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-            
-            fdSet(socket, set: &writeSet)
-            let status = select(numOfFd, nil, &writeSet, nil, &availableTimeval)
-            
-            
-            // Evaluate the result form the select call
-            
-            if status == 0 { // No events reported equals timeout
-                if telemetry != nil {
-                    telemetry!.endTime = Date()
-                    telemetry!.result = .timeout
-                }
-                return .timeout
-            }
-            
-            if status == -1 {
-                
-                switch errno {
-                    
-                case EBADF:
-                    // Case 1: In a multi-threaded environment it can happen that one thread closes a socket while another thread is transmitting data on the same socket.
-                    // In that case this is not really an error, but simply a signal that the transmitting thread should be terminated.
-                    // Case 2: Of course it could also happen that the programmer made a mistake and is using a socket that is not initialized.
-                    // The first case is more important, so as to avoid uneccesary error messages we return the SERVER_CLOSED result case.
-                    // If the programmer made an error, it is presumed that this error will become appearant in other ways (during testing!).
-                    telemetry?.endTime = Date()
-                    telemetry?.result = .serverClosed
-                    return .serverClosed
-                    
-                case EINVAL, EAGAIN, EINTR: fallthrough // These are the other possible error's
-                    
-                default: // Catch-all to satisfy the compiler
-                    let errString = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
-                    telemetry?.endTime = Date()
-                    telemetry?.result = .error(message: errString)
-                    return .error(message: errString)
-                }
-            }
-            
-            // Because we only specified 1 FD, we do not need to check on which FD the event was received
             
             
             // =====================================================================================
@@ -407,279 +201,89 @@ public extension SwifterSockets {
             let dataStart = buffer.baseAddress! + outOffset
             
             let bytesSend = send(socket, dataStart, size, 0)
-        
             
-            // Evaluate the result of the send
+            switch bytesSend {
             
-            if bytesSend == -1 { // An error occured
-                let msg = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
-                if telemetry != nil {
-                    telemetry!.endTime = Date()
-                    telemetry!.result = .error(message: msg)
-                }
-                return .error(message:msg)
+            case Int.min ... -1: // An error occured
+                let message = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
+                _ = progress?(bytesTransferred, buffer.count)
+                callback?.transmitterError(message)
+                return .error(message: message)
+            
+            case 0: // Other side closed connection
+                _ = progress?(bytesTransferred, buffer.count)
+                callback?.transmitterClosed()
+                return .closed
+
+            case 1 ... Int.max: // Data was transferred
+                outOffset += bytesSend
+                bytesTransferred += bytesSend
+                let cont = progress?(bytesTransferred, buffer.count) ?? true
+                if !cont { break }
+                
+            default: break // Compiler error?
             }
-            
-            if bytesSend == 0 { // Other side closed connection
-                if telemetry != nil {
-                    telemetry!.endTime = Date()
-                    telemetry!.result = .clientClosed
-                }
-                return .clientClosed
-            }
-            
-            
-            // =====================================================================================
-            // Data was transferred, do some housekeeping and repeat if there is more
-            // =====================================================================================
-            
-            outOffset += bytesSend
-            
-            
-            // Update telemetry
-            
-            blockCounter += 1
-            bytesTransferred += bytesSend
             
         } while (outOffset < buffer.count)
         
         
         // All data was transferred
         
-        if telemetry != nil {
-            telemetry!.endTime = Date()
-            telemetry!.result = .ready
-        }
+        _ = progress?(bytesTransferred, buffer.count)
+        callback?.transmitterReady()
         return .ready
     }
-
-
-    /**
-     Transmits the data from the given NSData object to the specified socket as a byte stream. The socket will remain open after the transfer (succesful or not).
-     
-     - Parameter toSocket: The socket on which to transfer the given data.
-     - Parameter data: A NSData object containing the bytes to be transferred.
-     - Parameter timeout: The time in seconds for the complete transfer attempt.
-     - Parameter telemetry: An optional pointer to a telemetry stucture that will be updated during execution of the transmit function. The telemetry will not be updated if the arguments have an error.
-     
-     - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
-     */
     
+    
+    /// Transfers the given data. The socket will remain open after the transfer (succesful or not).
+    ///
+    /// - Parameter socket: The socket on which to transfer the given data.
+    /// - Parameter data: Data containing the bytes to be transferred.
+    /// - Parameter timeout: The time in seconds for the complete transfer attempt.
+    /// - Parameter callback: An object that will receive the SwifterSocketsTransmitterCallback protocol operations.
+    /// - Parameter progress: A closure that will be activated to keep tracks of the progress of the transfer.
+    ///
+    /// - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
+
     @discardableResult
-    public static func transmit(
-        toSocket socket: Int32,
+    public static func transfer(
+        socket: Int32,
         data: Data,
         timeout: TimeInterval,
-        telemetry: TransmitTelemetry?) -> TransmitResult
-    {
-        let uint8ptr = (data as NSData).bytes.bindMemory(to: UInt8.self, capacity: 1)
-        let bufptr = UnsafeBufferPointer<UInt8>(start: uint8ptr, count: data.count)
+        callback: SwifterSocketsTransmitterCallback?,
+        progress: TransmitterProgressMonitor?) -> TransferResult {
         
-        return transmit(toSocket: socket, fromBuffer: bufptr, timeout: timeout, telemetry: telemetry)
+        return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult in
+            let ubptr = UnsafeBufferPointer<UInt8>.init(start: ptr, count: data.count)
+            return transfer(socket: socket, buffer: ubptr, timeout: timeout, callback: callback, progress: progress)
+        }
     }
-
-
-    /**
-     Transmits the data from the given String to the specified socket as a byte stream in UTF8. The socket will remain open after the transfer (succesful or not).
-     
-     - Parameter toSocket: The socket on which to transfer the given data.
-     - Parameter data: A NSData object containing the bytes to be transferred.
-     - Parameter timeout: The time in seconds for the complete transfer attempt.
-     - Parameter telemetry: An optional pointer to a telemetry stucture that will be updated during execution of the transmit function. The telemetry will not be updated if the arguments have an error.
-     
-     - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
-     */
     
+    
+    /// Transmits the given string. The socket will remain open after the transfer (succesful or not).
+    ///
+    /// - Parameter socket: The socket on which to transfer the given data.
+    /// - Parameter string: The string transformed in an array of UTF8 data.
+    /// - Parameter timeout: The time in seconds for the complete transfer attempt.
+    /// - Parameter callback: An object that will receive the SwifterSocketsTransmitterCallback protocol operations.
+    /// - Parameter progress: A closure that will be activated to keep tracks of the progress of the transfer.
+    ///
+    /// - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
+
     @discardableResult
-    public static func transmit(
-        toSocket socket: Int32,
+    public static func transfer(
+        socket: Int32,
         string: String,
         timeout: TimeInterval,
-        telemetry: TransmitTelemetry?) -> TransmitResult
-    {
+        callback: SwifterSocketsTransmitterCallback?,
+        progress: TransmitterProgressMonitor?) -> TransferResult {
         
-        // Convert the string to data
-        
-        guard let data = string.data(using: String.Encoding.utf8) else {
-            if telemetry != nil {
-                telemetry!.blockCounter = 0
-                telemetry!.endTime = Date()
-                telemetry!.result = .error(message: "Could not create NSData from input string")
-            }
-            return .error(message: "Could not create NSData from input string")
+        if let data = string.data(using: String.Encoding.utf8) {
+            return transfer(socket: socket, data: data, timeout: timeout, callback: callback, progress: progress)
+        } else {
+            _ = progress?(0, 0)
+            callback?.transmitterError("Cannot convert string to UTF8")
+            return .error(message: "Cannot convert string to UTF8")
         }
-        
-        
-        // Transmit the data
-        
-        return transmit(toSocket: socket, data: data, timeout: timeout, telemetry: telemetry)
-    }
-
-    
-    /**
-     Transmits the data from the given buffer to the specified socket. The socket will remain open after the transfer (succesful or not). this is an exception based wrapper for transmit(..buffer..).
-     
-     - Parameter toSocket: The socket on which to transfer the given data.
-     - Parameter fromBuffer: A pointer to a buffer containing the bytes to be transferred.
-     - Parameter timeout: The time in seconds for the complete transfer attempt.
-     - Parameter telemetry: An optional pointer to a telemetry object that will be updated during execution of the transmit function. The telemetry will not be updated if the arguments have an error.
-     
-     - Throws: TransmitException, either MESSAGE or TIMEOUT.
-     */
-
-    public static func transmitOrThrow(
-        toSocket socket: Int32,
-        fromBuffer buffer: UnsafeBufferPointer<UInt8>,
-        timeout: TimeInterval,
-        telemetry: TransmitTelemetry?) throws
-    {
-        let result = transmit(toSocket: socket, fromBuffer: buffer, timeout: timeout, telemetry: telemetry)
-        switch result {
-        case .ready, .serverClosed, .clientClosed: break
-        case .timeout: throw TransmitException.timeout
-        case let .error(message: msg): throw TransmitException.message(msg)
-        }
-    }
-    
-    
-    /**
-     Transmits the data from the given NSData object to the specified socket as a byte stream. The socket will remain open after the transfer (succesful or not). This is an exception based wrapper for transmit(..NSData..).
-     
-     - Parameter onSocket: The socket on which to transfer the given data.
-     - Parameter data: A NSData object containing the bytes to be transferred.
-     - Parameter timeout: The time in seconds for the complete transfer attempt.
-     - Parameter telemetry: An optional pointer to a telemetry stucture that will be updated during execution of the transmit function. The telemetry will not be updated if the arguments have an error.
-     */
-    
-    public static func transmitOrThrow(
-        toSocket socket: Int32,
-        data: Data,
-        timeout: TimeInterval,
-        telemetry: TransmitTelemetry?) throws
-    {
-        let result = transmit(toSocket: socket, data: data, timeout: timeout, telemetry: telemetry)
-        switch result {
-        case .ready, .serverClosed, .clientClosed: break
-        case .timeout: throw TransmitException.timeout
-        case let .error(message: msg): throw TransmitException.message(msg)
-        }
-    }
-    
-    
-    /**
-     Transmits the data from the given String to the specified socket as a byte stream codes in UTF8. The socket will remain open after the transfer (succesful or not). This is an exception based wrapper for transmit(..String..).
-     
-     - Parameter toSocket: The socket on which to transfer the given data.
-     - Parameter string: The string to be transferred as bytes in UTF8 coding.
-     - Parameter timeout: The time in seconds for the complete transfer attempt.
-     - Parameter telemetry: An optional pointer to a telemetry stucture that will be updated during execution of the transmit function. The telemetry will not be updated if the arguments have an error.
-     */
-    public static func transmitOrThrow(
-        toSocket socket: Int32,
-        string: String,
-        timeout: TimeInterval,
-        telemetry: TransmitTelemetry?) throws
-    {
-        let result = transmit(toSocket: socket, string: string, timeout: timeout, telemetry: telemetry)
-        switch result {
-        case .ready, .serverClosed, .clientClosed: break
-        case .timeout: throw TransmitException.timeout
-        case let .error(message: msg): throw TransmitException.message(msg)
-        }
-    }
-
-    
-    /**
-     Transmit the bytes in the given buffer asynchronously and -whether sucessfully or not- executes the given closure after the transmission ends. This is a conveniance "fire and forget" function that wraps around transmit(..UnsafePointer<UInt8>..).
-     
-     - Note: Make sure that the buffer that is pointed at is available when the transmit function is executed. One way to ensure this is to provide a postProcessor that uses the buffer for some dummy assignment. Just mentioning the buffer in a capture list without using it does not work (the capture is optimized away)
-     
-     - Parameter onQueue: The queue on which the transfer will be executed.
-     - Parameter toScket: The socket to which the transfer will be directed. The socket will not be closed, if it should be closed after the transfer do so in the postProcessing closure.
-     - Parameter fromBuffer: A pointer to the first byte of data to be transferred.
-     - Parameter timeout: The maximum duration of the transfer in seconds. Note that the number used is not exact, just very close to the given duration.
-     - Parameter telemetry: An optional pointer to a telemetry object that will be updated during the transfer.
-     - Parameter postProcessor: An optional closure that will be started when the transfer ends. When present, this closure is responsible to close the socket.
-     */
-    
-    public static func transmitAsync(
-        onQueue queue: DispatchQueue,
-        toSocket socket: Int32,
-        fromBuffer buffer: UnsafeBufferPointer<UInt8>,
-        timeout: TimeInterval,
-        telemetry: TransmitTelemetry?,
-        postProcessor: TransmitPostProcessing?)
-    {
-        queue.async(execute: {
-            let localTelemetry = telemetry ?? TransmitTelemetry()
-            transmit(toSocket: socket, fromBuffer: buffer, timeout: timeout, telemetry: localTelemetry)
-            if postProcessor != nil {
-                postProcessor!(socket, localTelemetry)
-            } else {
-                closeSocket(socket)
-            }
-        })
-    }
-
-    
-    /**
-     Transmit the given data asynchronously and -whether sucessfully or not- executes the given closure after the transmission ends. This is a conveniance "fire and forget" function that wraps around transmit(..NSData..).
-     
-     - Parameter onQueue: The queue on which the transfer will be executed.
-     - Parameter toSocket: The socket to which the transfer will be directed. The socket will not be closed, if it should be closed after the transfer do so in the postProcessing closure.
-     - Parameter data: The NSData object containing the bytes to transfer.
-     - Parameter timeout: The maximum duration of the transfer. Note that the actual number used is not exact, just very close to the given duration.
-     - Parameter telemetry: An optional pointer to a telemetry struct that will be updated during the transfer.
-     - Parameter postProcessor: An optional closure that will be started when the transfer ends. Though this closure may be nil, it is advised to at close the socket if the end of the transfer also ends the communication.
-     */
-    
-    public static func transmitAsync(
-        onQueue queue: DispatchQueue,
-        toSocket socket: Int32,
-        data: Data,
-        timeout: TimeInterval,
-        telemetry: TransmitTelemetry?,
-        postProcessor: TransmitPostProcessing?)
-    {
-        queue.async(execute: {
-            let localTelemetry = telemetry ?? TransmitTelemetry()
-            transmit(toSocket: socket, data: data, timeout: timeout, telemetry: localTelemetry)
-            if postProcessor != nil {
-                postProcessor!(socket, localTelemetry)
-            } else {
-                closeSocket(socket)
-            }
-        })
-    }
-
-    
-    /**
-     Transmit the given string asynchronously as a sequence of bytes coded in UTF8. And -whether sucessfully or not- executes the given closure after the transmission ends. This is a conveniance "fire and forget" function that wraps around transmit(..String..).
-     
-     - Parameter onQueue: The queue on which the transfer will be executed.
-     - Parameter useSocket: The socket to which the transfer will be directed. The socket will not be closed, if it should be closed after the transfer do so in the postProcessing closure.
-     - Parameter data: The NSData object containing the bytes to transfer.
-     - Parameter timeout: The maximum duration of the transfer. Note that the actual number used is not exact, just very close to the given duration.
-     - Parameter telemetry: An optional pointer to a telemetry struct that will be updated during the transfer.
-     - Parameter postProcessor: An optional closure that will be started when the transfer ends. Though this closure may be nil, it is advised to at close the socket if the end of the transfer also ends the communication.
-     */
-    
-    public static func transmitAsync(
-        onQueue queue: DispatchQueue,
-        toSocket socket: Int32,
-        string: String,
-        timeout: TimeInterval,
-        telemetry: TransmitTelemetry?,
-        postProcessor: TransmitPostProcessing?)
-    {
-        queue.async(execute: {
-            let localTelemetry = telemetry ?? TransmitTelemetry()
-            transmit(toSocket: socket, string: string, timeout: timeout, telemetry: localTelemetry)
-            if postProcessor != nil {
-                postProcessor!(socket, localTelemetry)
-            } else {
-                closeSocket(socket)
-            }
-        })
     }
 }

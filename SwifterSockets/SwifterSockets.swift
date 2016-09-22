@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.7
+//  Version:    0.9.8
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
 // v0.9.7 - Upgraded to Xcode 8 beta 6
 //        - Added isValidIpAddress
 // v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
@@ -67,13 +68,300 @@
 import Foundation
 
 
+/// A receiver can implement this protocol to handle all events connected with receiving data from a remote computer.
+
+public protocol SwifterSocketsReceiver {
+    
+    
+    /// An error occured while receiving. The receiver has stopped, but the connection has not been closed or released. The message contains a textual description of the error that occured.
+    
+    func receiverError(_ message: String)
+    
+    
+    /// Data was received and is ready for processing. Notice that the data will/can arrive in multiple blocks and that the implementation of this operation is responsible for end- and boundary detection.
+    /// - Parameter buffer: An area with the bytes that were received. Includes a "count" property.
+    /// - Returns: Return true to continue receiving, false to terminate. When false is returned, the connection will not be closed or released.
+    
+    func receiverData(_ buffer: UnsafeBufferPointer<UInt8>) -> Bool
+    
+    
+    /// The connection was unexpectedly closed. Probably by the other side or because of a parralel operation on a different thread. This operation should ensure that the connection is closed and or deallocated as necessary.
+    
+    func receiverClosed()
+    
+    
+    /// Since the last data transfer (or start of operation) a timeinterval as specified in "ReceiverLoopDuration" has elapsed without any activity.
+    /// - Returns: Return true to continue receiving, false to terminate. When false is returned, the connection will not be closed or released.
+    
+    func receiverLoop() -> Bool
+}
+
+
+/// An object can implement this protocol to receive feedback about the transmission to a remote computer.
+
+public protocol SwifterSocketsTransmitterCallback {
+    
+    
+    /// An error occured during transmission. The transmitter has stopped, but the connection has not been closed or released. The message contains a textual description of the error that occured.
+
+    func transmitterError(_ message: String)
+    
+    
+    /// A timeout occured during (or waiting for) transmission. The connection has not been closed or released. The data transfer is in an unknown state, i.e. it is uncertain how much data was transferred before this happenend. If a retry is attemped, the higher level protocol (implemented by the application) must ensure that the retry will not produce conflicts in the data stream.
+    
+    func transmitterTimeout()
+    
+    
+    /// The connection was unexpectedly closed. Probably by the other side or because of a parralel operation on a different thread. This operation should ensure that the connection is closed and or deallocated as necessary.
+
+    func transmitterClosed()
+    
+    
+    /// The transmission was successfully concluded.
+    
+    func transmitterReady()
+}
+
+
+/// The http and https servers implement these functions.
+
+public protocol SwifterSocketsServer {
+    
+    
+    /// Starts the server.
+    
+    func serverStart() -> SwifterSockets.SimpleResult
+    
+    
+    /// Stops the server. Note that there are delays involved, the accept loop may still accept new requests until it loops around. Requests being processed will be allowed to continue normally.
+    
+    func serverStop()
+}
+
+
 public final class SwifterSockets {
+    
+    
+    /// Signature for a closure that is fed error messages. Used by some operations/object-classes as a feedback mechanism or to allow the logging of error information.
+    
+    public typealias ErrorHandler = (_ message: String) -> ()
+    
+        
+    /// Return type for connectToServer and connectToClient. Possible values are:
+    ///
+    /// - error(message: String)
+    /// - success(socket: Int32)
+    
+    public enum SocketResult: CustomStringConvertible, CustomDebugStringConvertible {
+        
+        
+        /// An error occured. The message details the kind of error.
+        
+        case error(message: String)
+        
+        
+        /// On success the socket descriptor is returned
+        
+        case success(socket: Int32)
+        
+        
+        /// The CustomStringConvertible protocol
+        
+        public var description: String {
+            switch self {
+            case let .error(message): return "Error(\(message))"
+            case let .success(socket): return "Success(\(socket))"
+            }
+        }
+        
+        
+        /// The CustomDebugStringConvertible protocol
+        
+        public var debugDescription: String { return description }
+    }
 
     
-    /**
-     A Swift wrapper and extensions for sockaddr.
-     This wrapper was described on the blog from Marco Masser: http://blog.obdev.at/representing-socket-addresses-in-swift-using-enums/
-     */
+    /// A general purpose return value. Possible values are:
+    ///
+    /// - error(message: String)
+    /// - success
+    
+    public enum SimpleResult: CustomStringConvertible, CustomDebugStringConvertible {
+        
+        
+        // An error occured. The message details the kind of error.
+        
+        case error(message: String)
+        
+        
+        // The operation concluded sucessfully.
+        
+        case success
+        
+        
+        /// The CustomStringConvertible protocol
+
+        public var description: String {
+            switch self {
+            case .success: return "Success"
+            case let .error(message): return "Error(\(message))"
+            }
+        }
+        
+        
+        /// The CustomDebugStringConvertible protocol
+        
+        public var debugDescription: String { return description }
+    }
+
+
+    /// The signature of a closure intended to be used as a progress indicator for lengthy transfers. It can also be used to abort  transfers.
+    ///
+    /// - Parameter bytesTransferred: The number of bytes transferred so far.
+    /// - Parameter ofTotal: The total number of bytes to be transferred. Can be zero and may be reset to "bytesTransferred" if a previous execution of the progress closure returned 'false'.
+    ///
+    /// - Returns: If 'true' the transfer will be continued, if 'false' the transfer will be aborted.
+    ///
+    /// - Note: During the execution of the progress function the transfer will be temporary interrupted.
+    /// - Note: After this operation returns 'false' that is used to abort a transfer, there will be a second call of transmitProgress indicating that the transfer is complete ("bytesTransferred" is reduced to fit the amount transmitted) after which the transmit callback "transmitReady" is called.
+    
+    public typealias TransmitterProgressMonitor = (_ bytesTransferred: Int, _ ofTotal: Int) -> Bool
+
+    
+    /// The return values for the "waitForSelect" function.
+    ///
+    /// Either:
+    /// - ready // the event occured.
+    /// - timeout // nothing happened.
+    /// - error(message) // An eror occured, see message.
+    /// - closed // The socket was closed.
+    
+    public enum SelectResult: CustomStringConvertible, CustomDebugStringConvertible {
+        
+        
+        /// The event that was waited for has occured.
+        
+        case ready
+        
+        
+        /// Nothing happened in the timeout period.
+        
+        case timeout
+        
+        
+        /// An error occured as described in the message.
+        
+        case error(message: String)
+        
+        
+        /// Either remote or a parralel thread closed the connection.
+        
+        case closed
+        
+        
+        /// The CustomStringConvertible protocol
+        
+        public var description: String {
+            switch self {
+            case .ready: return "Ready"
+            case .timeout: return "Timeout"
+            case let .error(message): return "Error(\(message))"
+            case .closed: return "Closed"
+            }
+        }
+        
+        
+        /// The CustomDebugStringConvertible protocol
+        
+        public var debugDescription: String { return description }
+    }
+    
+    
+    /// Wait until the Posix select call returns.
+    ///
+    /// - Parameter socket: The socket on which something must happen.
+    /// - Parameter timeout: The time until the select call waits for an event
+    /// - Parameter forRead: Wait for a read event.
+    /// - Parameter forWrite: Wait for a write event.
+    ///
+    /// - Returns: See definition of "SelectResult"
+    
+    public static func waitForSelect(socket: Int32, timeout: Date, forRead: Bool, forWrite: Bool) -> SelectResult {
+        
+        
+        // =============================================
+        // Check timout interval and calculate remainder
+        // =============================================
+        
+        let availableTime = timeout.timeIntervalSinceNow
+        
+        if availableTime < 0.0 {
+            return .timeout
+        }
+        
+        let availableSeconds = Int(availableTime)
+        let availableUSeconds = Int32((availableTime - Double(availableSeconds)) * 1_000_000.0)
+        var availableTimeval = timeval(tv_sec: availableSeconds, tv_usec: availableUSeconds)
+        
+        
+        // ======================================================================================================
+        // Use the select API to wait for anything to happen on our client socket only within the timeout period.
+        // ======================================================================================================
+        
+        // Note: Since SSL may require a handshake it is necessary to check for both read & write activity.
+        
+        let numOfFd:Int32 = socket + 1
+        var readSet:fd_set = fd_set(fds_bits: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+        var writeSet:fd_set = fd_set(fds_bits: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+        
+        if forRead { fdSet(socket, set: &readSet) }
+        if forWrite { fdSet(socket, set: &writeSet) }
+        let status = select(numOfFd, &readSet, &writeSet, nil, &availableTimeval)
+        
+        // Because we only specified 1 FD, we do not need to check on which FD the event was received
+        
+        
+        // =========================
+        // Exit in case of a timeout
+        // =========================
+        
+        if status == 0 {
+            return .timeout
+        }
+        
+        
+        // ========================
+        // Exit in case of an error
+        // ========================
+        
+        if status == -1 {
+            
+            switch errno {
+                
+            case EBADF:
+                // Case 1: In a multi-threaded environment it can happen that one thread closes a socket while another thread is waiting for data on the same socket.
+                // In that case this is not really an error, but simply a signal that the receiving thread should be terminated.
+                // Case 2: Of course it could also happen that the programmer made a mistake and is using a socket that is not initialized.
+                // The first case is more important, so as to avoid uneccesary error messages we return the CLOSED result case.
+                // If the programmer made an error, it is presumed that this error will become appearant in other ways (during testing!).
+                return .closed
+                
+            case EINVAL, EAGAIN, EINTR: fallthrough // These are the other possible error's
+                
+            default: // Catch-all to satisfy the compiler
+                let errstr = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
+                return .error(message: errstr)
+                
+            }
+        }
+        
+        return .ready
+    }
+    
+    
+    /// A Swift wrapper and extensions for sockaddr.
+    ///
+    /// This wrapper was described on the blog from [Marco Masser](http://blog.obdev.at/representing-socket-addresses-in-swift-using-enums/)
     
     public enum SocketAddress {
         case version4(address: sockaddr_in)
@@ -121,6 +409,7 @@ public final class SwifterSockets {
 
     
     /// Verifies if the given string is a valid IPv4 or IPv6 address by converting it to a network address and back again. If the result equals the input, it must be correct.
+    ///
     /// - Returns: True if the string is a valid inet address, false otherwise
     
     public static func isValidIpAddress(_ address: String) -> Bool {
@@ -152,13 +441,11 @@ public final class SwifterSockets {
     }
 
     
-    /**
-     Returns the (ipAddress, portNumber) tuple for a given sockaddr (if possible)
-    
-     - Parameter addr: A pointer to a sockaddr structure.
-     
-     - Returns: (nil, nil) on failure, (ipAddress, portNumber) on success.
-     */
+    /// Returns the (ipAddress, portNumber) tuple for a given sockaddr (if possible)
+    ///
+    /// - Parameter addr: A pointer to a sockaddr structure.
+    ///
+    /// - Returns: (nil, nil) on failure, (ipAddress, portNumber) on success.
     
     public static func sockaddrDescription(_ addr: UnsafePointer<sockaddr>) -> (ipAddress: String?, portNumber: String?) {
         
@@ -186,29 +473,25 @@ public final class SwifterSockets {
     }
     
     
-    /**
-     Replacement for FD_ZERO macro.
-     
-     - Parameter set: A pointer to a fd_set structure.
-     
-     - Returns: The set that is opinted at is filled with all zero's.
-     */
+    /// Replacement for FD_ZERO macro.
+    ///
+    /// - Parameter set: A pointer to a fd_set structure.
+    ///
+    /// - Returns: The set that is opinted at is filled with all zero's.
     
     public static func fdZero(_ set: inout fd_set) {
         set.fds_bits = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     }
     
     
-    /**
-     Replacement for FD_SET macro
-     
-     - Parameter fd: A file descriptor that offsets the bit to be set to 1 in the fd_set pointed at by 'set'.
-     - Parameter set: A pointer to a fd_set structure.
-     
-     - Returns: The given set is updated in place, with the bit at offset 'fd' set to 1.
-     
-     - Note: If you receive an EXC_BAD_INSTRUCTION at the mask statement, then most likely the socket was already closed.
-     */
+    /// Replacement for FD_SET macro
+    ///
+    /// - Parameter fd: A file descriptor that offsets the bit to be set to 1 in the fd_set pointed at by 'set'.
+    /// - Parameter set: A pointer to a fd_set structure.
+    ///
+    /// - Returns: The given set is updated in place, with the bit at offset 'fd' set to 1.
+    ///
+    /// - Note: If you receive an EXC_BAD_INSTRUCTION at the mask statement, then most likely the socket was already closed.
     
     public static func fdSet(_ fd: Int32, set: inout fd_set) {
         let intOffset = Int(fd / 32)
@@ -252,14 +535,12 @@ public final class SwifterSockets {
     }
     
     
-    /**
-     Replacement for FD_CLR macro
-    
-     - Parameter fd: A file descriptor that offsets the bit to be cleared in the fd_set pointed at by 'set'.
-     - Parameter set: A pointer to a fd_set structure.
-    
-     - Returns: The given set is updated in place, with the bit at offset 'fd' cleared to 0.
-     */
+    /// Replacement for FD_CLR macro
+    ///
+    /// - Parameter fd: A file descriptor that offsets the bit to be cleared in the fd_set pointed at by 'set'.
+    /// - Parameter set: A pointer to a fd_set structure.
+    ///
+    /// - Returns: The given set is updated in place, with the bit at offset 'fd' cleared to 0.
 
     public static func fdClr(_ fd: Int32, set: inout fd_set) {
         let intOffset = Int(fd / 32)
@@ -303,14 +584,12 @@ public final class SwifterSockets {
     }
     
     
-    /**
-    Replacement for FD_ISSET macro
-    
-     - Parameter fd: A file descriptor that offsets the bit to be tested in the fd_set pointed at by 'set'.
-     - Parameter set: A pointer to a fd_set structure.
-    
-     - Returns: 'true' if the bit at offset 'fd' is 1, 'false' otherwise.
-     */
+    /// Replacement for FD_ISSET macro
+    ///
+    /// - Parameter fd: A file descriptor that offsets the bit to be tested in the fd_set pointed at by 'set'.
+    /// - Parameter set: A pointer to a fd_set structure.
+    ///
+    /// - Returns: 'true' if the bit at offset 'fd' is 1, 'false' otherwise.
 
     public static func fdIsSet(_ fd: Int32, set: inout fd_set) -> Bool {
         let intOffset = Int(fd / 32)
@@ -354,17 +633,13 @@ public final class SwifterSockets {
     }
     
     
-    /**
-     Returns all IP addresses in the addrinfo structure as a String.
-     
-     - Parameter infoPtr: A pointer to an addrinfo structure of which the IP addresses should be logged.
-     - Parameter source: The source to be logged for the log entry, defaults to "SwifterSockets.logAddrInfoIPAddresses".
-     
-     - Returns: A string with the IP Addresses of all entries in the infoPtr addrinfo structure chain.
-     */
+    /// Returns all IP addresses in the addrinfo structure as a String.
+    ///
+    /// - Parameter infoPtr: A pointer to an addrinfo structure of which the IP addresses should be logged.
+    ///
+    /// - Returns: A string with the IP Addresses of all entries in the infoPtr addrinfo structure chain.
     
-    public static func logAddrInfoIPAddresses(_ infoPtr: UnsafeMutablePointer<addrinfo>) -> String
-    {
+    public static func logAddrInfoIPAddresses(_ infoPtr: UnsafeMutablePointer<addrinfo>) -> String {
         let addrInfoNil: UnsafeMutablePointer<addrinfo>? = nil
         var count = 0
         var info = infoPtr
@@ -375,19 +650,15 @@ public final class SwifterSockets {
             count += 1
             info = info.pointee.ai_next
         }
-        
         return str
     }
     
     
-    /**
-     A string with all socket options.
-     
-     - Parameter socket: The socket of which to log the options.
-     - Parameter atLogLevel: The logleven at which the options will be logged.
-     
-     - Returns: A string with all socket options of the given socket.
-     */
+    /// A string with all socket options.
+    ///
+    /// - Parameter socket: The socket of which to log the options.
+    ///
+    /// - Returns: A string with all socket options of the given socket.
     
     public static func logSocketOptions(_ socket: Int32) -> String {
         
@@ -458,11 +729,9 @@ public final class SwifterSockets {
     }
     
     
-    /**
-     Closes the given socket if not nil. This entry point is supplied to have a single point that closes all your sockets. Durng debugging it is often good to have some logging facility that logs all calls on the unix sockets. This function allows to have a single point for that logging without having to look through your code to find all occurances of the close call.
-     
-     - Returns: True if the port was closed, nil if it was closed already and false if an error occured (errno will contain an error reason).
-     */
+    /// Closes the given socket if not nil. This entry point is supplied to have a single point that closes all your sockets. During debugging it is often good to have some logging facility that logs all calls on the unix sockets. This function allows to have a single point for that logging without having to look through your code to find all occurances of the close call.
+    ///
+    /// - Returns: True if the port was closed, nil if it was closed already and false if an error occured (errno will contain an error reason).
     
     @discardableResult
     public static func closeSocket(_ socket: Int32?) -> Bool? {

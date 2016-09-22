@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.InitServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.7
+//  Version:    0.9.8
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
 // v0.9.7 - Upgraded to Xcode 8 beta 6
 // v0.9.6 - Upgraded to Xcode 8 beta 3 Swift 3)
 // v0.9.4 - Header update
@@ -67,81 +68,15 @@ import Foundation
 public extension SwifterSockets {
     
     
-    /**
-     The return type for the setupServer functions. Possible values are:
+    /// Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6.
+    ///
+    /// - Parameter onPort: A string containing the number of the port to listen on.
+    /// - Parameter maxPendingConnectionRequest: The number of connections that can be kept pending before they are accepted. A connection request can be put into a queue before it is accepted or rejected. This argument specifies the size of the queue. If the queue is full further connection requests will be rejected.
+    ///
+    /// - Returns: Either success with the socket descriptor or a string with the error description.
     
-     - error(String)
-     - socket(Int32)
-     */
-    
-    public enum SetupServerReturn: CustomStringConvertible, CustomDebugStringConvertible {
+    public static func setupServer(onPort port: String, maxPendingConnectionRequest: Int32) -> SocketResult {
         
-        /// An error occured, enclosed is either errno or the getaddrinfo return value and the string is the textual representation of the error
-        
-        case error(String)
-        
-        
-        /// The socket descriptor of the open socket
-        
-        case socket(Int32)
-        
-        
-        /// The CustomStringConvertible protocol
-        
-        public var description: String {
-            switch self {
-            case let .socket(num): return "Socket(\(num))"
-            case let .error(msg): return "Error(\(msg))"
-            }
-        }
-        
-        
-        /// The CustomDebugStringConvertible protocol
-        
-        public var debugDescription: String { return description }
-    }
-    
-    
-    /// The exception for the throwing functions.
-    
-    public enum SetupServerException: Error, CustomStringConvertible, CustomDebugStringConvertible  {
-        
-        case message(String)
-        
-        
-        /// The CustomStringConvertible protocol
-        
-        public var description: String {
-            switch self {
-            case let .message(msg): return "Message(\(msg))"
-            }
-        }
-        
-        
-        /// The CustomDebugStringConvertible protocol
-        
-        public var debugDescription: String { return description }
-    }
-    
-    
-    /// Signature for the closure that can be started after the initialisation succeeds
-    
-    public typealias SetupServerPostProcessing = (_ socket: Int32) -> Void
-
-    
-    /**
-     Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6. This function implements the basic functionality offered in this file. All other functions can be considered convenience functions.
-     
-     - Parameter onPort: A string containing the number of the port to listen on.
-     - Parameter maxPendingConnectionRequest: The number of connections that can be kept pending before they are accepted. A connection request can be put into a queue before it is accepted or rejected. This argument specifies the size of the queue. If the queue is full further connection requests will be rejected.
-     
-     - Returns: Either the socket descriptor or a string with the error description.
-     */
-    
-    public static func setupServer(
-        onPort port: String,
-        maxPendingConnectionRequest: Int32) -> SetupServerReturn
-    {
         
         // General purpose status variable, used to detect error returns from socket functions
         
@@ -188,7 +123,7 @@ public extension SwifterSockets {
             } else {
                 strError = String(validatingUTF8: gai_strerror(status)) ?? "Unknown error code"
             }
-            return .error(strError)
+            return .error(message: strError)
         }
         
         
@@ -207,7 +142,7 @@ public extension SwifterSockets {
         if socketDescriptor == -1 {
             let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             freeaddrinfo(servinfo)
-            return .error(strError)
+            return .error(message: strError)
         }
         
         
@@ -228,7 +163,7 @@ public extension SwifterSockets {
             let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             freeaddrinfo(servinfo)
             closeSocket(socketDescriptor)
-            return .error(strError)
+            return .error(message: strError)
         }
         
         
@@ -247,7 +182,7 @@ public extension SwifterSockets {
             let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             freeaddrinfo(servinfo)
             closeSocket(socketDescriptor)
-            return .error(strError)
+            return .error(message: strError)
         }
         
         
@@ -272,7 +207,7 @@ public extension SwifterSockets {
         if status != 0 {
             let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
             closeSocket(socketDescriptor)
-            return .error(strError)
+            return .error(message: strError)
         }
         
         
@@ -280,55 +215,214 @@ public extension SwifterSockets {
         // Return the socket descriptor
         // ============================
         
-        return .socket(socketDescriptor)
+        return .success(socket: socketDescriptor)
     }
-
     
-    /**
-     A throw based wrapper for the setupServer. Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6. This function implements the basic functionality offered in this file. All other functions can be considered convenience functions.
-     
-     - Parameter onPort: A string containing the number of the port to listen on.
-     - Parameter maxPendingConnectionRequest: The number of connections that can be kept pending before they are accepted. A connection request can be put into a queue before it is accepted or rejected. This argument specifies the size of the queue. If the queue is full further connection requests will be rejected.
-     
-     - Returns: The socket descriptor.
-     
-     - Throws: SetupServerException on error.
-     */
     
-    public static func setupServerOrThrow(
-        onPort port: String,
-        maxPendingConnectionRequest: Int32) throws -> Int32
-    {
-        let result = setupServer(onPort: port, maxPendingConnectionRequest: maxPendingConnectionRequest)
-        switch result {
-        case let .error(msg):
-            throw SetupServerException.message(msg)
-        case let .socket(sock):
-            return sock
+    /// This class implements a server for non-secure connections. It builds directly on top of the Darwin sockets operations.
+    ///
+    /// The server has several options with which it can be configured. At a minimum the "connectionObjectFactory" must be initialized.
+    
+    public final class Server: SwifterSocketsServer {
+        
+        
+        /// Signature of the "alive" handler. The aliveHandler is invoked for each accept statement that times out.
+        
+        public typealias AliveHandler = () -> ()
+        
+                
+        /// Options with which the ServerSocket can be initialized.
+        
+        public enum Option {
+            
+            
+            /// The port on which the server will be listening.
+            /// - Note: Default = "80"
+            
+            case port(String)
+            
+            
+            /// The maximum number of connection requests that will be queued.
+            /// - Note: Default = 20
+            
+            case maxPendingConnectionRequests(Int)
+            
+            
+            /// This specifies the duration of the accept loop when no connection requests arrive.
+            /// - Note: By implication this also specifies the minimum time between two 'pulsHandler' invocations.
+            /// - Note: Default = 5 seconds
+            
+            case acceptLoopDuration(TimeInterval)
+            
+            
+            /// The server socket operations (Accept loop and "errorProcessor") run synchronously on this queue.
+            /// - Note: Default = serial with default qos.
+            
+            case acceptQueue(DispatchQueue)
+            
+            
+            /// This closure will be invoked after a connection is accepted. It will run on the acceptQueue and block further accepts until it finishes.
+            /// - Note: Must be provided before server is started.
+            
+            case connectionObjectFactory(ConnectionObjectFactory<Connection>)
+            
+            
+            /// This closure will be called when the accept loop wraps around without any activity. It will run on the accept queue and should return asap.
+            /// - Note: Default = nil
+            
+            case aliveHandler(AliveHandler?)
+            
+            
+            /// This closure will be called to inform the callee of possible error's during the accept loop. The accept loop will try to continue after reporting an error. It will run on the accept queue and should return asap.
+            /// - Note: Default = nil
+            
+            case errorHandler(ErrorHandler?)
         }
-    }
-
-    
-    /**
-     Dispatch based wrapper for setupServer. Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6. When complete the postProcessing closure is started on the specified queue. If an error occurs during the setup an error will be thrown.
-     
-     - Parameter onPort: A string containing the port number of the port to listen on.
-     - Parameter maxPendingConnectionRequest: The maximum number of connections that are allowed to remain pending before they are accepted. If more than this number of connection requests arrive, they will be rejected and reported to the client as "Server Busy"
-     - Parameter postProcessingQueue: The dispatch queue on which the postProcessor will be executed.
-     - Parameter postProcessor: The closure to be started when the initialisation was successful. This closure is responsible for closing the socket.
-     
-     - Throws: SetupServerException on error during initialisation.
-     */
-    
-    public static func setupServerOrThrowAsync(
-        onPort port: String,
-        maxPendingConnectionRequest: Int32,
-        postProcessingQueue: DispatchQueue,
-        postProcessor: SetupServerPostProcessing) throws
-    {
-        let socket = try setupServerOrThrow(onPort: port, maxPendingConnectionRequest: maxPendingConnectionRequest)
-        postProcessingQueue.async() {
-            postProcessor(socket)
+        
+        
+        // Optioned properties
+        
+        private(set) var port: String = "80"
+        private(set) var maxPendingConnectionRequests: Int = 20
+        private(set) var acceptLoopDuration: TimeInterval = 5
+        private(set) var acceptQueue: DispatchQueue!
+        private(set) var connectionObjectFactory: ConnectionObjectFactory<Connection>?
+        private(set) var aliveHandler: AliveHandler?
+        private(set) var errorHandler: ErrorHandler?
+        
+        
+        // Interface properties
+        
+        private(set) var socket: Int32?
+        var isRunning: Bool { return socket != nil }
+        
+        
+        // Internal properties
+        
+        private var stop = false
+        
+        
+        /// Allow the creation of placeholder objects.
+        
+        public init() {}
+        
+        
+        /// Create a new server socket with the given options. Only initializes internal data. Does not allocate system resources.
+        
+        public init(_ options: Option ...) {
+            setOptions(options)
+        }
+        
+        
+        /// Set one or more options. Note that it is not possible to change any options while the server is running.
+        
+        @discardableResult
+        public func setOptions(_ options: [Option]) -> SimpleResult {
+            guard socket == nil else { return .error(message: "Socket is already active, no changes made") }
+            for option in options {
+                switch option {
+                case let .port(str): port = str
+                case let .maxPendingConnectionRequests(num): maxPendingConnectionRequests = num
+                case let .acceptLoopDuration(dur): acceptLoopDuration = dur
+                case let .acceptQueue(queue): acceptQueue = queue
+                case let .connectionObjectFactory(acch): connectionObjectFactory = acch
+                case let .aliveHandler(phan): aliveHandler = phan
+                case let .errorHandler(phan): errorHandler = phan
+                }
+            }
+            return .success
+        }
+        
+        
+        /// Set one or more options. Note that it is not possible to change any options while the server is running.
+        
+        @discardableResult
+        public func setOptions(_ options: Option ...) -> SimpleResult {
+            return setOptions(options)
+        }
+        
+        
+        /// Starts accepting connection requests according to the default values and the updates thereof by way of options.
+        ///
+        /// If no connectionObjectFactory is set, an error will be returned.
+        ///
+        /// If the server is running, this operation will have no effect.
+        ///
+        /// - Note: An connectionObjectFactory must have been set.
+        
+        @discardableResult
+        public func serverStart() -> SimpleResult {
+            
+            
+            // Exit if already running
+            
+            if socket != nil { return .success }
+            
+            
+            // Exit if there is no connectionObjectFactory
+            
+            guard connectionObjectFactory != nil else {
+                return .error(message: "Missing ConnectionObjectFactory closure")
+            }
+            
+            
+            // Create accept queue if necessary
+            
+            let acceptQueue = self.acceptQueue ?? DispatchQueue(label: "Accept queue for port \(port)", qos: .default, attributes: DispatchQueue.Attributes(), autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.inherit, target: nil)
+            
+            
+            // Start listening
+            
+            switch SwifterSockets.setupServer(onPort: port, maxPendingConnectionRequest: Int32(maxPendingConnectionRequests)) {
+                
+            case let .error(message): return .error(message: message)
+            
+            
+            case let .success(sock): socket = sock
+            
+            
+                // Start accepting
+                            
+                stop = false
+                acceptQueue.async() {
+                
+                    [unowned self] in
+                
+                    ACCEPT_LOOP: while !self.stop {
+                    
+                        switch SwifterSockets.accept(onSocket: sock, timeout: self.acceptLoopDuration) {
+                        
+                        // Normal, get a connection object and start its receiver loop
+                        case let .accepted(clientSocket, clientAddress):
+                            let ctype = SwifterSockets.ConnectionType.http(socket: clientSocket)
+                            if let connectedClient = self.connectionObjectFactory!(ctype, clientAddress) {
+                                connectedClient.startReceiverLoop()
+                            }
+                        
+                        // Failed to establish a connection, try again.
+                        case .closed: self.errorHandler?("Socket unexpectedly closed.")
+                        
+                        // If the user provided an error processor, use that
+                        case let .error(message): self.errorHandler?(message)
+                        
+                        // Normal, try again
+                        case .timeout: self.aliveHandler?()
+                        }
+                    }
+                
+                    SwifterSockets.closeSocket(self.socket)
+                    self.socket = nil
+                }
+            }
+            
+            return .success
+        }
+        
+        
+        /// Instructs the server socket to stop accepting new connection requests. Notice that it only stops the server and not the receiver loops that may be running.
+        
+        public func serverStop() {
+            stop = true
         }
     }
 }
