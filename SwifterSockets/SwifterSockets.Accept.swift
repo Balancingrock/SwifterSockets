@@ -153,7 +153,7 @@ public extension SwifterSockets {
         // =====================================
         
         if clientSocket == -1 { // Error
-            let errstr = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
+            let errstr = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
             return .error(message: errstr)
         }
         
@@ -164,7 +164,7 @@ public extension SwifterSockets {
         
         var optval = 1;
         
-        let status = setsockopt(
+        let status = Darwin.setsockopt(
             clientSocket,
             SOL_SOCKET,
             SO_NOSIGPIPE,
@@ -173,7 +173,7 @@ public extension SwifterSockets {
         
         if status == -1 {
             closeSocket(clientSocket)
-            let errstr = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
+            let errstr = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
             return .error(message: errstr)
         }
         

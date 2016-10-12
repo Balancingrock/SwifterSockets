@@ -89,7 +89,7 @@ public extension SwifterSockets {
         
         // Protocol configuration, used to retrieve the data needed to create the socket descriptor
         
-        var hints = addrinfo(
+        var hints = Darwin.addrinfo(
             ai_flags: AI_PASSIVE,       // Assign the address of the local host to the socket structures
             ai_family: AF_UNSPEC,       // Either IPv4 or IPv6
             ai_socktype: SOCK_STREAM,   // TCP
@@ -102,16 +102,16 @@ public extension SwifterSockets {
         
         // For the information needed to create a socket (result from the getaddrinfo)
         
-        var servinfo: UnsafeMutablePointer<addrinfo>? = nil
+        var servinfo: UnsafeMutablePointer<Darwin.addrinfo>? = nil
         
         
         // Get the info we need to create our socket descriptor
         
-        status = getaddrinfo(
-            nil,                        // Any interface
+        status = Darwin.getaddrinfo(
+            nil,                      // Any interface
             port,                     // The port on which will be listenend
-            &hints,                     // Protocol configuration as per above
-            &servinfo)                  // The created information
+            &hints,                   // Protocol configuration as per above
+            &servinfo)                // The created information
         
         
         // Cop out if there is an error
@@ -119,9 +119,9 @@ public extension SwifterSockets {
         if status != 0 {
             var strError: String
             if status == EAI_SYSTEM {
-                strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
+                strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
             } else {
-                strError = String(validatingUTF8: gai_strerror(status)) ?? "Unknown error code"
+                strError = String(validatingUTF8: Darwin.gai_strerror(status)) ?? "Unknown error code"
             }
             return .error(message: strError)
         }
@@ -131,7 +131,7 @@ public extension SwifterSockets {
         // Create the socket descriptor
         // ============================
         
-        let socketDescriptor = socket(
+        let socketDescriptor = Darwin.socket(
             (servinfo?.pointee.ai_family)!,      // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
             (servinfo?.pointee.ai_socktype)!,    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
             (servinfo?.pointee.ai_protocol)!)    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
@@ -140,8 +140,8 @@ public extension SwifterSockets {
         // Cop out if there is an error
         
         if socketDescriptor == -1 {
-            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
-            freeaddrinfo(servinfo)
+            let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
+            Darwin.freeaddrinfo(servinfo)
             return .error(message: strError)
         }
         
@@ -152,16 +152,16 @@ public extension SwifterSockets {
         
         var optval: Int = 1; // Use 1 to enable the option, 0 to disable
         
-        status = setsockopt(
-            socketDescriptor,               // The socket descriptor of the socket on which the option will be set
-            SOL_SOCKET,                     // Type of socket options
-            SO_REUSEADDR,                   // The socket option id
-            &optval,                        // The socket option value
-            socklen_t(MemoryLayout<Int>.size))         // The size of the socket option value
+        status = Darwin.setsockopt(
+            socketDescriptor,                  // The socket descriptor of the socket on which the option will be set
+            SOL_SOCKET,                        // Type of socket options
+            SO_REUSEADDR,                      // The socket option id
+            &optval,                           // The socket option value
+            socklen_t(MemoryLayout<Int>.size)) // The size of the socket option value
         
         if status == -1 {
-            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
-            freeaddrinfo(servinfo)
+            let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
+            Darwin.freeaddrinfo(servinfo)
             closeSocket(socketDescriptor)
             return .error(message: strError)
         }
@@ -171,16 +171,16 @@ public extension SwifterSockets {
         // Bind the socket descriptor to a port
         // ====================================
         
-        status = bind(
-            socketDescriptor,               // The socket descriptor of the socket to bind
+        status = Darwin.bind(
+            socketDescriptor,                 // The socket descriptor of the socket to bind
             servinfo?.pointee.ai_addr,        // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
-            (servinfo?.pointee.ai_addrlen)!)     // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
+            (servinfo?.pointee.ai_addrlen)!)  // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
         
         // Cop out if there is an error
         
         if status != 0 {
-            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
-            freeaddrinfo(servinfo)
+            let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
+            Darwin.freeaddrinfo(servinfo)
             closeSocket(socketDescriptor)
             return .error(message: strError)
         }
@@ -190,14 +190,14 @@ public extension SwifterSockets {
         // Don't need the servinfo anymore
         // ===============================
         
-        freeaddrinfo(servinfo)
+        Darwin.freeaddrinfo(servinfo)
         
         
         // ========================================
         // Start listening for incoming connections
         // ========================================
         
-        status = listen(
+        status = Darwin.listen(
             socketDescriptor,              // The socket on which to listen
             maxPendingConnectionRequest)   // The number of connections that will be allowed before they are accepted
         
@@ -205,7 +205,7 @@ public extension SwifterSockets {
         // Cop out if there are any errors
         
         if status != 0 {
-            let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
+            let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
             closeSocket(socketDescriptor)
             return .error(message: strError)
         }

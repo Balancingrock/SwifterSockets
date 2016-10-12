@@ -134,8 +134,8 @@ public extension SwifterSockets {
         socket: Int32,
         buffer: UnsafeBufferPointer<UInt8>,
         timeout: TimeInterval,
-        callback: SwifterSocketsTransmitterCallback?,
-        progress: TransmitterProgressMonitor?) -> TransferResult {
+        callback: SwifterSocketsTransmitterCallback? = nil,
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult {
                 
         // Check if there is data to transmit
         
@@ -200,7 +200,7 @@ public extension SwifterSockets {
             let size = buffer.count - outOffset
             let dataStart = buffer.baseAddress! + outOffset
             
-            let bytesSend = send(socket, dataStart, size, 0)
+            let bytesSend = Darwin.send(socket, dataStart, size, 0)
             
             switch bytesSend {
             
@@ -250,8 +250,8 @@ public extension SwifterSockets {
         socket: Int32,
         data: Data,
         timeout: TimeInterval,
-        callback: SwifterSocketsTransmitterCallback?,
-        progress: TransmitterProgressMonitor?) -> TransferResult {
+        callback: SwifterSocketsTransmitterCallback? = nil,
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult in
             let ubptr = UnsafeBufferPointer<UInt8>.init(start: ptr, count: data.count)
@@ -275,8 +275,8 @@ public extension SwifterSockets {
         socket: Int32,
         string: String,
         timeout: TimeInterval,
-        callback: SwifterSocketsTransmitterCallback?,
-        progress: TransmitterProgressMonitor?) -> TransferResult {
+        callback: SwifterSocketsTransmitterCallback? = nil,
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         if let data = string.data(using: String.Encoding.utf8) {
             return transfer(socket: socket, data: data, timeout: timeout, callback: callback, progress: progress)

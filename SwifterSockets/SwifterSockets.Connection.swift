@@ -182,9 +182,7 @@ public extension SwifterSockets {
         private(set) var errorHandler: ErrorHandler?
         
         
-        /// Allow the creation of untyped connetions.
-        ///
-        /// - Note: The object must be prepared for use by calling "prepare".
+        /// Allow the creation of untyped connetions. This is done to allow the creation of connection-pools of reusable connection objects. Connection objects __must__ be prepeared for use by calling the "prepare" method.
         
         public init() {}
         
@@ -267,7 +265,7 @@ public extension SwifterSockets {
                 transmitterQueue = DispatchQueue(
                     label: "Transmitter queue",
                     qos: transmitterQueueQoS!,
-                    attributes: DispatchQueue.Attributes(),
+                    attributes: [],
                     autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.inherit,
                     target: nil)
                 return transmitterQueue
@@ -279,8 +277,9 @@ public extension SwifterSockets {
         /// The content of the given buffer will be transferred to the connected client.
         ///
         /// - Note: If no dispatch transmitter queue is present and no dispatch transmitter queue QoS is set, then the operation will take place "in-line".
+        /// - Note: The callee must ensure that the buffer remains allocated until the transfer is complete.
         ///
-        /// - Parameter buffer: A pointer to a buffer with bytes to be transferred.
+        /// - Parameter buffer: A pointer to a buffer with bytes to be transferred. The callee must ensure that the buffer remains allocated until the transfer is complete.
         /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on the transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by self. Child classes can override those callback operations they need.
         ///
         /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
@@ -320,12 +319,17 @@ public extension SwifterSockets {
                         
                         // Note: This connection is always valid because closing this connection will reset the type to http(-2)
                         
-                        SwifterSockets.Ssl.transfer(
-                            ssl: ssl,
-                            buffer: buffer,
-                            timeout: self?.transmitterTimeoutValue ?? 1,
-                            callback: self?.transmitterCallback ?? self,
-                            progress: self?.transmitterProgressMonitor)
+                        #if USE_OPEN_SSL
+                        
+                            SwifterSockets.Ssl.transfer(
+                                ssl: ssl,
+                                buffer: buffer,
+                                timeout: self?.transmitterTimeoutValue ?? 1,
+                                callback: self?.transmitterCallback ?? self,
+                                progress: self?.transmitterProgressMonitor)
+                        #else
+                            break
+                        #endif
                     }
                 }
                 
@@ -350,13 +354,18 @@ public extension SwifterSockets {
                     
                     
                 case let .https(ssl, _)?:
-                    
-                    return SwifterSockets.Ssl.transfer(
-                        ssl: ssl,
-                        buffer: buffer,
-                        timeout: self.transmitterTimeoutValue,
-                        callback: self.transmitterCallback ?? self,
-                        progress: self.transmitterProgressMonitor)
+
+                    #if USE_OPEN_SSL
+
+                        return SwifterSockets.Ssl.transfer(
+                            ssl: ssl,
+                            buffer: buffer,
+                            timeout: self.transmitterTimeoutValue,
+                            callback: self.transmitterCallback ?? self,
+                            progress: self.transmitterProgressMonitor)
+                    #else
+                        return nil
+                    #endif
                 }
             }
         }
@@ -365,8 +374,9 @@ public extension SwifterSockets {
         /// The content of the given data object will be transferred to the connected client.
         ///
         /// - Note: If no dispatch transmitter queue is present and no dispatch transmitter queue QoS is set, then the operation will take place "in-line".
+        /// - Note: The callee must ensure that the Data object remains allocated until the transfer is complete.
         ///
-        /// - Parameter data: A data object containing the bytes to be transferred.
+        /// - Parameter data: A data object containing the bytes to be transferred. The callee must ensure that this object remains allocated until the transfer is complete.
         /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on the transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by this object itself. Child classes can override those callback operations that they need.
         ///
         /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
@@ -384,8 +394,9 @@ public extension SwifterSockets {
         /// The content of the given string will be transmitted as a UTF-8 byte sequence to the connected client.
         ///
         /// - Note: If no dispatch transmitter queue is present and no dispatch transmitter queue QoS is set, then the operation will take place "in-line".
+        /// - Note: The callee must ensure that the String object remains allocated until the transfer is complete.
         ///
-        /// - Parameter string: The string to be transferred as UTF-8.
+        /// - Parameter string: The string to be transferred as UTF-8. The callee must ensure that this object remains allocated until the transfer is complete.
         /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on thq transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by this object itself. Child classes can override those callback operations that they need.
         ///
         /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
@@ -437,9 +448,13 @@ public extension SwifterSockets {
                 type = nil
                 
             case let .https(ssl, sock)?:
-                SSL_free(ssl)
-                SwifterSockets.closeSocket(sock)
-                type = nil
+                #if USE_OPEN_SSL
+                    SSL_free(ssl)
+                    SwifterSockets.closeSocket(sock)
+                    type = nil
+                #else
+                    break
+                #endif
             }
         }
         
@@ -502,11 +517,16 @@ public extension SwifterSockets {
                 
                 case let .https(ssl, _)?:
                     
-                    SwifterSockets.Ssl.receiveLoop(
-                        ssl: ssl,
-                        bufferSize: self?.receiverBufferSize ?? 20 * 1024,
-                        duration: self?.receiverLoopDuration ?? 5,
-                        receiver: self)
+                    #if USE_OPEN_SSL
+                        
+                        SwifterSockets.Ssl.receiveLoop(
+                            ssl: ssl,
+                            bufferSize: self?.receiverBufferSize ?? 20 * 1024,
+                            duration: self?.receiverLoopDuration ?? 5,
+                            receiver: self)
+                    #else
+                        break
+                    #endif
                 }
             }
         }

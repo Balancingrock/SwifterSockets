@@ -136,7 +136,7 @@ public extension SwifterSockets {
                 // Call the recv
                 // =============
                 
-                let bytesRead = recv(socket, buffer.assumingMemoryBound(to: UInt8.self), bufferSize, 0)
+                let bytesRead = Darwin.recv(socket, buffer.assumingMemoryBound(to: UInt8.self), bufferSize, 0)
                 
                 switch bytesRead {
                     
