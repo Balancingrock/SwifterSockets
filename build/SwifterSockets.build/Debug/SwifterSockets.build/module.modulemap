@@ -1,3 +1,0 @@
-framework module SwifterSockets {
-    header "SwifterSockets-Swift.h"
-}
