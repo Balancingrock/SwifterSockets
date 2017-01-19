@@ -32,6 +32,7 @@ General purpose JSON framework.
 	- connectToTipServer (returns a connection)
 	- TipServer (class, produces connections)
 - Includes replacements for the FD_SET, FD_CLR, FD_ZERO and FD_ISSET macro's.
+- Builds as a library using the Swift Package Manager (SPM)
 
 #Version history
 
