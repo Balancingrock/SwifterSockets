@@ -11,7 +11,7 @@
 //  Blog:       http://swiftrien.blogspot.com
 //  Git:        https://github.com/Swiftrien/SwifterSockets
 //
-//  Copyright:  (c) 2014-2016 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2014-2017 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -57,12 +57,18 @@ import Foundation
 
 
 extension SwifterSockets.Ssl {
+
+    
+    /// The signature for a closure that provides a SSL-Context (CTX). The closure should not SSL-retain the supplied CTX.
+    /// - Returns: A ctx pointer if successful, 'nil' if the closure failed to create a ctx.
+    
+    /// public typealias CreateCtx = () -> OpaquePointer?
     
     
     /// The return type for the setupServer functions. Possible values are:
     /// - error(String)
     /// - success(socket: Int32, ctx: OpaquePointer)
-    
+    /*
     public enum SetupServerResult: CustomStringConvertible {
         
         
@@ -84,105 +90,110 @@ extension SwifterSockets.Ssl {
             case let .error(msg): return "Error(\(msg))"
             }
         }
-    }
+    }*/
+
     
-    
-    /// Setup openSSL and start listening on the given port.
+    /// Starts listening on the given port.
+    ///
+    /// When no trusted client certificates are present, the server will accept uncertified clients. If client certificates are specified, then only clients with those certificates are accepted.
+    ///
+    /// To listen for incoming requests, one SSL-Context (CTX) needs to be set up. This is called the server-wide CTX. A default server-wide CTX is supplied, but an implementation can also create his own. In order to use the default ctx, set _createServerWideCtx_ to nil. The default configuration is: use TLS server method, no SSLv2, no SSLv3, enable all openSSL bugfixes, and if a trustedClientCertificate is present the SSL_VERIFY_PEER and SSL_VERIFY_FAIL_IF_NO_PEER_CERT are also set (i.e. client certificates are enforced if present).
+    ///
+    /// When a _createServerWideCtx_ closure is provided that closure will be responsible for the creation and configuration of the server-wide CTX. However some settings may be updated afterwards if _domainCtxLookup_ or _certificateAndPrivateKeyFiles_ or _trustedClientCertificates_ parameters are present.
+    ///
+    /// - Note: Calling this operation with all parameters set to default values is invalid. At a minimum specify either _createServerWideCtx_ __or__ _certificateAndPrivateKeyFiles_.
     ///
     /// - Parameter onPort: A string identifying the number of the port to listen on.
     /// - Parameter maxPendingConnectionRequest: The number of connections that can be kept pending before they are accepted. A connection request can be put into a queue before it is accepted or rejected. This argument specifies the size of the queue. If the queue is full further connection requests will be rejected.
-    /// - Parameter certificate: A path to a file in either ANS1 or PEM format containg the certificate for the server. If PEM, the first certificate in the file will be used.
-    /// - Parameter privateKey: A path to a file in either ANS1 or PEM format containg the private key for the server. If PEM, the first key in the file will be used.
-    /// - Parameter clientCertificatesFile: A path to the file containing trusted client certificates in PEM format. This parameter is optional and should only be used if only trusted clients are allowed. Certificates in this file take precedence over the certificates in the clientCertificatesFolder.
-    /// - Parameter clientCertificatesFolder: A path to the folder containing trusted client certificates in PEM format. Each file should contain only 1 certificate. This parameter is optional and should only be used if only trusted clients are allowed.
+    /// - Parameter certificateAndPrivateKeyFiles: The certificate and private key for the server to use.
+    /// - Parameter trustedClientCertificates: An optional list of paths to certificates (either files or folders).
+    /// - Parameter serverCtx: An optional CTX that will be used for the server CTX. If it is 'nil' then a default ServerCtx will be created.
+    /// - Parameter domainCtxs: An optional list of domain CTXs to be used for SNI. Each domain with a certificate should provide a CTX with the certificate for that domain.
     ///
-    /// - Returns: The SSL on which is beiing listened or a string with the error description.
+    /// - Returns: The SSL session on which is beiing listened or a string with the error description.
     
     public static func setupServer(
         onPort port: String,
         maxPendingConnectionRequest: Int32,
-        certificate: KeyCertFile,
-        privateKey: KeyCertFile,
-        clientCertificatesFile: String?,
-        clientCertificatesFolder: String?) -> SetupServerResult {
+        certificateAndPrivateKeyFiles: CertificateAndPrivateKeyFiles? = nil,
+        trustedClientCertificates: [String]? = nil,
+        serverCtx: Ctx? = nil,
+        domainCtxs: [Ctx]? = nil) -> SwifterSockets.Result<(socket: Int32, ctx: Ctx)> {
         
-        let result = createServerCtx(certificate, privateKey)
         
-        switch result {
-        case let .error(message): return .error(message: "SSL initialization failed with: \n" + message)
-        case let .success(ctx):
+        // Prevent errors
+        
+        if (serverCtx == nil) && (certificateAndPrivateKeyFiles == nil) {
+            assert(false, "SwifterSockets.Ssl.Server.setupServer: createServerWideCtx and certificateAndPrivateKeyFiles cannot both be nil") // debug only
+            return .error(message: "SwifterSockets.Ssl.Server.setupServer: createServerWideCtx and certificateAndPrivateKeyFiles cannot both be nil")
+        }
+        
+        
+        // Create or let a CTX be created
+        
+        guard let ctx = serverCtx ?? ServerCtx() else {
+            return .error(message: "SwifterSockets.Ssl.Server.setupServer: Failed to create a CTX")
+        }
 
-            // Optional: Add trusted client certificates
-            if (clientCertificatesFile != nil) || (clientCertificatesFolder != nil) {
-                if SSL_CTX_load_verify_locations(ctx, clientCertificatesFile, clientCertificatesFolder) != 1 {
-                    SSL_CTX_free(ctx)
-                    return .error(message: allStackedErrorMessages())
+        
+        // Add the certificate and private key - if present
+        
+        if let ck = certificateAndPrivateKeyFiles {
+            
+            // Set the certificate
+            
+            switch ctx.useCertificate(in: ck.certificate) {
+            case let .error(message): return .error(message: message)
+            case .success: break
+            }
+            
+            
+            // Set the private key
+            
+            switch ctx.usePrivateKey(in: ck.privateKey) {
+            case let .error(message): return .error(message: message)
+            case .success: break
+            }
+        }
+        
+        
+        // Optional: Add trusted client certificates
+            
+        if trustedClientCertificates?.count ?? 0 > 0 {
+                
+            for certPath in trustedClientCertificates! {
+                
+                switch ctx.loadVerifyLocation(at: certPath) {
+                case let .error(message): return .error(message: message)
+                case .success: break
                 }
             }
             
-            // Start listening.
-            let result = SwifterSockets.setupServer(onPort: port, maxPendingConnectionRequest: maxPendingConnectionRequest)
+                
+            // Also instruct the CTX to allow only connections from verfied clients
+
+            ctx.setVerifyPeer()
+        }
+        
+        
+        // Add the domain CTX's if present
+        
+        for dctx in domainCtxs ?? [Ctx]() { ctx.addDomainCtx(dctx) }
+        
+        
+        // Start listening.
             
-            switch result {
-            case let .error(msg): SSL_CTX_free(ctx); return .error(message: msg)
-            case let .success(desc): return .success(socket: desc, ctx: ctx)
-            }
+        switch SwifterSockets.setupServer(onPort: port, maxPendingConnectionRequest: maxPendingConnectionRequest) {
+        case let .error(msg): return .error(message: msg)
+        case let .success(desc): return .success(socket: desc, ctx: ctx)
         }
     }
     
     
-    /// The result type for the createServerCtx function.
     
-    private enum CreateServerCtxResult {
-        case error(String)
-        case success(OpaquePointer)
-    }
+    /// A secure server.
     
-    
-    /// Creates a new server CTX
-    
-    private static func createServerCtx(
-        _ certificate: KeyCertFile,
-        _ privateKey: KeyCertFile) -> CreateServerCtxResult {
-        
-        
-        // Create a CTX
-        
-        let ctx = SSL_CTX_new(TLS_server_method())
-        
-        if ctx == nil {
-            let message = allStackedErrorMessages()
-            return .error(message)
-        }
-        
-        
-        // Disable the SSL protocols v2 and v3
-        
-        SSL_CTX_set_options(ctx, (UInt(SSL_OP_NO_SSLv2) + UInt(SSL_OP_NO_SSLv3) + UInt(SSL_OP_ALL)))
-        
-        
-        // Set the certificate
-        
-        if SSL_CTX_use_certificate_file(ctx, certificate.path, certificate.encoding) != 1 {
-            let message = allStackedErrorMessages()
-            return .error(message)
-        }
-        
-        
-        // Set the private key
-        
-        if SSL_CTX_use_PrivateKey_file(ctx, privateKey.path, privateKey.encoding) != 1 {
-            let message = allStackedErrorMessages()
-            return .error(message)
-        }
-        
-        return .success(ctx!)
-    }
-    
-    
-    /// A secure server using OpenSSL.
-    
-    public final class Server: SwifterSocketsServer {
+    public class Server: SwifterSockets.ServerProtocol {
         
         
         /// Options with which the ServerSocket can be initialized.
@@ -245,24 +256,35 @@ extension SwifterSockets.Ssl {
             case errorHandler(SwifterSockets.ErrorHandler?)
             
             
-            /// A reference to the certificate to be used as the server certificate
+            /// This closure is started right after a connection has been accepted, before the SSL handshake occurs. If it returns 'true' processing resumes as normal and SSL handshake is initiated. If it returns false, the connection will be terminated.
+
+            case addressHandler(SwifterSockets.AddressHandler?)
+
             
-            case serverCertificate(SwifterSockets.Ssl.KeyCertFile)
+            /// This closure is started right after the SSL handshake was completed, before the connection object factory is called. If it returns 'true' processing resumes as normal and the connection object factor is called. If it returns false, the connection will be terminated.
+
+            case sslSessionHandler(SwifterSockets.Ssl.SslSessionHandler?)
+
+            
+            /// The certificate and private key for the server to use. Is ignored if a ctxSetup closure is present.
+            
+            case certificateAndPrivateKeyFiles(SwifterSockets.Ssl.CertificateAndPrivateKeyFiles?)
             
             
-            /// A reference to the private key used by the server
+            /// An optional list of paths to certificates (either files or folders). Is ignored if a ctxSetup closure is present.
             
-            case serverPrivateKey(SwifterSockets.Ssl.KeyCertFile)
-            
-            
-            /// A path to the file with trusted client certificates (PEM format, multiple certificates possible)
-            
-            case trustedClientCertificatesFile(String)
+            case trustedClientCertificates([String]?)
             
             
-            /// A path to a folder with trusted client certificates (PEM format, one certificate per file)
+            /// An optional closure to create the server-wide CTX. Use this if the default setup is insufficient. See 'setupServer' for a description of the default setup.
+            /// - Note: If present, it will only be invoked for the server CTX.
             
-            case trustedClientCertificatesFolder(String)
+            case serverCtx(Ctx?)
+            
+            
+            /// A list of server CTXs that can be used for the SNI protocol extension. There should be one context for each domain that has a certificate associated with it.
+            
+            case domainCtxs([Ctx]?)
         }
         
         
@@ -277,21 +299,24 @@ extension SwifterSockets.Ssl {
         private(set) var transmitTimeout: TimeInterval = 1
         private(set) var aliveHandler: SwifterSockets.Server.AliveHandler?
         private(set) var errorHandler: SwifterSockets.ErrorHandler?
-        private(set) var serverCertificate: SwifterSockets.Ssl.KeyCertFile?
-        private(set) var serverPrivateKey: SwifterSockets.Ssl.KeyCertFile?
-        private(set) var trustedClientCertificatesFile: String?
-        private(set) var trustedClientCertificatesFolder: String?
+        private(set) var addressHandler: SwifterSockets.AddressHandler?
+        private(set) var sslSessionHandler: SslSessionHandler?
+        private(set) var certificateAndPrivateKeyFiles: CertificateAndPrivateKeyFiles?
+        private(set) var trustedClientCertificates: [String]?
+        private(set) var serverCtx: Ctx?
+        private(set) var domainCtxs: [Ctx]?
         
         
         // Interface properties
         
         private(set) var socket: Int32?
-        
+        var isRunning: Bool { return socket != nil }
+
         
         // Internal properties
         
-        private var stop = false
-        private var ctx: OpaquePointer?
+        private var _stop = false
+        private var ctx: Ctx?
         
         
         /// Allow the creation of placeholder objects.
@@ -309,7 +334,7 @@ extension SwifterSockets.Ssl {
         /// Set one or more options. Note that once "startAccept" has been called, it is no longer possible to set options without first calling "stopAccepting".
         
         @discardableResult
-        public func setOptions(_ options: [Option]) -> SwifterSockets.SimpleResult {
+        public func setOptions(_ options: [Option]) -> SwifterSockets.Result<Bool> {
             guard ctx == nil else { return .error(message: "Socket is already active, no changes made") }
             for option in options {
                 switch option {
@@ -320,22 +345,24 @@ extension SwifterSockets.Ssl {
                 case let .connectionObjectFactory(acch): connectionObjectFactory = acch
                 case let .transmitQueueQoS(q): transmitQueueQoS = q
                 case let .transmitTimeout(dur): transmitTimeout = dur
-                case let .aliveHandler(phan): aliveHandler = phan
-                case let .errorHandler(phan): errorHandler = phan
-                case let .serverCertificate(kc): serverCertificate = kc
-                case let .serverPrivateKey(kc): serverPrivateKey = kc
-                case let .trustedClientCertificatesFile(str): trustedClientCertificatesFile = str
-                case let .trustedClientCertificatesFolder(str): trustedClientCertificatesFolder = str
+                case let .aliveHandler(cl): aliveHandler = cl
+                case let .errorHandler(cl): errorHandler = cl
+                case let .addressHandler(cl): addressHandler = cl
+                case let .sslSessionHandler(cl): sslSessionHandler = cl
+                case let .certificateAndPrivateKeyFiles(kc): certificateAndPrivateKeyFiles = kc
+                case let .trustedClientCertificates(strs): trustedClientCertificates = strs
+                case let .serverCtx(cl): serverCtx = cl
+                case let .domainCtxs(cb): domainCtxs = cb
                 }
             }
-            return .success
+            return .success(true)
         }
         
         
         /// Set one or more options. Note that once "startAccept" has been called, it is no longer possible to set options without first calling "stopAccepting".
         
         @discardableResult
-        public func setOptions(_ options: Option ...) -> SwifterSockets.SimpleResult {
+        public func setOptions(_ options: Option ...) -> SwifterSockets.Result<Bool> {
             return setOptions(options)
         }
 
@@ -349,16 +376,15 @@ extension SwifterSockets.Ssl {
         /// If the server is running, this operation will have no effect.
         
         @discardableResult
-        public func serverStart() -> SwifterSockets.SimpleResult {
+        public func start() -> SwifterSockets.Result<Bool> {
             
-            if serverCertificate == nil { return .error(message: "Missing server certificate") }
-            if serverPrivateKey == nil { return .error(message: "Missing server private key") }
+            if certificateAndPrivateKeyFiles == nil { return .error(message: "Missing server certificate & private key files") }
             if connectionObjectFactory == nil { return .error(message: "Missing ConnectionObjectFactory closure") }
 
             
             // Exit if already running
             
-            if ctx != nil { return .success }
+            if ctx != nil { return .success(true) }
             
             
             // Create accept queue if necessary
@@ -373,10 +399,10 @@ extension SwifterSockets.Ssl {
             let result = SwifterSockets.Ssl.setupServer(
                 onPort: port,
                 maxPendingConnectionRequest: Int32(maxPendingConnectionRequests),
-                certificate: serverCertificate!,
-                privateKey: serverPrivateKey!,
-                clientCertificatesFile: trustedClientCertificatesFile,
-                clientCertificatesFolder: trustedClientCertificatesFolder)
+                certificateAndPrivateKeyFiles: certificateAndPrivateKeyFiles!,
+                trustedClientCertificates: trustedClientCertificates,
+                serverCtx: serverCtx,
+                domainCtxs: domainCtxs)
             
             switch result {
                 
@@ -385,26 +411,26 @@ extension SwifterSockets.Ssl {
                 return .error(message: message)
             
                 
-            case let .success(sock, context):
+            case let .success(socket_in, ctx_in):
                 
-                socket = sock
-                ctx = context
+                socket = socket_in
+                ctx = ctx_in
 
             
                 // Start accepting
             
-                stop = false
+                _stop = false
                 acceptQueue!.async() {
                 
                     [unowned self] in
                 
-                    ACCEPT_LOOP: while !self.stop {
+                    ACCEPT_LOOP: while !self._stop {
                         
-                        switch SwifterSockets.Ssl.accept(onSocket: sock, useCtx: context, timeout: self.acceptLoopDuration) {
+                        switch SwifterSockets.Ssl.accept(onSocket: self.socket!, useCtx: self.ctx!, timeout: self.acceptLoopDuration, addressHandler: self.addressHandler, sslSessionHandler: self.sslSessionHandler) {
                             
-                        // Normal, let the accept handler take over
+                        // Normal
                         case let .accepted(ssl, socket, clientAddress):
-                            let ctype = SwifterSockets.ConnectionType.https(ssl: ssl, socket: socket)
+                            let ctype = SwifterSockets.ConnectionType.ssl(ssl: ssl, socket: socket)
                             if let connectedClient = self.connectionObjectFactory!(ctype, clientAddress) {
                                 connectedClient.startReceiverLoop()
                             }
@@ -422,20 +448,29 @@ extension SwifterSockets.Ssl {
                     
                     // Free ssl and system resources
                     
-                    SSL_CTX_free(self.ctx)
                     SwifterSockets.closeSocket(self.socket)
                     self.socket = nil
                 }
             
-                return .success
+                return .success(true)
             }
         }
         
         
         /// Instructs the server socket to stop accepting new connection requests. Notice that it might take some time for all activity to cease due to the accept loop duration, receiver timeout and consumer processing time.
         
-        public func serverStop() {
-            stop = true
+        public func stop() {
+            _stop = true
+        }
+        
+        
+        /// Add to the trusted client certificate(s).
+        ///
+        /// - Parameter at: The path to a file with the certificate(s) or a directory with certificate(s).
+        
+        public func addTrustedClientCertificate(at path: String) -> SwifterSockets.Result<Bool> {
+            
+            return ctx?.loadVerifyLocation(at: path) ?? .error(message: "No ctx present")
         }
     }
 }

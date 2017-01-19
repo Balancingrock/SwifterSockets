@@ -11,7 +11,7 @@
 //  Blog:       http://swiftrien.blogspot.com
 //  Git:        https://github.com/Swiftrien/SwifterSockets
 //
-//  Copyright:  (c) 2016 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2016-2017 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -59,7 +59,7 @@ public extension SwifterSockets.Ssl {
     
     /// Transmits the buffer content from the given buffer using the specified SSL struct.
     ///
-    /// - Parameter ssl: The SSL structure to use.
+    /// - Parameter ssl: The ssl session.
     /// - Parameter buffer: A pointer to a buffer containing the bytes to be transferred.
     /// - Parameter timeout: The time in seconds for the complete transfer attempt.
     /// - Parameter callback: An object that will receive the SwifterSocketsTransmitterCallback protocol operations.
@@ -69,16 +69,16 @@ public extension SwifterSockets.Ssl {
     
     @discardableResult
     public static func transfer(
-        ssl: OpaquePointer,
+        ssl: Ssl,
         buffer: UnsafeBufferPointer<UInt8>,
         timeout: TimeInterval,
-        callback: SwifterSocketsTransmitterCallback?,
+        callback: SwifterSockets.TransmitterProtocol?,
         progress: SwifterSockets.TransmitterProgressMonitor?) -> SwifterSockets.TransferResult {
         
         
         // Get the socket
         
-        let socket = SSL_get_fd(ssl)
+        let socket = ssl.getSocket()
         if socket < 0 {
             _ = progress?(0, 0)
             callback?.transmitterError("Missing filedescriptor from SSL")
@@ -125,7 +125,7 @@ public extension SwifterSockets.Ssl {
             // Call out to SSL_write
             // =====================
             
-            let result = writeSsl(ssl, buf: UnsafeRawPointer(buffer.baseAddress!), num: Int32(buffer.count))
+            let result = ssl.write(buf: UnsafeRawPointer(buffer.baseAddress!), num: Int32(buffer.count))
             
             switch result {
                 
@@ -143,21 +143,9 @@ public extension SwifterSockets.Ssl {
                 
                 
             // All error cases, none of these should be possible.
-            case .wantConnect: fallthrough
-            case .wantAccept: fallthrough
-            case .wantX509Lookup: fallthrough
-            case .wantAsync: fallthrough
-            case .wantAsyncJob: fallthrough
-            case .syscall: fallthrough
-            case .ssl:
+            case .wantConnect, .wantAccept, .wantX509Lookup, .wantAsync, .wantAsyncJob, .syscall, .undocumentedSslError, .undocumentedSslFunctionResult, .ssl, .bios_errno, .errorMessage:
                 
-                let errString = "An error occured during SSL_write, \(result) was reported."
-                return .error(message: errString)
-                
-                
-            case let .unknown(val):
-                
-                let errString = "SSL_write returned an unknown error code \(val)"
+                let errString = "An error occured during SSL_write, '\(result)' was reported."
                 return .error(message: errString)
             }
         }
@@ -166,7 +154,7 @@ public extension SwifterSockets.Ssl {
     
     /// Transmits the bytes from the given Data object using the specified SSL struct.
     ///
-    /// - Parameter ssl: The SSL structure to use.
+    /// - Parameter ssl: The ssl session.
     /// - Parameter data: A Data object containing the bytes to be transferred.
     /// - Parameter timeout: The time in seconds for the complete transfer attempt.
     /// - Parameter callback: An object that will receive the SwifterSocketsTransmitterCallback protocol operations.
@@ -176,10 +164,10 @@ public extension SwifterSockets.Ssl {
 
     @discardableResult
     public static func transfer(
-        ssl: OpaquePointer,
+        ssl: Ssl,
         data: Data,
         timeout: TimeInterval,
-        callback: SwifterSocketsTransmitterCallback?,
+        callback: SwifterSockets.TransmitterProtocol?,
         progress: SwifterSockets.TransmitterProgressMonitor?) -> SwifterSockets.TransferResult {
         
         return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> SwifterSockets.TransferResult in
@@ -191,7 +179,7 @@ public extension SwifterSockets.Ssl {
 
     /// Transmits the given string as a UTF-8 byte sequence using the specified SSL struct.
     ///
-    /// - Parameter ssl: The SSL structure to use.
+    /// - Parameter ssl: The ssl session.
     /// - Parameter string: The string to be converted to a UTF-8 bytes sequence for transfer.
     /// - Parameter timeout: The time in seconds for the complete transfer attempt.
     /// - Parameter callback: An object that will receive the SwifterSocketsTransmitterCallback protocol operations.
@@ -201,10 +189,10 @@ public extension SwifterSockets.Ssl {
 
     @discardableResult
     public static func transfer(
-        ssl: OpaquePointer,
+        ssl: Ssl,
         string: String,
         timeout: TimeInterval,
-        callback: SwifterSocketsTransmitterCallback?,
+        callback: SwifterSockets.TransmitterProtocol?,
         progress: SwifterSockets.TransmitterProgressMonitor?) -> SwifterSockets.TransferResult {
         
         if let data = string.data(using: String.Encoding.utf8) {

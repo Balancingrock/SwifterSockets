@@ -1,6 +1,6 @@
 // =====================================================================================================================
 //
-//  File:       SwifterSockets.Ssl.swift
+//  File:       SwifterSockets.Ssl.X509.swift
 //  Project:    SwifterSockets
 //
 //  Version:    0.9.8
@@ -11,7 +11,7 @@
 //  Blog:       http://swiftrien.blogspot.com
 //  Git:        https://github.com/Swiftrien/SwifterSockets
 //
-//  Copyright:  (c) 2014-2016 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2017 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -56,172 +56,134 @@
 import Foundation
 
 
-fileprivate var sslErrorMessages: Array<String> = []
+public extension SwifterSockets.Ssl {
+    
+    
+    /// Returns the string for the NID element in the given X509_NAME structure.
+    ///
+    /// - Parameter x509Name: A pointer to the X509_NAME
+    /// - Parameter withNid: An integer indicating the NID element (see openssl/objects.h)
+    
+    static func valueFrom(x509Name: OpaquePointer!, withNid: Int32) -> String? {
+        
 
-
-// - Note: This operation is not threadsafe. It is intended for use during debugging. Occasional use in production seems acceptable.
-
-fileprivate func sslErrorMessageReader(message: UnsafePointer<Int8>?, _ : Int, _ : UnsafeMutableRawPointer?) -> Int32 {
-    if let message = message {
-        let str = String.init(cString: message)
-        sslErrorMessages.append(str)
+        // Get the position of the common name in the subject
+        
+        let position = X509_NAME_get_index_by_NID(x509Name, withNid, -1)
+        if position == -1 { return nil }
+        
+        
+        // Get the entry for the common name
+        
+        let entry = X509_NAME_get_entry(x509Name, position)
+        
+        
+        // Get the ANS1 data for the common name
+        
+        let ans1String = X509_NAME_ENTRY_get_data(entry)
+        
+        
+        // Convert the ANS1 string to a [UInt8]
+        
+        var ptr: UnsafeMutablePointer<UInt8>?
+        let len = ASN1_STRING_to_UTF8(&ptr, ans1String)
+        if (len < 0) || (ptr == nil) { return nil }
+        
+        
+        // View [UInt8] as a buffer pointer
+        
+        let buf = UnsafeMutableBufferPointer(start: ptr!, count: Int(len))
+        
+        
+        // Create native string
+        
+        let str = String.init(bytes: buf, encoding: String.Encoding.utf8)
+        
+        
+        // Free the original data
+        
+        CRYPTO_free(UnsafeMutableRawPointer(ptr), "", 0)
+        
+        
+        // And create a string from the c-string
+        
+        return str
     }
-    return 1
-}
-
-
-public func == (lhs: SwifterSockets.Ssl.Result, rhs: SwifterSockets.Ssl.Result) -> Bool {
-    switch lhs {
-    case let .completed(lnum): if case let .completed(rnum) = rhs { return lnum == rnum } else { return false }
-    case .zeroReturn: return rhs == .zeroReturn
-    case .wantRead: return rhs == .wantRead
-    case .wantWrite: return rhs == .wantWrite
-    case .wantConnect: return rhs == .wantConnect
-    case .wantAccept: return rhs == .wantAccept
-    case .wantX509Lookup: return rhs == .wantX509Lookup
-    case .wantAsync: return rhs == .wantAsync
-    case .wantAsyncJob: return rhs == .wantAsyncJob
-    case .syscall: return rhs == .syscall
-    case .ssl: return rhs == .ssl
-    case let .unknown(lval): if case let .unknown(rval) = rhs { return lval == rval } else { return false }
+    
+    
+    static func getX509CommonName(from x509: OpaquePointer!) -> String? {
+    
+        // The common name is located in the subject entry
+        
+        let subject = X509_get_subject_name(x509)
+            
+        return SwifterSockets.Ssl.valueFrom(x509Name: subject, withNid: NID_commonName)
     }
-}
-
-
-public func != (lhs: SwifterSockets.Ssl.Result, rhs: SwifterSockets.Ssl.Result) -> Bool {
-    return !(lhs == rhs)
-}
-
-
-public extension SwifterSockets {
     
-    
-    /// Implements the necessary additions for secure connections using OpenSSL-1.1.0
-    
-    public class Ssl {
+        
+    static func getX509SubjectAltNames(from x509: OpaquePointer!) -> [String]? {
         
         
-        /// The return condition from sslConnect(), sslAccept(), sslDoHandshake(), sslRead(), sslPeek(), or sslWrite()
+        // Get the alternative names from the cert (there may be none!)
         
-        public enum Result: CustomStringConvertible, Equatable {
-            
-            
-            /// The TLS/SSL I/O operation completed. This result code is returned if and only if ret > 0.
-            
-            case completed(Int32)
-            
-            
-            /// The TLS/SSL connection has been closed. If the protocol version is SSL 3.0 or TLS 1.0, this result code is returned only if a closure alert has occurred in the protocol, i.e. if the connection has been closed cleanly. Note that in this case SSL_ERROR_ZERO_RETURN does not necessarily indicate that the underlying transport has been closed.
-            
-            case zeroReturn
-            
-            
-            /// The operation did not complete; the same TLS/SSL I/O function should be called again later. If, by then, the underlying BIO has data available for reading (if the result code is SSL_ERROR_WANT_READ) or allows writing data (SSL_ERROR_WANT_WRITE), then some TLS/SSL protocol progress will take place, i.e. at least part of an TLS/SSL record will be read or written. Note that the retry may again lead to a SSL_ERROR_WANT_READ or SSL_ERROR_WANT_WRITE condition. There is no fixed upper limit for the number of iterations that may be necessary until progress becomes visible at application protocol level.
-            ///
-            /// For socket BIOs (e.g. when SSL_set_fd() was used), select() or poll() on the underlying socket can be used to find out when the TLS/SSL I/O function should be retried.
-            ///
-            /// Caveat: Any TLS/SSL I/O function can lead to either of SSL_ERROR_WANT_READ and SSL_ERROR_WANT_WRITE. In particular, SSL_read() or SSL_peek() may want to write data and SSL_write() may want to read data. This is mainly because TLS/SSL handshakes may occur at any time during the protocol (initiated by either the client or the server); SSL_read(), SSL_peek(), and SSL_write() will handle any pending handshakes.
-            
-            case wantRead, wantWrite
+        guard let names = OpaquePointer(X509_get_ext_d2i(x509, NID_subject_alt_name, nil, nil)) else { return nil }
+        
 
-            
-            /// The operation did not complete; the same TLS/SSL I/O function should be called again later. The underlying BIO was not connected yet to the peer and the call would block in connect()/accept(). The SSL function should be called again when the connection is established. These messages can only appear with a BIO_s_connect() or BIO_s_accept() BIO, respectively. In order to find out, when the connection has been successfully established, on many platforms select() or poll() for writing on the socket file descriptor can be used.
+        // Storage for the names that are found
+        
+        var altNames = [String]()
 
-            case wantConnect, wantAccept
+        
+        // Loop over all names (keep in mind that 'names' is an OpaquePointer)
+        
+        let count = sk_GENERAL_NAMES_num(names)
+        for i in 0 ..< count {
             
             
-            /// The operation did not complete because an application callback set by SSL_CTX_set_client_cert_cb() has asked to be called again. The TLS/SSL I/O function should be called again later. Details depend on the application.
+            // Get name at index i
+            
+            let aName = sk_GENERAL_NAME_value(names, i)
+            
+            
+            // If it is a domain name, add it to the results
+            
+            if aName!.pointee.type == GEN_DNS {
+                
+                
+                // Convert it to a native String
+                
+                guard let cstr = ASN1_STRING_get0_data(aName!.pointee.d.dNSName) else { return nil }
+                
+                
+                // Check for nul characters in the string (= malformed certificate)
+                
+                let str = String(cString: cstr)
+                guard Int32(str.utf8.count) == ASN1_STRING_length(aName!.pointee.d.dNSName) else { return nil }
 
-            case wantX509Lookup
-            
-            
-            /// The operation did not complete because an asynchronous engine is still processing data. This will only occur if the mode has been set to SSL_MODE_ASYNC using SSL_CTX_set_mode or SSL_set_mode and an asynchronous capable engine is being used. An application can determine whether the engine has completed its processing using select() or poll() on the asynchronous wait file descriptor. This file descriptor is available by calling SSL_get_all_async_fds or SSL_get_changed_async_fds. The TLS/SSL I/O function should be called again later. The function must be called from the same thread that the original call was made from.
-            
-            case wantAsync
-            
-            
-            /// The asynchronous job could not be started because there were no async jobs available in the pool (see ASYNC_init_thread(3)). This will only occur if the mode has been set to SSL_MODE_ASYNC using SSL_CTX_set_mode or SSL_set_mode and a maximum limit has been set on the async job pool through a call to ASYNC_init_thread. The application should retry the operation after a currently executing asynchronous operation for the current thread has completed.
-            
-            case wantAsyncJob
-            
-            
-            /// Some I/O error occurred. The OpenSSL error queue may contain more information on the error. If the error queue is empty (i.e. ERR_get_error() returns 0), ret can be used to find out more about the error: If ret == 0, an EOF was observed that violates the protocol. If ret == -1, the underlying BIO reported an I/O error (for socket I/O on Unix systems, consult errno for details).
-            
-            case syscall
-            
-            
-            /// A failure in the SSL library occurred, usually a protocol error. The OpenSSL error queue contains more information on the error.
-
-            case ssl
-            
-            
-            /// An unknown (undocumented) error was returned by SSL
-            
-            case unknown(Int32)
-            
-            
-            /// Converts the result from a SSL_get_error call into a SsL.Result.
-            
-            public init(for value: Int32) {
-                if value > 0 {
-                    self = .completed(value)
-                } else {
-                    switch value {
-                    case SSL_ERROR_ZERO_RETURN: self = .zeroReturn
-                    case SSL_ERROR_WANT_READ: self = .wantRead
-                    case SSL_ERROR_WANT_WRITE: self = .wantWrite
-                    case SSL_ERROR_WANT_CONNECT: self = .wantConnect
-                    case SSL_ERROR_WANT_ACCEPT: self = .wantAccept
-                    case SSL_ERROR_WANT_X509_LOOKUP: self = .wantX509Lookup
-                    case SSL_ERROR_WANT_ASYNC: self = .wantAsync
-                    case SSL_ERROR_WANT_ASYNC_JOB: self = .wantAsyncJob
-                    case SSL_ERROR_SYSCALL: self = .syscall
-                    case SSL_ERROR_SSL: self = .ssl
-                    default: self = .unknown(value)
-                    }
-                }
+                
+                // Append the name
+                
+                altNames.append(str)
             }
             
             
-            /// Returns a result code for a preceding call to SSL_connect(), SSL_accept(), SSL_do_handshake(), SSL_read(), SSL_peek(), or SSL_write() on ssl. The value returned by that TLS/SSL I/O function must be passed to SSL_get_error() in parameter ret.
-            ///
-            /// In addition to ssl and ret, SSL_get_error() inspects the current thread's OpenSSL error queue. Thus, SSL_get_error() must be used in the same thread that performed the TLS/SSL I/O operation, and no other OpenSSL function calls should appear in between. The current thread's error queue must be empty before the TLS/SSL I/O operation is attempted, or SSL_get_error() will not work reliably.
+            // Free the GENERAL NAMES structure
             
-            public static func code(ssl: OpaquePointer, ret: Int32) -> Result {
-                return Result(for: SSL_get_error(ssl, ret))
-            }
-            
-            
-            /// The CustomStringConvertible protocol
-
-            public var description: String {
-                switch self {
-                case let .completed(num): return "SSL_ERROR_NONE: The TLS/SSL I/O operation completed with count \(num)."
-                case .zeroReturn: return "SSL_ERROR_ZERO_RETURN: The TLS/SSL connection has been closed."
-                case .wantRead: return "SSL_ERROR_WANT_READ: The operation did not complete."
-                case .wantWrite: return "SSL_ERROR_WANT_WRITE: The operation did not complete."
-                case .wantConnect: return "SSL_ERROR_WANT_CONNECT: The operation did not complete."
-                case .wantAccept: return "SSL_ERROR_WANT_ACCEPT: The operation did not complete."
-                case .wantX509Lookup: return "SSL_ERROR_WANT_X509_LOOKUP: The operation did not complete because an asynchronous engine is still processing data."
-                case .wantAsync: return "SSL_ERROR_WANT_ASYNC: The operation did not complete because an asynchronous engine is still processing data."
-                case .wantAsyncJob: return "SSL_ERROR_WANT_ASYNC_JOB: The asynchronous job could not be started because there were no async jobs available in the pool."
-                case .syscall: return "SSL_ERROR_SYSCALL: Some I/O error occurred."
-                case .ssl: return "SSL_ERROR_SSL: A failure in the SSL library occurred, usually a protocol error."
-                case let .unknown(val): return "SSL returned unknown code '\(val)'"
-                }
-            }
-            
-            
-            /// The CustomDebugStringConvertible protocol
-            
-            public var debugDescription: String { return description }
+            skGeneralNamePopFree(names)
         }
         
+        return altNames
+    }
+
+    
+    /// A wrapper class for a x509 structure. This wrapper avoids having to handle the free/up_ref.
+    
+    public class X509 {
         
         /// The result of a certificate verification
         
-        public enum X509_VerificationResult: Int {
-
+        public enum VerificationResult: Int {
+            
             /// The operation was successful.
             case x509_v_ok = 0
             
@@ -425,7 +387,7 @@ public extension SwifterSockets {
             
             /// An unknown (undocumented) error was returned
             case unknown
-
+            
             var description: String {
                 
                 switch self {
@@ -574,155 +536,36 @@ public extension SwifterSockets {
             }
         }
         
-        
-        /// - Returns: The error message(s) that have occured in the current thread in openSSL.
-        
-        public static func allStackedErrorMessages() -> String {
-            sslErrorMessages.removeAll()
-            ERR_print_errors_cb(sslErrorMessageReader, nil)
-            let str = sslErrorMessages.reduce("") { $0 + "\n" + $1  }
-            ERR_clear_error()
-            return str
-        }
 
-
-        /// Convenience wrapper for SSL_connect(). SSL_connect() initiates the TLS/SSL handshake with a server. The communication channel must already have been set and assigned to the ssl by setting an underlying BIO.
-        ///
-        /// If the underlying BIO is blocking, SSL_connect() will only return once the handshake has been finished or an error occurred.
-        ///
-        /// If the underlying BIO is non-blocking, SSL_connect() will also return when the underlying BIO could not satisfy the needs of SSL_connect().
-        ///
-        /// [Weblink](https://www.openssl.org/docs/man1.1.0/ssl/SSL_connect.html)
-        ///
-        /// - Parameter ssl: A pointer to an SSL structure (as created by SSL_new())
-        /// - Returns: The result code from the operation.
+        private(set) var optr: OpaquePointer?
         
-        public static func connectSsl(_ ssl: OpaquePointer) -> Result {
-            ERR_clear_error()
-            let res = SSL_connect(ssl)
-            if res == 1 {
-                return .completed(0)
-            }
-            return Result.code(ssl: ssl, ret: res)
+        deinit { X509_free(optr) }
+        
+        init?(fromSslPeer ssl: OpaquePointer!) {
+            optr = SSL_get_peer_certificate(ssl) // up_ref is implicit
+            if optr == nil { return nil }
         }
         
-        
-        /// Convenience wrapper for SSL_accept(). SSL_accept() waits for a TLS/SSL client to initiate the TLS/SSL handshake. The communication channel must already have been set and assigned to the ssl by setting an underlying BIO.
-        ///
-        /// The behaviour of SSL_accept() depends on the underlying BIO.
-        ///
-        /// If the underlying BIO is blocking, SSL_accept() will only return once the handshake has been finished or an error occurred.
-        ///
-        /// If the underlying BIO is non-blocking, SSL_accept() will also return when the underlying BIO could not satisfy the needs of SSL_accept() to continue the handshake
-        ///
-        /// [Weblink](https://www.openssl.org/docs/man1.1.0/ssl/SSL_accept.html)
-        ///
-        /// - Parameter ssl: A pointer to an SSL structure (as created by SSL_new())
-        /// - Returns: The result code from the operation.
-
-        public static func acceptSsl(_ ssl: OpaquePointer) -> Result {
-            ERR_clear_error()
-            let res = SSL_accept(ssl)
-            if res == 1 {
-                return .completed(0)
-            }
-            return Result.code(ssl: ssl, ret: res)
-        }
-        
-        
-        /// Convenience wrapper for SSL_do_handshake(). SSL_do_handshake() will wait for a SSL/TLS handshake to take place. If the connection is in client mode, the handshake will be started. The handshake routines may have to be explicitly set in advance using either SSL_set_connect_state or SSL_set_accept_state.
-        ///
-        /// The behaviour of SSL_do_handshake() depends on the underlying BIO.
-        ///
-        /// If the underlying BIO is blocking, SSL_do_handshake() will only return once the handshake has been finished or an error occurred.
-        ///
-        /// If the underlying BIO is non-blocking, SSL_do_handshake() will also return when the underlying BIO could not satisfy the needs of SSL_do_handshake() to continue the handshake.
-        ///
-        /// [Weblink](https://www.openssl.org/docs/man1.1.0/ssl/SSL_do_handshake.html)
-        ///
-        /// - Parameter ssl: A pointer to an SSL structure (as created by SSL_new())
-        /// - Returns: The result code from the operation.
-
-        public static func doHandshakeSsl(_ ssl: OpaquePointer) -> Result {
-            ERR_clear_error()
-            let res = SSL_do_handshake(ssl)
-            if res == 1 {
-                return .completed(0)
-            }
-            return Result.code(ssl: ssl, ret: res)
-        }
-        
-        
-        /// Convenience wrapper for SSL_read(). SSL_read() tries to read num bytes from the specified ssl into the buffer buf.
-        ///
-        /// If necessary, SSL_read() will negotiate a TLS/SSL session, if not already explicitly performed by SSL_connect or SSL_accept. If the peer requests a re-negotiation, it will be performed transparently during the SSL_read() operation. For the transparent negotiation to succeed, the ssl must have been initialized to client or server mode.
-        /// [Weblink](https://www.openssl.org/docs/man1.1.0/ssl/SSL_read.html)
-        ///
-        /// - Parameter ssl: A pointer to an SSL structure (as created by SSL_new())
-        /// - Parameter buf: A pointer to a memory area containg at least 'num' bytes.
-        /// - Parameter num: The maximum number of bytes to read.
-        /// - Returns: The result code from the operation.
-
-        public static func readSsl(_ ssl: OpaquePointer, buf: UnsafeMutableRawPointer, num: Int32) -> Result {
-            ERR_clear_error()
-            let res = SSL_read(ssl, buf, num)
-            if res > 0 {
-                return .completed(res)
-            }
-            return Result.code(ssl: ssl, ret: res)
-        }
-        
-        
-        /// Convenience wrapper for SSL_write(). SSL_write() writes num bytes from the buffer buf into the specified ssl connection.
-        ///
-        /// If necessary, SSL_write() will negotiate a TLS/SSL session, if not already explicitly performed by SSL_connect or SSL_accept. If the peer requests a re-negotiation, it will be performed transparently during the SSL_write() operation. The behaviour of SSL_write() depends on the underlying BIO.
-        ///
-        /// For the transparent negotiation to succeed, the ssl must have been initialized to client or server mode.
-        ///
-        /// If the underlying BIO is blocking, SSL_write() will only return, once the write operation has been finished or an error occurred, except when a renegotiation take place, in which case a SSL_ERROR_WANT_READ may occur. This behaviour can be controlled with the SSL_MODE_AUTO_RETRY flag of the SSL_CTX_set_mode call.
-        ///
-        /// If the underlying BIO is non-blocking, SSL_write() will also return, when the underlying BIO could not satisfy the needs of SSL_write() to continue the operation.
-        ///
-        /// [Weblink](https://www.openssl.org/docs/man1.1.0/ssl/SSL_write.html)
-        ///
-        /// - Parameter ssl: A pointer to an SSL structure (as created by SSL_new())
-        /// - Parameter buf: A pointer to a memory area containg at least 'num' bytes.
-        /// - Parameter num: The maximum number of bytes to read.
-        /// - Returns: The result code from the operation.
-
-        public static func writeSsl(_ ssl: OpaquePointer, buf: UnsafeRawPointer, num: Int32) -> Result {
-            ERR_clear_error()
-            let res = SSL_write(ssl, buf, num)
-            if res > 0 {
-                return .completed(res)
-            }
-            return Result.code(ssl: ssl, ret: res)
-        }
-        
-                
-        /// The supported filetypes for keys and certificates
-        
-        public enum FileEncoding {
-            case ans1 // 1 key/certificate per file
-            case pem  // Multiple certificates or keys per file, only the first is used
-            var asInt32: Int32 {
-                switch self {
-                case .ans1: return SSL_FILETYPE_ASN1
-                case .pem:  return SSL_FILETYPE_PEM
-                }
+        init?(fromContext ctx: Ctx) {
+            if let p = SSL_CTX_get0_certificate(ctx.optr) {
+                optr = p
+                X509_up_ref(optr)
+            } else {
+                return nil
             }
         }
+ 
+        func getCommonName() -> String? {
+            return SwifterSockets.Ssl.getX509CommonName(from: optr)
+        }
         
+        func getSubjectAltNames() -> [String]? {
+            return SwifterSockets.Ssl.getX509SubjectAltNames(from: optr)
+        }
         
-        /// The specification of a file containing a key or certificate.
-        
-        public struct KeyCertFile {
-            let path: String
-            let encoding: Int32
-            init(path: String, encoding: FileEncoding) {
-                self.path = path
-                self.encoding = encoding.asInt32
-            }
+        func checkHost(_ name: UnsafePointer<Int8>!) -> Bool {
+            return X509_check_host(optr, name, 0, 0, nil) == 1
         }
     }
+
 }

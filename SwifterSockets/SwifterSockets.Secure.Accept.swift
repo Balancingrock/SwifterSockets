@@ -11,7 +11,7 @@
 //  Blog:       http://swiftrien.blogspot.com
 //  Git:        https://github.com/Swiftrien/SwifterSockets
 //
-//  Copyright:  (c) 2016 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2016-2017 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -58,6 +58,16 @@ import Foundation
 
 public extension SwifterSockets.Ssl {
     
+    
+    /// A handler with this signature can be invoked after the sslAccept (~ SSL_accept) completes.
+    /// - Parameter ssl: The SSL session struct.
+    /// - Parameter clientIp: The IP address of the client.
+    /// - Note: The return value of the closure can be used to deny a successfull sslAccept, but not to force an accept of a failed sslAccept. The main purpose of this
+    /// - Returns: 'false' if the session should be terminated. 'true' otherwise.
+    
+    public typealias SslSessionHandler = (_ ssl: Ssl, _ clientIp: String) -> Bool
+
+    
     /// The result for the accept function accept. Possible values are:
     ///
     /// - accepted(socket: Int32, ssl: OpaquePointer, clientIp: String)
@@ -65,12 +75,12 @@ public extension SwifterSockets.Ssl {
     /// - timeout
     /// - closed
     
-    public enum AcceptResult: CustomStringConvertible {
+    public enum AcceptResult {
         
         
-        /// A connection was accepted, the socket descriptor and client IP adddress are enclosed
+        /// A connection was accepted, the ssl session, the socket descriptor and the client IP adddress are enclosed
         
-        case accepted(ssl: OpaquePointer, socket: Int32, clientIp: String)
+        case accepted(ssl: Ssl, socket: Int32, clientIp: String)
         
         
         /// An error occured, the error message is enclosed.
@@ -86,18 +96,6 @@ public extension SwifterSockets.Ssl {
         /// Another thread closed the socket
         
         case closed
-        
-        
-        /// The CustomStringConvertible protocol
-        
-        public var description: String {
-            switch self {
-            case let .accepted(ssl, socket, clientIp): return "Accepted(\(ssl), \(socket), \(clientIp))"
-            case let .error(message): return "Error(\(message))"
-            case .timeout: return "Timeout"
-            case .closed: return "Closed"
-            }
-        }
     }
 
     
@@ -111,8 +109,10 @@ public extension SwifterSockets.Ssl {
     
     public static func accept(
         onSocket acceptSocket: Int32,
-        useCtx ctx: OpaquePointer,
-        timeout: TimeInterval) -> AcceptResult {
+        useCtx ctx: Ctx,
+        timeout: TimeInterval,
+        addressHandler: SwifterSockets.AddressHandler? = nil,
+        sslSessionHandler: SslSessionHandler? = nil) -> AcceptResult {
         
         
         let timeoutTime = Date().addingTimeInterval(timeout)
@@ -122,29 +122,30 @@ public extension SwifterSockets.Ssl {
         // Wait for a connection attempt
         // =============================
         
-        let result = SwifterSockets.accept(onSocket: acceptSocket, timeout: timeout)
+        let result = SwifterSockets.accept(onSocket: acceptSocket, timeout: timeout, addressHandler: addressHandler)
         
         switch result {
         case .closed: return .closed
         case let .error(msg): return .error(message: msg)
         case .timeout: return .timeout
-        case let .accepted(receiveSocket, client):
+        case let .accepted(receiveSocket, clientIp):
+                        
+            var closeReceiveSocketOnExit = true;
+            defer { if closeReceiveSocketOnExit { close(receiveSocket) } }
             
             
             // =======================
             // Create a new SSL object
             // =======================
             
-            guard let ssl = SSL_new(ctx) else {
-                let message = allStackedErrorMessages()
-                close(receiveSocket)
+            guard let ssl = Ssl(context: ctx) else {
+                let message = errPrintErrors()
                 return .error(message: "Failed to allocate a new SSL structure with: \n" + message)
             }
-            guard SSL_set_fd(ssl, receiveSocket) != 0 else {
-                let message = allStackedErrorMessages()
-                SSL_free(ssl)
-                close(receiveSocket)
-                return .error(message: "Failed to set the SSL socket descriptor with: \n" + message)
+            
+            switch ssl.setSocket(receiveSocket) {
+            case let .error(message): return .error(message: "SwifterSockets.Ssl.Accept.accept: Could not set socket,\n\(message)")
+            case .success: break
             }
             
             
@@ -161,72 +162,60 @@ public extension SwifterSockets.Ssl {
                 
                 // Note: Unsure about the possible timeouts that apply to this call.
                 
-                let result = acceptSsl(ssl)
-                
+                let result = ssl.accept()
                 switch result {
                     
+                
                 // On success, return the new SSL structure
                 case .completed:
-                    return .accepted(ssl: ssl, socket: receiveSocket, clientIp: client)
-                
-                // Exit if the connection closed (i.e. there is no secure connection)
-                case .zeroReturn:
-                    SSL_free(ssl)
-                    close(receiveSocket)
-                    return .closed
+                    
+                    // An API user provided ssl session handler can reject this connection.
+                    
+                    if !(sslSessionHandler?(ssl, clientIp) ?? true) {
+                        return .error(message: "Ssl session rejected by SslSessionHandler")
+                    }
 
+                    
+                    // Prevent closing the socket
+                    
+                    closeReceiveSocketOnExit = false
+                    
+                    
+                    return .accepted(ssl: ssl, socket: receiveSocket, clientIp: clientIp)
+                
+                    
+                // Exit if the connection closed (i.e. there is no secure connection)
+                case .zeroReturn: return .closed
+
+                    
                 // Only waiting for a read or write is acceptable, everything else is an error
                 case .wantRead:
                     
                     let selres = SwifterSockets.waitForSelect(socket: acceptSocket, timeout: timeoutTime, forRead: true, forWrite: false)
                     
                     switch selres {
-                    case .timeout:
-                        SSL_free(ssl)
-                        close(receiveSocket)
-                        return .timeout
-
-                    case .closed:
-                        SSL_free(ssl)
-                        close(receiveSocket)
-                        return .closed
-
-                    case let .error(message):
-                        SSL_free(ssl)
-                        close(receiveSocket)
-                        return .error(message: message)
-
+                    case .timeout: return .timeout
+                    case .closed: return .closed
+                    case let .error(message): return .error(message: message)
                     case .ready: break
                     }
                     
+                    
                 // Only waiting for a read or write is acceptable, everything else is an error
-                case  .wantWrite:
+                case .wantWrite:
                     
                     let selres = SwifterSockets.waitForSelect(socket: acceptSocket, timeout: timeoutTime, forRead: false, forWrite: true)
                     
                     switch selres {
-                    case .timeout:
-                        SSL_free(ssl)
-                        close(receiveSocket)
-                        return .timeout
-                        
-                    case .closed:
-                        SSL_free(ssl)
-                        close(receiveSocket)
-                        return .closed
-                        
-                    case let .error(message):
-                        SSL_free(ssl)
-                        close(receiveSocket)
-                        return .error(message: message)
-                        
+                    case .timeout: return .timeout
+                    case .closed: return .closed
+                    case let .error(message): return .error(message: message)
                     case .ready: break
                     }
 
+                    
                 // All of these are error's
-                case .wantConnect, .wantAccept, .wantX509Lookup, .wantAsync, .wantAsyncJob, .syscall, .ssl, .unknown:
-                    SSL_free(ssl)
-                    close(receiveSocket)
+                case .wantConnect, .wantAccept, .wantX509Lookup, .wantAsync, .wantAsyncJob, .syscall, .ssl, .bios_errno, .errorMessage, .undocumentedSslError, .undocumentedSslFunctionResult:
                     return .error(message: result.description)
                 }
             }

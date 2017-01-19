@@ -11,7 +11,7 @@
 //  Blog:       http://swiftrien.blogspot.com
 //  Git:        https://github.com/Swiftrien/SwifterSockets
 //
-//  Copyright:  (c) 2016 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2016-2017 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -65,16 +65,16 @@ public extension SwifterSockets.Ssl {
     ///
     /// - Note: This operation can be resume transfers after a timeout occurs. I.e. after a timeout the operation can be called again with the same parameter values as before. This can be used to implement -for example- progress tracking.
     ///
-    /// - Parameter ssl: An opaque pointer to an SSL struct.
+    /// - Parameter ssl: The session to use.
     /// - Parameter bufferSize: The size of the buffer that will be allocated for the data to be received.
     /// - Parameter duration: The maximum duration of a single receive loop.
     /// - Parameter receiver: The object that implements the receiver protocol.
     
     public static func receiveLoop(
-        ssl: OpaquePointer,
+        ssl: Ssl,
         bufferSize: Int,
         duration: TimeInterval,
-        receiver: SwifterSocketsReceiver?) {
+        receiver: SwifterSockets.ReceiverProtocol?) {
         
         // Find programming errors
         
@@ -88,7 +88,7 @@ public extension SwifterSockets.Ssl {
         
         // Get the socket that the SSL is bound to
         
-        let socket = SSL_get_fd(ssl)
+        let socket = ssl.getSocket()
         
         
         // ===============================================================================
@@ -129,7 +129,7 @@ public extension SwifterSockets.Ssl {
                 // Read data
                 // =========
                 
-                let result = readSsl(ssl, buf: buffer.assumingMemoryBound(to: UInt8.self), num: Int32(bufferSize))
+                let result = ssl.read(buf: buffer.assumingMemoryBound(to: UInt8.self), num: Int32(bufferSize))
                 
                 switch result {
                     
@@ -141,43 +141,14 @@ public extension SwifterSockets.Ssl {
                 case .zeroReturn:
                     receiver?.receiverClosed()
                     cont = false
-                    
+                
                 // Need to repeat the call to SSL_read with the exact same arguments as before.
                 case .wantRead, .wantWrite: break
                     
                 // All off the following are error cases, none of these should happen.
-                case .wantConnect:
-                    receiver?.receiverError("SSL_read unexpectedly returned 'wantConnect'")
-                    cont = false
+                case .wantConnect, .wantAccept, .wantX509Lookup, .wantAsync, .wantAsyncJob, .syscall, .ssl, .undocumentedSslError, .undocumentedSslFunctionResult, .errorMessage, .bios_errno:
 
-                case .wantAccept:
-                    receiver?.receiverError("SSL_read unexpectedly returned 'wantAccept'")
-                    cont = false
-
-                case .wantX509Lookup:
-                    receiver?.receiverError("SSL_read unexpectedly returned 'wantX509Lookup'")
-                    cont = false
-
-                case .wantAsync:
-                    receiver?.receiverError("SSL_read unexpectedly returned 'wantX509Lookup'")
-                    cont = false
-
-                case .wantAsyncJob:
-                    receiver?.receiverError("SSL_read unexpectedly returned 'wantAsyncJob'")
-                    cont = false
-
-                case .syscall:
-                    let message = String(validatingUTF8: strerror(errno)) ?? "Possibly protocol violating EOF received"
-                    receiver?.receiverError("SSL_read unexpectedly returned 'syscall'. The following information is provided but may be inaccurate: \(message)")
-                    cont = false
-
-                case .ssl:
-                    receiver?.receiverError("An error occured during SSL_read, \(allStackedErrorMessages()) was reported.")
-                    cont = false
-                    
-                // Should not be possible.
-                case let .unknown(val):
-                    receiver?.receiverError("SSL_read returned an unknown error code \(val)")
+                    receiver?.receiverError("An error occured during SSL_write, '\(result)' was reported.")
                     cont = false
                 }
             }
