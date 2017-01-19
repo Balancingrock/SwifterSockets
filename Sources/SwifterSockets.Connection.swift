@@ -144,7 +144,7 @@ public class TipConnection: ConnectionType {
         
         if isValid {
             
-            tipReceiveLoop(
+            tipReceiverLoop(
                 socket: socket!,
                 bufferSize: bufferSize,
                 duration: duration,

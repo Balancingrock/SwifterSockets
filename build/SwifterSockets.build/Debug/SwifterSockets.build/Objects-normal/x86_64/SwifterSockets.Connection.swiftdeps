@@ -16,39 +16,39 @@ provides-member:
 - ["OC14SwifterSockets10Connection6Option", ""]
 provides-dynamic-lookup:
 depends-top-level:
+- "ErrorHandler"
+- "String"
+- "Bool"
+- "*"
 - !private "BooleanLiteralType"
-- "StringLiteralType"
-- "UInt8"
-- "DispatchQoS"
-- "UnsafeBufferPointer"
-- "TipConnection"
-- !private "UnsafePointer"
-- "ReceiverProtocol"
+- !private "<"
 - !private "closeSocket"
-- "UnicodeScalarType"
+- !private "tipReceiverLoop"
+- !private "UnsafePointer"
+- "UInt8"
+- "UnsafeBufferPointer"
+- "DispatchQoS"
+- "Data"
 - "ConnectionType"
-- !private "??"
+- "Int"
+- "StringLiteralType"
+- "Int32"
+- !private "!="
+- !private "tipTransfer"
 - "TransmitterProtocol"
-- !private "Array"
-- "TransferResult"
+- !private "??"
 - "DispatchQueue"
+- "UnicodeScalarType"
+- "TimeInterval"
 - "Connection"
 - "AssignmentPrecedence"
-- "*"
 - !private "=="
-- !private "<"
-- "TimeInterval"
-- "Bool"
-- "Int32"
-- "String"
-- "Data"
-- !private "tipReceiveLoop"
-- !private "tipTransfer"
-- "ConnectionObjectFactory"
-- !private "!="
+- !private "Array"
 - "TransmitterProgressMonitor"
-- "ErrorHandler"
-- "Int"
+- "ConnectionObjectFactory"
+- "TransferResult"
+- "TipConnection"
+- "ReceiverProtocol"
 depends-member:
 - !private ["Ps9AnyObject", "AutoreleaseFrequency"]
 - !private ["Ps9AnyObject", "DispatchQueue"]
@@ -77,7 +77,7 @@ depends-member:
 - !private ["Ps9AnyObject", "safeCloseConnection"]
 - !private ["Ps9AnyObject", "setOptions"]
 - ["Ps9AnyObject", "socket"]
-- !private ["Ps9AnyObject", "tipReceiveLoop"]
+- !private ["Ps9AnyObject", "tipReceiverLoop"]
 - !private ["Ps9AnyObject", "tipTransfer"]
 - !private ["Ps9AnyObject", "tqueue"]
 - ["Ps9AnyObject", "transfer"]
@@ -193,7 +193,7 @@ depends-member:
 - ["C14SwifterSockets14ConnectionType", "isValid"]
 - ["C14SwifterSockets14ConnectionType", "receiverLoop"]
 - ["C14SwifterSockets14ConnectionType", "socket"]
-- !private ["C14SwifterSockets14ConnectionType", "tipReceiveLoop"]
+- !private ["C14SwifterSockets14ConnectionType", "tipReceiverLoop"]
 - !private ["C14SwifterSockets14ConnectionType", "tipTransfer"]
 - ["C14SwifterSockets14ConnectionType", "transfer"]
 - ["C14SwifterSockets14ConnectionType", ""]
@@ -471,7 +471,7 @@ depends-member:
 - ["C14SwifterSockets13TipConnection", "isValid"]
 - ["C14SwifterSockets13TipConnection", "receiverLoop"]
 - ["C14SwifterSockets13TipConnection", "socket"]
-- !private ["C14SwifterSockets13TipConnection", "tipReceiveLoop"]
+- !private ["C14SwifterSockets13TipConnection", "tipReceiverLoop"]
 - !private ["C14SwifterSockets13TipConnection", "tipTransfer"]
 - ["C14SwifterSockets13TipConnection", "transfer"]
 - ["O14SwifterSockets14TransferResult", "deinit"]

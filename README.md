@@ -1,7 +1,11 @@
 # SwifterSockets
 A collection of socket utilities in pure Swift
 
-SwifterSockets is part of the 4 packages that make up the [Swiftfire](http://swiftfire.nl) webserver:
+SwifterSockets is part of the 5 packages that make up the [Swiftfire](http://swiftfire.nl) webserver:
+
+#####[SecureSockets](https://github.com/Swiftrien/SecureSockets)
+
+An extenstion to SwifterSockets for SSL connections.
 
 #####[Swiftfire](https://github.com/Swiftrien/Swiftfire)
 
@@ -15,10 +19,13 @@ General purpose logging utility.
 
 General purpose JSON framework.
 
-There is a 5th package called [SwiftfireTester](https://github.com/Swiftrien/SwiftfireTester) that can be used to challenge a webserver (any webserver) and see/verify the response.
-
 #Features
 - Shields the Swift application from the complexity of the Unix socket calls.
+- Directly interfaces with the POSIX calles using:
+	- connectToTipServer
+	- tipTransfer
+	- tipReceiverLoop
+	-  
 - Implement a client with InitClient, Transfer, Close.
 - Implement a server with InitServer, Accept, Receive, Transfer, Close.
 - Can be used in three ways:

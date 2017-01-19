@@ -79,7 +79,7 @@ import Foundation
 /// - Parameter duration: The duration of the receive loop.
 /// - Parameter receiver: The target that implements the SwifterSocketsReceive protocol. If not provided, the receive operation will function as a data sink.
 
-public func tipReceiveLoop(
+public func tipReceiverLoop(
     socket: Int32,
     bufferSize: Int,
     duration: TimeInterval,
