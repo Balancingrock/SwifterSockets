@@ -1,0 +1,609 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+- "setupSslServer"
+- "SslServer"
+provides-nominal:
+- "C14SwifterSockets9SslServer"
+- "OC14SwifterSockets9SslServer6Option"
+provides-member:
+- ["C14SwifterSockets9SslServer", ""]
+- ["OC14SwifterSockets9SslServer6Option", ""]
+provides-dynamic-lookup:
+depends-top-level:
+- "BooleanLiteralType"
+- "Int"
+- !private "ConnectionType"
+- !private ">"
+- !private "&&"
+- !private "closeSocket"
+- "DispatchQueue"
+- "StringLiteralType"
+- !private "assert"
+- "Secure"
+- "DispatchQoS"
+- "String"
+- "ServerProtocol"
+- "SslSessionHandler"
+- !private "!"
+- "setupSslServer"
+- "TcpipServer"
+- !private "=="
+- !private "setupTcpipServer"
+- !private "!="
+- !private "sslAccept"
+- "ConnectionObjectFactory"
+- "Result"
+- "ErrorHandler"
+- "Bool"
+- "SslServer"
+- "AddressHandler"
+- !private "??"
+- "TimeInterval"
+- "AssignmentPrecedence"
+- "Int32"
+depends-member:
+- ["Ps9AnyObject", "AliveHandler"]
+- !private ["Ps9AnyObject", "Attributes"]
+- !private ["Ps9AnyObject", "AutoreleaseFrequency"]
+- ["Ps9AnyObject", "CertificateAndPrivateKeyFiles"]
+- !private ["Ps9AnyObject", "ConnectionType"]
+- ["Ps9AnyObject", "Ctx"]
+- !private ["Ps9AnyObject", "DispatchQueue"]
+- !private ["Ps9AnyObject", "Int32"]
+- !private ["Ps9AnyObject", "ServerCtx"]
+- !private ["Ps9AnyObject", "_stop"]
+- !private ["Ps9AnyObject", "acceptLoopDuration"]
+- !private ["Ps9AnyObject", "acceptQueue"]
+- !private ["Ps9AnyObject", "addDomainCtx"]
+- !private ["Ps9AnyObject", "addressHandler"]
+- !private ["Ps9AnyObject", "aliveHandler"]
+- !private ["Ps9AnyObject", "async"]
+- !private ["Ps9AnyObject", "certificateAndPrivateKeyFiles"]
+- !private ["Ps9AnyObject", "closeSocket"]
+- !private ["Ps9AnyObject", "connectionObjectFactory"]
+- !private ["Ps9AnyObject", "ctx"]
+- !private ["Ps9AnyObject", "domainCtxs"]
+- !private ["Ps9AnyObject", "errorHandler"]
+- ["Ps9AnyObject", "init"]
+- !private ["Ps9AnyObject", "loadVerify"]
+- !private ["Ps9AnyObject", "maxPendingConnectionRequests"]
+- !private ["Ps9AnyObject", "port"]
+- !private ["Ps9AnyObject", "serverCtx"]
+- !private ["Ps9AnyObject", "setOptions"]
+- !private ["Ps9AnyObject", "setVerifyPeer"]
+- !private ["Ps9AnyObject", "setupSslServer"]
+- !private ["Ps9AnyObject", "socket"]
+- !private ["Ps9AnyObject", "sslAccept"]
+- !private ["Ps9AnyObject", "sslSessionHandler"]
+- ["Ps9AnyObject", "start"]
+- !private ["Ps9AnyObject", "startReceiverLoop"]
+- ["Ps9AnyObject", "stop"]
+- !private ["Ps9AnyObject", "transmitQueueQoS"]
+- !private ["Ps9AnyObject", "transmitTimeout"]
+- !private ["Ps9AnyObject", "trustedClientCertificates"]
+- !private ["Ps9AnyObject", "useCertificate"]
+- !private ["Ps9AnyObject", "usePrivateKey"]
+- ["Ps9AnyObject", ""]
+- !private ["Sa", "IndexDistance"]
+- !private ["Sa", "Iterator"]
+- !private ["Sa", "_Element"]
+- !private ["Sa", "count"]
+- ["Sa", "deinit"]
+- !private ["VE8DispatchCSo13DispatchQueue10Attributes", "Element"]
+- !private ["VE8DispatchCSo13DispatchQueue10Attributes", "RawValue"]
+- ["VE8DispatchCSo13DispatchQueue10Attributes", "deinit"]
+- !private ["VE8DispatchCSo13DispatchQueue10Attributes", "init"]
+- ["OE8DispatchCSo13DispatchQueue20AutoreleaseFrequency", "deinit"]
+- !private ["OE8DispatchCSo13DispatchQueue20AutoreleaseFrequency", "inherit"]
+- !private ["Ps23BidirectionalCollection", "IndexDistance"]
+- !private ["Ps23BidirectionalCollection", "Iterator"]
+- !private ["Ps23BidirectionalCollection", "_Element"]
+- !private ["Ps23BidirectionalCollection", "count"]
+- !private ["Ps22BidirectionalIndexable", "IndexDistance"]
+- !private ["Ps22BidirectionalIndexable", "Iterator"]
+- !private ["Ps22BidirectionalIndexable", "_Element"]
+- !private ["Ps22BidirectionalIndexable", "count"]
+- !private ["Ps17BitwiseOperations", "init"]
+- !private ["Sb", "_getBuiltinLogicValue"]
+- ["Sb", "deinit"]
+- !private ["Ps7CVarArg", "Attributes"]
+- !private ["Ps7CVarArg", "AutoreleaseFrequency"]
+- !private ["Ps7CVarArg", "IndexDistance"]
+- !private ["Ps7CVarArg", "Iterator"]
+- !private ["Ps7CVarArg", "_Element"]
+- !private ["Ps7CVarArg", "async"]
+- !private ["Ps7CVarArg", "count"]
+- ["Ps7CVarArg", "init"]
+- !private ["VC14SwifterSockets6Secure29CertificateAndPrivateKeyFiles", "certificate"]
+- ["VC14SwifterSockets6Secure29CertificateAndPrivateKeyFiles", "deinit"]
+- !private ["VC14SwifterSockets6Secure29CertificateAndPrivateKeyFiles", "privateKey"]
+- !private ["Vs9Character", "deinit"]
+- !private ["Ps10Collection", "IndexDistance"]
+- !private ["Ps10Collection", "Iterator"]
+- !private ["Ps10Collection", "_Element"]
+- !private ["Ps10Collection", "count"]
+- ["Ps10Comparable", "init"]
+- !private ["C14SwifterSockets10Connection", "deinit"]
+- !private ["C14SwifterSockets10Connection", "startReceiverLoop"]
+- !private ["O14SwifterSockets14ConnectionType", "deinit"]
+- !private ["O14SwifterSockets14ConnectionType", "ssl"]
+- !private ["CC14SwifterSockets6Secure3Ctx", "addDomainCtx"]
+- ["CC14SwifterSockets6Secure3Ctx", "deinit"]
+- !private ["CC14SwifterSockets6Secure3Ctx", "loadVerify"]
+- !private ["CC14SwifterSockets6Secure3Ctx", "setVerifyPeer"]
+- !private ["CC14SwifterSockets6Secure3Ctx", "useCertificate"]
+- !private ["CC14SwifterSockets6Secure3Ctx", "usePrivateKey"]
+- !private ["Ps28CustomDebugStringConvertible", "Attributes"]
+- !private ["Ps28CustomDebugStringConvertible", "AutoreleaseFrequency"]
+- !private ["Ps28CustomDebugStringConvertible", "IndexDistance"]
+- !private ["Ps28CustomDebugStringConvertible", "Iterator"]
+- !private ["Ps28CustomDebugStringConvertible", "_Element"]
+- !private ["Ps28CustomDebugStringConvertible", "async"]
+- !private ["Ps28CustomDebugStringConvertible", "count"]
+- ["Ps28CustomDebugStringConvertible", "init"]
+- !private ["Ps29CustomPlaygroundQuickLookable", "_getBuiltinLogicValue"]
+- ["Ps29CustomPlaygroundQuickLookable", "init"]
+- !private ["Ps17CustomReflectable", "IndexDistance"]
+- !private ["Ps17CustomReflectable", "Iterator"]
+- !private ["Ps17CustomReflectable", "_Element"]
+- !private ["Ps17CustomReflectable", "_getBuiltinLogicValue"]
+- !private ["Ps17CustomReflectable", "count"]
+- ["Ps17CustomReflectable", "init"]
+- !private ["Ps23CustomStringConvertible", "Attributes"]
+- !private ["Ps23CustomStringConvertible", "AutoreleaseFrequency"]
+- !private ["Ps23CustomStringConvertible", "IndexDistance"]
+- !private ["Ps23CustomStringConvertible", "Iterator"]
+- !private ["Ps23CustomStringConvertible", "_Element"]
+- !private ["Ps23CustomStringConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps23CustomStringConvertible", "async"]
+- !private ["Ps23CustomStringConvertible", "count"]
+- ["Ps23CustomStringConvertible", "init"]
+- !private ["CSo14DispatchObject", "Attributes"]
+- !private ["CSo14DispatchObject", "AutoreleaseFrequency"]
+- !private ["CSo14DispatchObject", "async"]
+- !private ["CSo14DispatchObject", "init"]
+- ["V8Dispatch11DispatchQoS", "default"]
+- ["V8Dispatch11DispatchQoS", "deinit"]
+- !private ["CSo13DispatchQueue", "Attributes"]
+- !private ["CSo13DispatchQueue", "AutoreleaseFrequency"]
+- !private ["CSo13DispatchQueue", "async"]
+- ["CSo13DispatchQueue", "deinit"]
+- !private ["CSo13DispatchQueue", "init"]
+- ["Sd", "deinit"]
+- ["VC14SwifterSockets6Secure11EncodedFile", "deinit"]
+- !private ["VC14SwifterSockets6Secure11EncodedFile", "path"]
+- !private ["Ps9Equatable", "Attributes"]
+- !private ["Ps9Equatable", "AutoreleaseFrequency"]
+- !private ["Ps9Equatable", "Element"]
+- !private ["Ps9Equatable", "RawValue"]
+- !private ["Ps9Equatable", "_getBuiltinLogicValue"]
+- !private ["Ps9Equatable", "async"]
+- ["Ps9Equatable", "default"]
+- !private ["Ps9Equatable", "inherit"]
+- ["Ps9Equatable", "init"]
+- !private ["Ps25ExpressibleByArrayLiteral", "Element"]
+- !private ["Ps25ExpressibleByArrayLiteral", "IndexDistance"]
+- !private ["Ps25ExpressibleByArrayLiteral", "Iterator"]
+- !private ["Ps25ExpressibleByArrayLiteral", "RawValue"]
+- !private ["Ps25ExpressibleByArrayLiteral", "_Element"]
+- !private ["Ps25ExpressibleByArrayLiteral", "count"]
+- !private ["Ps25ExpressibleByArrayLiteral", "init"]
+- !private ["Ps27ExpressibleByBooleanLiteral", "_getBuiltinLogicValue"]
+- ["Ps43ExpressibleByExtendedGraphemeClusterLiteral", "init"]
+- !private ["Ps27ExpressibleByIntegerLiteral", "init"]
+- ["Ps32ExpressibleByStringInterpolation", "init"]
+- ["Ps26ExpressibleByStringLiteral", "init"]
+- ["Ps33ExpressibleByUnicodeScalarLiteral", "init"]
+- !private ["Sf", "deinit"]
+- !private ["Ps8Hashable", "Attributes"]
+- !private ["Ps8Hashable", "AutoreleaseFrequency"]
+- !private ["Ps8Hashable", "_getBuiltinLogicValue"]
+- !private ["Ps8Hashable", "async"]
+- !private ["Ps8Hashable", "inherit"]
+- ["Ps8Hashable", "init"]
+- ["SQ", "deinit"]
+- !private ["Ps9Indexable", "IndexDistance"]
+- !private ["Ps9Indexable", "Iterator"]
+- !private ["Ps9Indexable", "_Element"]
+- !private ["Ps9Indexable", "count"]
+- !private ["Ps13IndexableBase", "IndexDistance"]
+- !private ["Ps13IndexableBase", "Iterator"]
+- !private ["Ps13IndexableBase", "_Element"]
+- !private ["Ps13IndexableBase", "count"]
+- !private ["Vs16IndexingIterator", "Element"]
+- ["Si", "deinit"]
+- !private ["Vs5Int16", "deinit"]
+- ["Vs5Int32", "deinit"]
+- !private ["Vs5Int32", "init"]
+- !private ["Vs5Int64", "deinit"]
+- !private ["Vs4Int8", "deinit"]
+- !private ["Ps7Integer", "init"]
+- !private ["Ps17IntegerArithmetic", "init"]
+- !private ["Ps16IteratorProtocol", "Element"]
+- !private ["Ps25LosslessStringConvertible", "_getBuiltinLogicValue"]
+- ["Ps25LosslessStringConvertible", "init"]
+- ["Ps10MirrorPath", "init"]
+- !private ["Ps17MutableCollection", "IndexDistance"]
+- !private ["Ps17MutableCollection", "Iterator"]
+- !private ["Ps17MutableCollection", "_Element"]
+- !private ["Ps17MutableCollection", "count"]
+- !private ["Ps16MutableIndexable", "IndexDistance"]
+- !private ["Ps16MutableIndexable", "Iterator"]
+- !private ["Ps16MutableIndexable", "_Element"]
+- !private ["Ps16MutableIndexable", "count"]
+- ["PSo8NSCoding", "init"]
+- ["PSo9NSCopying", "init"]
+- ["PSo16NSMutableCopying", "init"]
+- !private ["CSo8NSObject", "Attributes"]
+- !private ["CSo8NSObject", "AutoreleaseFrequency"]
+- !private ["CSo8NSObject", "async"]
+- !private ["CSo8NSObject", "deinit"]
+- ["CSo8NSObject", "init"]
+- !private ["PSo16NSObjectProtocol", "Attributes"]
+- !private ["PSo16NSObjectProtocol", "AutoreleaseFrequency"]
+- !private ["PSo16NSObjectProtocol", "async"]
+- ["PSo16NSObjectProtocol", "init"]
+- ["PSo14NSSecureCoding", "init"]
+- ["CSo8NSString", "init"]
+- !private ["CSo9OS_object", "Attributes"]
+- !private ["CSo9OS_object", "AutoreleaseFrequency"]
+- !private ["CSo9OS_object", "async"]
+- !private ["CSo9OS_object", "init"]
+- ["OC14SwifterSockets9SslServer6Option", "AddressHandler"]
+- ["OC14SwifterSockets9SslServer6Option", "ConnectionObjectFactory"]
+- ["OC14SwifterSockets9SslServer6Option", "DispatchQoS"]
+- ["OC14SwifterSockets9SslServer6Option", "DispatchQueue"]
+- ["OC14SwifterSockets9SslServer6Option", "ErrorHandler"]
+- ["OC14SwifterSockets9SslServer6Option", "Int"]
+- ["OC14SwifterSockets9SslServer6Option", "Secure"]
+- ["OC14SwifterSockets9SslServer6Option", "SslSessionHandler"]
+- ["OC14SwifterSockets9SslServer6Option", "String"]
+- ["OC14SwifterSockets9SslServer6Option", "TcpipServer"]
+- ["OC14SwifterSockets9SslServer6Option", "TimeInterval"]
+- ["OC14SwifterSockets9SslServer6Option", "acceptLoopDuration"]
+- ["OC14SwifterSockets9SslServer6Option", "acceptQueue"]
+- ["OC14SwifterSockets9SslServer6Option", "addressHandler"]
+- ["OC14SwifterSockets9SslServer6Option", "aliveHandler"]
+- ["OC14SwifterSockets9SslServer6Option", "certificateAndPrivateKeyFiles"]
+- ["OC14SwifterSockets9SslServer6Option", "connectionObjectFactory"]
+- ["OC14SwifterSockets9SslServer6Option", "deinit"]
+- ["OC14SwifterSockets9SslServer6Option", "domainCtxs"]
+- ["OC14SwifterSockets9SslServer6Option", "errorHandler"]
+- ["OC14SwifterSockets9SslServer6Option", "maxPendingConnectionRequests"]
+- ["OC14SwifterSockets9SslServer6Option", "port"]
+- ["OC14SwifterSockets9SslServer6Option", "serverCtx"]
+- ["OC14SwifterSockets9SslServer6Option", "sslSessionHandler"]
+- ["OC14SwifterSockets9SslServer6Option", "transmitQueueQoS"]
+- ["OC14SwifterSockets9SslServer6Option", "transmitTimeout"]
+- ["OC14SwifterSockets9SslServer6Option", "trustedClientCertificates"]
+- !private ["Ps9OptionSet", "Element"]
+- !private ["Ps9OptionSet", "RawValue"]
+- !private ["Ps9OptionSet", "init"]
+- ["Sq", "deinit"]
+- !private ["Ps22RandomAccessCollection", "IndexDistance"]
+- !private ["Ps22RandomAccessCollection", "Iterator"]
+- !private ["Ps22RandomAccessCollection", "_Element"]
+- !private ["Ps22RandomAccessCollection", "count"]
+- !private ["Ps21RandomAccessIndexable", "IndexDistance"]
+- !private ["Ps21RandomAccessIndexable", "Iterator"]
+- !private ["Ps21RandomAccessIndexable", "_Element"]
+- !private ["Ps21RandomAccessIndexable", "count"]
+- !private ["Ps26RangeReplaceableCollection", "IndexDistance"]
+- !private ["Ps26RangeReplaceableCollection", "Iterator"]
+- !private ["Ps26RangeReplaceableCollection", "_Element"]
+- !private ["Ps26RangeReplaceableCollection", "count"]
+- !private ["Ps25RangeReplaceableIndexable", "IndexDistance"]
+- !private ["Ps25RangeReplaceableIndexable", "Iterator"]
+- !private ["Ps25RangeReplaceableIndexable", "_Element"]
+- !private ["Ps25RangeReplaceableIndexable", "count"]
+- !private ["Ps16RawRepresentable", "Element"]
+- !private ["Ps16RawRepresentable", "RawValue"]
+- !private ["Ps16RawRepresentable", "init"]
+- !private ["P14SwifterSockets16ReceiverProtocol", "startReceiverLoop"]
+- ["O14SwifterSockets6Result", "deinit"]
+- ["O14SwifterSockets6Result", "error"]
+- ["O14SwifterSockets6Result", "success"]
+- ["C14SwifterSockets6Secure", "CertificateAndPrivateKeyFiles"]
+- ["C14SwifterSockets6Secure", "Ctx"]
+- !private ["C14SwifterSockets6Secure", "ServerCtx"]
+- !private ["Ps8Sequence", "Element"]
+- !private ["Ps8Sequence", "IndexDistance"]
+- !private ["Ps8Sequence", "Iterator"]
+- !private ["Ps8Sequence", "_Element"]
+- !private ["Ps8Sequence", "count"]
+- !private ["CC14SwifterSockets6Secure9ServerCtx", "init"]
+- ["P14SwifterSockets14ServerProtocol", "AliveHandler"]
+- !private ["P14SwifterSockets14ServerProtocol", "ConnectionType"]
+- !private ["P14SwifterSockets14ServerProtocol", "DispatchQueue"]
+- !private ["P14SwifterSockets14ServerProtocol", "Int32"]
+- !private ["P14SwifterSockets14ServerProtocol", "_stop"]
+- !private ["P14SwifterSockets14ServerProtocol", "acceptLoopDuration"]
+- !private ["P14SwifterSockets14ServerProtocol", "acceptQueue"]
+- !private ["P14SwifterSockets14ServerProtocol", "addressHandler"]
+- !private ["P14SwifterSockets14ServerProtocol", "aliveHandler"]
+- !private ["P14SwifterSockets14ServerProtocol", "certificateAndPrivateKeyFiles"]
+- !private ["P14SwifterSockets14ServerProtocol", "closeSocket"]
+- !private ["P14SwifterSockets14ServerProtocol", "connectionObjectFactory"]
+- !private ["P14SwifterSockets14ServerProtocol", "ctx"]
+- !private ["P14SwifterSockets14ServerProtocol", "domainCtxs"]
+- !private ["P14SwifterSockets14ServerProtocol", "errorHandler"]
+- !private ["P14SwifterSockets14ServerProtocol", "maxPendingConnectionRequests"]
+- !private ["P14SwifterSockets14ServerProtocol", "port"]
+- !private ["P14SwifterSockets14ServerProtocol", "serverCtx"]
+- !private ["P14SwifterSockets14ServerProtocol", "setOptions"]
+- !private ["P14SwifterSockets14ServerProtocol", "setupSslServer"]
+- !private ["P14SwifterSockets14ServerProtocol", "socket"]
+- !private ["P14SwifterSockets14ServerProtocol", "sslAccept"]
+- !private ["P14SwifterSockets14ServerProtocol", "sslSessionHandler"]
+- ["P14SwifterSockets14ServerProtocol", "start"]
+- ["P14SwifterSockets14ServerProtocol", "stop"]
+- !private ["P14SwifterSockets14ServerProtocol", "transmitQueueQoS"]
+- !private ["P14SwifterSockets14ServerProtocol", "transmitTimeout"]
+- !private ["P14SwifterSockets14ServerProtocol", "trustedClientCertificates"]
+- ["P14SwifterSockets14ServerProtocol", ""]
+- !private ["Ps10SetAlgebra", "Element"]
+- !private ["Ps10SetAlgebra", "RawValue"]
+- !private ["Ps10SetAlgebra", "init"]
+- !private ["Ps13SignedInteger", "init"]
+- !private ["Ps12SignedNumber", "init"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "deinit"]
+- !private ["O14SwifterSockets15SslAcceptResult", "accepted"]
+- !private ["O14SwifterSockets15SslAcceptResult", "closed"]
+- !private ["O14SwifterSockets15SslAcceptResult", "deinit"]
+- !private ["O14SwifterSockets15SslAcceptResult", "error"]
+- !private ["O14SwifterSockets15SslAcceptResult", "timeout"]
+- ["C14SwifterSockets9SslServer", "AddressHandler"]
+- ["C14SwifterSockets9SslServer", "Bool"]
+- ["C14SwifterSockets9SslServer", "ConnectionObjectFactory"]
+- !private ["C14SwifterSockets9SslServer", "ConnectionType"]
+- ["C14SwifterSockets9SslServer", "DispatchQoS"]
+- ["C14SwifterSockets9SslServer", "DispatchQueue"]
+- ["C14SwifterSockets9SslServer", "ErrorHandler"]
+- ["C14SwifterSockets9SslServer", "Int"]
+- ["C14SwifterSockets9SslServer", "Int32"]
+- ["C14SwifterSockets9SslServer", "Option"]
+- ["C14SwifterSockets9SslServer", "Result"]
+- ["C14SwifterSockets9SslServer", "Secure"]
+- ["C14SwifterSockets9SslServer", "SslSessionHandler"]
+- ["C14SwifterSockets9SslServer", "String"]
+- ["C14SwifterSockets9SslServer", "TcpipServer"]
+- ["C14SwifterSockets9SslServer", "TimeInterval"]
+- !private ["C14SwifterSockets9SslServer", "_stop"]
+- ["C14SwifterSockets9SslServer", "acceptLoopDuration"]
+- ["C14SwifterSockets9SslServer", "acceptQueue"]
+- ["C14SwifterSockets9SslServer", "addTrustedClientCertificate"]
+- ["C14SwifterSockets9SslServer", "addressHandler"]
+- ["C14SwifterSockets9SslServer", "aliveHandler"]
+- ["C14SwifterSockets9SslServer", "certificateAndPrivateKeyFiles"]
+- !private ["C14SwifterSockets9SslServer", "closeSocket"]
+- ["C14SwifterSockets9SslServer", "connectionObjectFactory"]
+- !private ["C14SwifterSockets9SslServer", "ctx"]
+- ["C14SwifterSockets9SslServer", "deinit"]
+- ["C14SwifterSockets9SslServer", "domainCtxs"]
+- ["C14SwifterSockets9SslServer", "errorHandler"]
+- ["C14SwifterSockets9SslServer", "init"]
+- ["C14SwifterSockets9SslServer", "isRunning"]
+- ["C14SwifterSockets9SslServer", "maxPendingConnectionRequests"]
+- ["C14SwifterSockets9SslServer", "port"]
+- ["C14SwifterSockets9SslServer", "serverCtx"]
+- ["C14SwifterSockets9SslServer", "setOptions"]
+- !private ["C14SwifterSockets9SslServer", "setupSslServer"]
+- ["C14SwifterSockets9SslServer", "socket"]
+- !private ["C14SwifterSockets9SslServer", "sslAccept"]
+- ["C14SwifterSockets9SslServer", "sslSessionHandler"]
+- ["C14SwifterSockets9SslServer", "start"]
+- ["C14SwifterSockets9SslServer", "stop"]
+- ["C14SwifterSockets9SslServer", "transmitQueueQoS"]
+- ["C14SwifterSockets9SslServer", "transmitTimeout"]
+- ["C14SwifterSockets9SslServer", "trustedClientCertificates"]
+- ["Vs12StaticString", "deinit"]
+- !private ["Vs12StaticString", "init"]
+- !private ["Ps10Strideable", "init"]
+- ["SS", "deinit"]
+- ["SS", "init"]
+- ["C14SwifterSockets11TcpipServer", "AliveHandler"]
+- ["Ps16TextOutputStream", "init"]
+- ["Ps20TextOutputStreamable", "init"]
+- !private ["P14SwifterSockets19TransmitterProtocol", "startReceiverLoop"]
+- ["Su", "deinit"]
+- !private ["Vs6UInt16", "deinit"]
+- !private ["Vs6UInt32", "deinit"]
+- !private ["Vs6UInt64", "deinit"]
+- !private ["Vs5UInt8", "deinit"]
+- !private ["Sc", "deinit"]
+- !private ["Ps14_ArrayProtocol", "IndexDistance"]
+- !private ["Ps14_ArrayProtocol", "Iterator"]
+- !private ["Ps14_ArrayProtocol", "_Element"]
+- !private ["Ps14_ArrayProtocol", "count"]
+- !private ["Ps24_DestructorSafeContainer", "IndexDistance"]
+- !private ["Ps24_DestructorSafeContainer", "Iterator"]
+- !private ["Ps24_DestructorSafeContainer", "_Element"]
+- !private ["Ps24_DestructorSafeContainer", "count"]
+- !private ["Ps35_ExpressibleByBuiltinBooleanLiteral", "_getBuiltinLogicValue"]
+- ["Ps51_ExpressibleByBuiltinExtendedGraphemeClusterLiteral", "init"]
+- !private ["Ps35_ExpressibleByBuiltinIntegerLiteral", "init"]
+- ["Ps34_ExpressibleByBuiltinStringLiteral", "init"]
+- ["Ps39_ExpressibleByBuiltinUTF16StringLiteral", "init"]
+- ["Ps41_ExpressibleByBuiltinUnicodeScalarLiteral", "init"]
+- ["Ps35_HasCustomAnyHashableRepresentation", "init"]
+- !private ["Ps9_Hashable", "Attributes"]
+- !private ["Ps9_Hashable", "AutoreleaseFrequency"]
+- !private ["Ps9_Hashable", "_getBuiltinLogicValue"]
+- !private ["Ps9_Hashable", "async"]
+- !private ["Ps9_Hashable", "inherit"]
+- ["Ps9_Hashable", "init"]
+- !private ["Ps14_Incrementable", "init"]
+- !private ["Ps8_Integer", "init"]
+- !private ["Ps18_IntegerArithmetic", "init"]
+- !private ["Ps21_ObjectiveCBridgeable", "IndexDistance"]
+- !private ["Ps21_ObjectiveCBridgeable", "Iterator"]
+- !private ["Ps21_ObjectiveCBridgeable", "_Element"]
+- !private ["Ps21_ObjectiveCBridgeable", "_getBuiltinLogicValue"]
+- !private ["Ps21_ObjectiveCBridgeable", "count"]
+- ["Ps21_ObjectiveCBridgeable", "init"]
+- ["Vs26_OptionalNilComparisonType", "deinit"]
+- !private ["Ps14_SignedInteger", "init"]
+- !private ["Ps11_Strideable", "init"]
+depends-nominal:
+- "Ps9AnyObject"
+- "Sa"
+- "VE8DispatchCSo13DispatchQueue10Attributes"
+- "OE8DispatchCSo13DispatchQueue20AutoreleaseFrequency"
+- !private "Ps23BidirectionalCollection"
+- !private "Ps22BidirectionalIndexable"
+- !private "Ps17BitwiseOperations"
+- "Sb"
+- "Ps7CVarArg"
+- "VC14SwifterSockets6Secure29CertificateAndPrivateKeyFiles"
+- !private "Vs9Character"
+- !private "Ps10Collection"
+- "Ps10Comparable"
+- !private "C14SwifterSockets10Connection"
+- !private "O14SwifterSockets14ConnectionType"
+- "CC14SwifterSockets6Secure3Ctx"
+- "Ps28CustomDebugStringConvertible"
+- "Ps29CustomPlaygroundQuickLookable"
+- "Ps17CustomReflectable"
+- "Ps23CustomStringConvertible"
+- !private "CSo14DispatchObject"
+- "V8Dispatch11DispatchQoS"
+- "CSo13DispatchQueue"
+- "Sd"
+- "VC14SwifterSockets6Secure11EncodedFile"
+- "Ps9Equatable"
+- !private "Ps25ExpressibleByArrayLiteral"
+- !private "Ps27ExpressibleByBooleanLiteral"
+- "Ps43ExpressibleByExtendedGraphemeClusterLiteral"
+- !private "Ps27ExpressibleByIntegerLiteral"
+- "Ps32ExpressibleByStringInterpolation"
+- "Ps26ExpressibleByStringLiteral"
+- "Ps33ExpressibleByUnicodeScalarLiteral"
+- !private "Sf"
+- "Ps8Hashable"
+- "SQ"
+- !private "Ps9Indexable"
+- !private "Ps13IndexableBase"
+- !private "Vs16IndexingIterator"
+- "Si"
+- !private "Vs5Int16"
+- "Vs5Int32"
+- !private "Vs5Int64"
+- !private "Vs4Int8"
+- !private "Ps7Integer"
+- !private "Ps17IntegerArithmetic"
+- !private "Ps16IteratorProtocol"
+- "Ps25LosslessStringConvertible"
+- "Ps10MirrorPath"
+- !private "Ps17MutableCollection"
+- !private "Ps16MutableIndexable"
+- "PSo8NSCoding"
+- "PSo9NSCopying"
+- "PSo16NSMutableCopying"
+- "CSo8NSObject"
+- "PSo16NSObjectProtocol"
+- "PSo14NSSecureCoding"
+- "CSo8NSString"
+- !private "CSo9OS_object"
+- "OC14SwifterSockets9SslServer6Option"
+- !private "Ps9OptionSet"
+- "Sq"
+- !private "Ps22RandomAccessCollection"
+- !private "Ps21RandomAccessIndexable"
+- !private "Ps26RangeReplaceableCollection"
+- !private "Ps25RangeReplaceableIndexable"
+- !private "Ps16RawRepresentable"
+- !private "P14SwifterSockets16ReceiverProtocol"
+- "O14SwifterSockets6Result"
+- "C14SwifterSockets6Secure"
+- !private "Ps8Sequence"
+- !private "CC14SwifterSockets6Secure9ServerCtx"
+- "P14SwifterSockets14ServerProtocol"
+- !private "Ps10SetAlgebra"
+- !private "Ps13SignedInteger"
+- !private "Ps12SignedNumber"
+- !private "CC14SwifterSockets6Secure3Ssl"
+- !private "O14SwifterSockets15SslAcceptResult"
+- "C14SwifterSockets9SslServer"
+- "Vs12StaticString"
+- !private "Ps10Strideable"
+- "SS"
+- "C14SwifterSockets11TcpipServer"
+- "Ps16TextOutputStream"
+- "Ps20TextOutputStreamable"
+- !private "P14SwifterSockets19TransmitterProtocol"
+- "Su"
+- !private "Vs6UInt16"
+- !private "Vs6UInt32"
+- !private "Vs6UInt64"
+- !private "Vs5UInt8"
+- !private "Sc"
+- !private "Ps14_ArrayProtocol"
+- !private "Ps24_DestructorSafeContainer"
+- !private "Ps35_ExpressibleByBuiltinBooleanLiteral"
+- "Ps51_ExpressibleByBuiltinExtendedGraphemeClusterLiteral"
+- !private "Ps35_ExpressibleByBuiltinIntegerLiteral"
+- "Ps34_ExpressibleByBuiltinStringLiteral"
+- "Ps39_ExpressibleByBuiltinUTF16StringLiteral"
+- "Ps41_ExpressibleByBuiltinUnicodeScalarLiteral"
+- "Ps35_HasCustomAnyHashableRepresentation"
+- "Ps9_Hashable"
+- !private "Ps14_Incrementable"
+- !private "Ps8_Integer"
+- !private "Ps18_IntegerArithmetic"
+- "Ps21_ObjectiveCBridgeable"
+- "Vs26_OptionalNilComparisonType"
+- !private "Ps14_SignedInteger"
+- !private "Ps11_Strideable"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Swift.swiftmodule"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/Sources/SwifterSockets-Bridge.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ssl.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/e_os2.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/opensslconf.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/clang/include/inttypes.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Darwin.swiftmodule"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/comp.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/crypto.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/stack.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/safestack.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/opensslv.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ossl_typ.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/symhacks.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/bio.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/x509.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/buffer.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/evp.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/objects.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/obj_mac.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/asn1.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/bn.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ec.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/rsa.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/dsa.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/dh.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/sha.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/x509_vfy.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/lhash.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/pkcs7.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/pem.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/pem2.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/hmac.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/async.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ct.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ssl2.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ssl3.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/tls1.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/dtls1.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/srtp.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/err.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/x509v3.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/conf.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/Sources/SwifterSockets.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/SwiftOnoneSupport.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/IOKit.swiftmodule"
+interface-hash: "d925b697ad391c5f0b7d65c67a047f5e"

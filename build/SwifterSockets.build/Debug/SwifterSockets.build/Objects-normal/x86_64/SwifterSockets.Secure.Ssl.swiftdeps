@@ -1,0 +1,630 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+- "=="
+- "!="
+provides-nominal:
+- "CC14SwifterSockets6Secure3Ssl"
+- "OCC14SwifterSockets6Secure3Ssl9SslResult"
+provides-member:
+- ["C14SwifterSockets6Secure", ""]
+- ["CC14SwifterSockets6Secure3Ssl", ""]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", ""]
+- ["C14SwifterSockets6Secure", "Ssl"]
+provides-dynamic-lookup:
+depends-top-level:
+- "Secure"
+- !private "IntegerLiteralType"
+- !private "SSL_ERROR_WANT_ASYNC"
+- !private "SSL_set_fd"
+- !private "SSL_write"
+- !private "FloatLiteralType"
+- !private "SSL_connect"
+- !private "SSL_get_SSL_CTX"
+- !private ">"
+- !private "SSL_read"
+- !private "UnicodeScalarType"
+- !private "fatalError"
+- "Int32"
+- !private "SSL_ERROR_WANT_ACCEPT"
+- !private "waitForSelect"
+- "Equatable"
+- !private "~="
+- "=="
+- "AssignmentPrecedence"
+- !private "SSL_ERROR_WANT_READ"
+- !private "SSL_ERROR_NONE"
+- !private "SSL_ERROR_WANT_WRITE"
+- !private "SSL_ERROR_SSL"
+- "UnsafeMutableRawPointer"
+- !private "SSL_ERROR_ZERO_RETURN"
+- !private "Int"
+- !private "SSL_ERROR_WANT_ASYNC_JOB"
+- !private "StringLiteralType"
+- !private "SSL_ctrl"
+- !private "ERR_clear_error"
+- !private "SSL_get_verify_result"
+- !private "SSL_get_fd"
+- !private "SSL_get_error"
+- !private "SSL_new"
+- !private "!"
+- !private "BooleanLiteralType"
+- "Result"
+- "Bool"
+- "SelectResult"
+- !private "strerror"
+- !private "SSL_get_servername"
+- !private "errno"
+- !private "+="
+- !private "+"
+- !private "<"
+- !private "TLSEXT_NAMETYPE_host_name"
+- "OpaquePointer"
+- "CustomStringConvertible"
+- !private "SSL_ERROR_WANT_X509_LOOKUP"
+- "UnsafePointer"
+- "Date"
+- !private "SSL_CTRL_SET_TLSEXT_HOSTNAME"
+- "Int8"
+- !private "SSL_ERROR_SYSCALL"
+- !private "SSL_ERROR_WANT_CONNECT"
+- !private "SSL_do_handshake"
+- !private "SSL_free"
+- !private "??"
+- !private "SSL_shutdown"
+- "!="
+- !private "SSL_accept"
+- "SwifterSockets"
+- "String"
+- !private "SSL_CTX_up_ref"
+- "UnsafeRawPointer"
+depends-member:
+- ["Ps9AnyObject", "Ctx"]
+- !private ["Ps9AnyObject", "ERR_clear_error"]
+- !private ["Ps9AnyObject", "Int"]
+- !private ["Ps9AnyObject", "Int32"]
+- !private ["Ps9AnyObject", "SSL_CTRL_SET_TLSEXT_HOSTNAME"]
+- !private ["Ps9AnyObject", "SSL_CTX_up_ref"]
+- !private ["Ps9AnyObject", "SSL_ERROR_NONE"]
+- !private ["Ps9AnyObject", "SSL_ERROR_SSL"]
+- !private ["Ps9AnyObject", "SSL_ERROR_SYSCALL"]
+- !private ["Ps9AnyObject", "SSL_ERROR_WANT_ACCEPT"]
+- !private ["Ps9AnyObject", "SSL_ERROR_WANT_ASYNC"]
+- !private ["Ps9AnyObject", "SSL_ERROR_WANT_ASYNC_JOB"]
+- !private ["Ps9AnyObject", "SSL_ERROR_WANT_CONNECT"]
+- !private ["Ps9AnyObject", "SSL_ERROR_WANT_READ"]
+- !private ["Ps9AnyObject", "SSL_ERROR_WANT_WRITE"]
+- !private ["Ps9AnyObject", "SSL_ERROR_WANT_X509_LOOKUP"]
+- !private ["Ps9AnyObject", "SSL_ERROR_ZERO_RETURN"]
+- !private ["Ps9AnyObject", "SSL_accept"]
+- !private ["Ps9AnyObject", "SSL_connect"]
+- !private ["Ps9AnyObject", "SSL_ctrl"]
+- !private ["Ps9AnyObject", "SSL_do_handshake"]
+- !private ["Ps9AnyObject", "SSL_free"]
+- !private ["Ps9AnyObject", "SSL_get_SSL_CTX"]
+- !private ["Ps9AnyObject", "SSL_get_error"]
+- !private ["Ps9AnyObject", "SSL_get_fd"]
+- !private ["Ps9AnyObject", "SSL_get_servername"]
+- !private ["Ps9AnyObject", "SSL_get_verify_result"]
+- !private ["Ps9AnyObject", "SSL_new"]
+- !private ["Ps9AnyObject", "SSL_read"]
+- !private ["Ps9AnyObject", "SSL_set_fd"]
+- !private ["Ps9AnyObject", "SSL_shutdown"]
+- !private ["Ps9AnyObject", "SSL_write"]
+- !private ["Ps9AnyObject", "Secure"]
+- ["Ps9AnyObject", "Ssl"]
+- ["Ps9AnyObject", "SslResult"]
+- !private ["Ps9AnyObject", "String"]
+- !private ["Ps9AnyObject", "TLSEXT_NAMETYPE_host_name"]
+- !private ["Ps9AnyObject", "UnsafeMutableRawPointer"]
+- !private ["Ps9AnyObject", "VerificationResult"]
+- !private ["Ps9AnyObject", "X509"]
+- !private ["Ps9AnyObject", "errPrintErrors"]
+- !private ["Ps9AnyObject", "errno"]
+- !private ["Ps9AnyObject", "fatalError"]
+- !private ["Ps9AnyObject", "getError"]
+- !private ["Ps9AnyObject", "init"]
+- !private ["Ps9AnyObject", "optr"]
+- !private ["Ps9AnyObject", "strerror"]
+- !private ["Ps9AnyObject", "waitForSelect"]
+- ["Ps9AnyObject", ""]
+- !private ["Ps17BitwiseOperations", "Stride"]
+- !private ["Ps17BitwiseOperations", "init"]
+- !private ["Sb", "_getBuiltinLogicValue"]
+- ["Sb", "deinit"]
+- !private ["Ps7CVarArg", "Stride"]
+- !private ["Ps7CVarArg", "init"]
+- !private ["Vs9Character", "deinit"]
+- !private ["Vs11ClosedRange", "deinit"]
+- !private ["Ps10Comparable", "Stride"]
+- !private ["Ps10Comparable", "init"]
+- !private ["Vs20CountableClosedRange", "deinit"]
+- !private ["Vs14CountableRange", "deinit"]
+- ["CC14SwifterSockets6Secure3Ctx", "deinit"]
+- !private ["CC14SwifterSockets6Secure3Ctx", "init"]
+- !private ["CC14SwifterSockets6Secure3Ctx", "optr"]
+- !private ["Ps28CustomDebugStringConvertible", "init"]
+- !private ["Ps29CustomPlaygroundQuickLookable", "Stride"]
+- !private ["Ps29CustomPlaygroundQuickLookable", "_getBuiltinLogicValue"]
+- !private ["Ps29CustomPlaygroundQuickLookable", "init"]
+- !private ["Ps17CustomReflectable", "Stride"]
+- !private ["Ps17CustomReflectable", "_getBuiltinLogicValue"]
+- !private ["Ps17CustomReflectable", "init"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_NONE"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_SSL"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_SYSCALL"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_WANT_ACCEPT"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_WANT_ASYNC"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_WANT_ASYNC_JOB"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_WANT_CONNECT"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_WANT_READ"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_WANT_WRITE"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_WANT_X509_LOOKUP"]
+- !private ["Ps23CustomStringConvertible", "SSL_ERROR_ZERO_RETURN"]
+- !private ["Ps23CustomStringConvertible", "Stride"]
+- !private ["Ps23CustomStringConvertible", "String"]
+- !private ["Ps23CustomStringConvertible", "_getBuiltinLogicValue"]
+- ["Ps23CustomStringConvertible", "bios_errno"]
+- ["Ps23CustomStringConvertible", "completed"]
+- ["Ps23CustomStringConvertible", "description"]
+- !private ["Ps23CustomStringConvertible", "errno"]
+- ["Ps23CustomStringConvertible", "errorMessage"]
+- !private ["Ps23CustomStringConvertible", "init"]
+- ["Ps23CustomStringConvertible", "ssl"]
+- !private ["Ps23CustomStringConvertible", "strerror"]
+- ["Ps23CustomStringConvertible", "syscall"]
+- ["Ps23CustomStringConvertible", "undocumentedSslError"]
+- ["Ps23CustomStringConvertible", "undocumentedSslFunctionResult"]
+- ["Ps23CustomStringConvertible", "wantAccept"]
+- ["Ps23CustomStringConvertible", "wantAsync"]
+- ["Ps23CustomStringConvertible", "wantAsyncJob"]
+- ["Ps23CustomStringConvertible", "wantConnect"]
+- ["Ps23CustomStringConvertible", "wantRead"]
+- ["Ps23CustomStringConvertible", "wantWrite"]
+- ["Ps23CustomStringConvertible", "wantX509Lookup"]
+- ["Ps23CustomStringConvertible", "zeroReturn"]
+- ["Ps23CustomStringConvertible", ""]
+- ["V10Foundation4Date", "deinit"]
+- !private ["Sd", "deinit"]
+- !private ["Ps9Equatable", "RawValue"]
+- !private ["Ps9Equatable", "SSL_ERROR_NONE"]
+- !private ["Ps9Equatable", "SSL_ERROR_SSL"]
+- !private ["Ps9Equatable", "SSL_ERROR_SYSCALL"]
+- !private ["Ps9Equatable", "SSL_ERROR_WANT_ACCEPT"]
+- !private ["Ps9Equatable", "SSL_ERROR_WANT_ASYNC"]
+- !private ["Ps9Equatable", "SSL_ERROR_WANT_ASYNC_JOB"]
+- !private ["Ps9Equatable", "SSL_ERROR_WANT_CONNECT"]
+- !private ["Ps9Equatable", "SSL_ERROR_WANT_READ"]
+- !private ["Ps9Equatable", "SSL_ERROR_WANT_WRITE"]
+- !private ["Ps9Equatable", "SSL_ERROR_WANT_X509_LOOKUP"]
+- !private ["Ps9Equatable", "SSL_ERROR_ZERO_RETURN"]
+- !private ["Ps9Equatable", "Stride"]
+- !private ["Ps9Equatable", "String"]
+- !private ["Ps9Equatable", "_getBuiltinLogicValue"]
+- ["Ps9Equatable", "bios_errno"]
+- ["Ps9Equatable", "completed"]
+- ["Ps9Equatable", "description"]
+- !private ["Ps9Equatable", "errno"]
+- ["Ps9Equatable", "errorMessage"]
+- !private ["Ps9Equatable", "init"]
+- ["Ps9Equatable", "ssl"]
+- !private ["Ps9Equatable", "strerror"]
+- ["Ps9Equatable", "syscall"]
+- ["Ps9Equatable", "undocumentedSslError"]
+- ["Ps9Equatable", "undocumentedSslFunctionResult"]
+- ["Ps9Equatable", "wantAccept"]
+- ["Ps9Equatable", "wantAsync"]
+- ["Ps9Equatable", "wantAsyncJob"]
+- ["Ps9Equatable", "wantConnect"]
+- ["Ps9Equatable", "wantRead"]
+- ["Ps9Equatable", "wantWrite"]
+- ["Ps9Equatable", "wantX509Lookup"]
+- !private ["Ps9Equatable", "x509_v_ok"]
+- ["Ps9Equatable", "zeroReturn"]
+- ["Ps9Equatable", ""]
+- !private ["Ps27ExpressibleByBooleanLiteral", "_getBuiltinLogicValue"]
+- !private ["Ps43ExpressibleByExtendedGraphemeClusterLiteral", "init"]
+- !private ["Ps27ExpressibleByIntegerLiteral", "Stride"]
+- !private ["Ps27ExpressibleByIntegerLiteral", "init"]
+- !private ["Ps32ExpressibleByStringInterpolation", "init"]
+- !private ["Ps26ExpressibleByStringLiteral", "init"]
+- !private ["Ps33ExpressibleByUnicodeScalarLiteral", "init"]
+- !private ["Sf", "deinit"]
+- !private ["Ps8Hashable", "RawValue"]
+- !private ["Ps8Hashable", "Stride"]
+- !private ["Ps8Hashable", "_getBuiltinLogicValue"]
+- !private ["Ps8Hashable", "description"]
+- !private ["Ps8Hashable", "init"]
+- !private ["Ps8Hashable", "x509_v_ok"]
+- ["SQ", "deinit"]
+- ["Si", "deinit"]
+- !private ["Si", "init"]
+- !private ["Vs5Int16", "deinit"]
+- !private ["Vs5Int32", "Stride"]
+- ["Vs5Int32", "deinit"]
+- !private ["Vs5Int32", "init"]
+- !private ["Vs5Int64", "deinit"]
+- !private ["Vs4Int8", "deinit"]
+- !private ["Ps7Integer", "Stride"]
+- !private ["Ps7Integer", "init"]
+- !private ["Ps17IntegerArithmetic", "Stride"]
+- !private ["Ps17IntegerArithmetic", "init"]
+- !private ["Ps25LosslessStringConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps25LosslessStringConvertible", "init"]
+- !private ["Ps10MirrorPath", "init"]
+- !private ["PSo8NSCoding", "init"]
+- !private ["PSo9NSCopying", "init"]
+- !private ["PSo16NSMutableCopying", "init"]
+- !private ["CSo8NSObject", "init"]
+- !private ["PSo16NSObjectProtocol", "init"]
+- !private ["PSo14NSSecureCoding", "init"]
+- !private ["CSo8NSString", "init"]
+- ["Os5Never", "deinit"]
+- ["Vs13OpaquePointer", "deinit"]
+- ["Sq", "deinit"]
+- !private ["Vs5Range", "deinit"]
+- !private ["Ps16RawRepresentable", "RawValue"]
+- !private ["Ps16RawRepresentable", "description"]
+- !private ["Ps16RawRepresentable", "init"]
+- !private ["Ps16RawRepresentable", "x509_v_ok"]
+- ["O14SwifterSockets6Result", "deinit"]
+- !private ["O14SwifterSockets6Result", "error"]
+- !private ["O14SwifterSockets6Result", "success"]
+- ["C14SwifterSockets6Secure", "Bool"]
+- ["C14SwifterSockets6Secure", "Ctx"]
+- ["C14SwifterSockets6Secure", "CustomStringConvertible"]
+- ["C14SwifterSockets6Secure", "Date"]
+- !private ["C14SwifterSockets6Secure", "ERR_clear_error"]
+- ["C14SwifterSockets6Secure", "Equatable"]
+- !private ["C14SwifterSockets6Secure", "Int"]
+- ["C14SwifterSockets6Secure", "Int32"]
+- ["C14SwifterSockets6Secure", "Int8"]
+- ["C14SwifterSockets6Secure", "OpaquePointer"]
+- ["C14SwifterSockets6Secure", "Result"]
+- !private ["C14SwifterSockets6Secure", "SSL_CTRL_SET_TLSEXT_HOSTNAME"]
+- !private ["C14SwifterSockets6Secure", "SSL_CTX_up_ref"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_NONE"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_SSL"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_SYSCALL"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_WANT_ACCEPT"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_WANT_ASYNC"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_WANT_ASYNC_JOB"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_WANT_CONNECT"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_WANT_READ"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_WANT_WRITE"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_WANT_X509_LOOKUP"]
+- !private ["C14SwifterSockets6Secure", "SSL_ERROR_ZERO_RETURN"]
+- !private ["C14SwifterSockets6Secure", "SSL_accept"]
+- !private ["C14SwifterSockets6Secure", "SSL_connect"]
+- !private ["C14SwifterSockets6Secure", "SSL_ctrl"]
+- !private ["C14SwifterSockets6Secure", "SSL_do_handshake"]
+- !private ["C14SwifterSockets6Secure", "SSL_free"]
+- !private ["C14SwifterSockets6Secure", "SSL_get_SSL_CTX"]
+- !private ["C14SwifterSockets6Secure", "SSL_get_error"]
+- !private ["C14SwifterSockets6Secure", "SSL_get_fd"]
+- !private ["C14SwifterSockets6Secure", "SSL_get_servername"]
+- !private ["C14SwifterSockets6Secure", "SSL_get_verify_result"]
+- !private ["C14SwifterSockets6Secure", "SSL_new"]
+- !private ["C14SwifterSockets6Secure", "SSL_read"]
+- !private ["C14SwifterSockets6Secure", "SSL_set_fd"]
+- !private ["C14SwifterSockets6Secure", "SSL_shutdown"]
+- !private ["C14SwifterSockets6Secure", "SSL_write"]
+- ["C14SwifterSockets6Secure", "Secure"]
+- ["C14SwifterSockets6Secure", "SelectResult"]
+- ["C14SwifterSockets6Secure", "Ssl"]
+- ["C14SwifterSockets6Secure", "String"]
+- !private ["C14SwifterSockets6Secure", "TLSEXT_NAMETYPE_host_name"]
+- ["C14SwifterSockets6Secure", "UnsafeMutableRawPointer"]
+- ["C14SwifterSockets6Secure", "UnsafePointer"]
+- ["C14SwifterSockets6Secure", "UnsafeRawPointer"]
+- ["C14SwifterSockets6Secure", "X509"]
+- !private ["C14SwifterSockets6Secure", "errPrintErrors"]
+- !private ["C14SwifterSockets6Secure", "errno"]
+- !private ["C14SwifterSockets6Secure", "fatalError"]
+- !private ["C14SwifterSockets6Secure", "strerror"]
+- !private ["C14SwifterSockets6Secure", "waitForSelect"]
+- ["O14SwifterSockets12SelectResult", "closed"]
+- ["O14SwifterSockets12SelectResult", "deinit"]
+- ["O14SwifterSockets12SelectResult", "error"]
+- ["O14SwifterSockets12SelectResult", "ready"]
+- ["O14SwifterSockets12SelectResult", "timeout"]
+- !private ["Ps13SignedInteger", "Stride"]
+- !private ["Ps13SignedInteger", "init"]
+- !private ["Ps12SignedNumber", "Stride"]
+- !private ["Ps12SignedNumber", "init"]
+- ["CC14SwifterSockets6Secure3Ssl", "Bool"]
+- ["CC14SwifterSockets6Secure3Ssl", "Ctx"]
+- ["CC14SwifterSockets6Secure3Ssl", "CustomStringConvertible"]
+- ["CC14SwifterSockets6Secure3Ssl", "Date"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "ERR_clear_error"]
+- ["CC14SwifterSockets6Secure3Ssl", "Equatable"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "Int"]
+- ["CC14SwifterSockets6Secure3Ssl", "Int32"]
+- ["CC14SwifterSockets6Secure3Ssl", "Int8"]
+- ["CC14SwifterSockets6Secure3Ssl", "OpaquePointer"]
+- ["CC14SwifterSockets6Secure3Ssl", "Result"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_CTRL_SET_TLSEXT_HOSTNAME"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_CTX_up_ref"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_NONE"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_SSL"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_SYSCALL"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_WANT_ACCEPT"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_WANT_ASYNC"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_WANT_ASYNC_JOB"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_WANT_CONNECT"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_WANT_READ"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_WANT_WRITE"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_WANT_X509_LOOKUP"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ERROR_ZERO_RETURN"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_accept"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_connect"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_ctrl"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_do_handshake"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_free"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_get_SSL_CTX"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_get_error"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_get_fd"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_get_servername"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_get_verify_result"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_new"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_read"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_set_fd"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_shutdown"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "SSL_write"]
+- ["CC14SwifterSockets6Secure3Ssl", "Secure"]
+- ["CC14SwifterSockets6Secure3Ssl", "SelectResult"]
+- ["CC14SwifterSockets6Secure3Ssl", "SslResult"]
+- ["CC14SwifterSockets6Secure3Ssl", "String"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "TLSEXT_NAMETYPE_host_name"]
+- ["CC14SwifterSockets6Secure3Ssl", "UnsafeMutableRawPointer"]
+- ["CC14SwifterSockets6Secure3Ssl", "UnsafePointer"]
+- ["CC14SwifterSockets6Secure3Ssl", "UnsafeRawPointer"]
+- ["CC14SwifterSockets6Secure3Ssl", "X509"]
+- ["CC14SwifterSockets6Secure3Ssl", "accept"]
+- ["CC14SwifterSockets6Secure3Ssl", "connect"]
+- ["CC14SwifterSockets6Secure3Ssl", "ctx"]
+- ["CC14SwifterSockets6Secure3Ssl", "deinit"]
+- ["CC14SwifterSockets6Secure3Ssl", "doHandshake"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "errno"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "fatalError"]
+- ["CC14SwifterSockets6Secure3Ssl", "getError"]
+- ["CC14SwifterSockets6Secure3Ssl", "getFd"]
+- ["CC14SwifterSockets6Secure3Ssl", "getPeerCertificate"]
+- ["CC14SwifterSockets6Secure3Ssl", "getServerName"]
+- ["CC14SwifterSockets6Secure3Ssl", "getVerifyResult"]
+- ["CC14SwifterSockets6Secure3Ssl", "init"]
+- ["CC14SwifterSockets6Secure3Ssl", "optr"]
+- ["CC14SwifterSockets6Secure3Ssl", "read"]
+- ["CC14SwifterSockets6Secure3Ssl", "setFd"]
+- ["CC14SwifterSockets6Secure3Ssl", "setTlsextHostname"]
+- ["CC14SwifterSockets6Secure3Ssl", "shutdown"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "strerror"]
+- !private ["CC14SwifterSockets6Secure3Ssl", "waitForSelect"]
+- ["CC14SwifterSockets6Secure3Ssl", "write"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "Int32"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_NONE"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_SSL"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_SYSCALL"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_WANT_ACCEPT"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_WANT_ASYNC"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_WANT_ASYNC_JOB"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_WANT_CONNECT"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_WANT_READ"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_WANT_WRITE"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_WANT_X509_LOOKUP"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "SSL_ERROR_ZERO_RETURN"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "String"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "bios_errno"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "completed"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "debugDescription"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "deinit"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "description"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "errno"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "errorMessage"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "init"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "ssl"]
+- !private ["OCC14SwifterSockets6Secure3Ssl9SslResult", "strerror"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "syscall"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "undocumentedSslError"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "undocumentedSslFunctionResult"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "wantAccept"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "wantAsync"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "wantAsyncJob"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "wantConnect"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "wantRead"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "wantWrite"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "wantX509Lookup"]
+- ["OCC14SwifterSockets6Secure3Ssl9SslResult", "zeroReturn"]
+- ["Vs12StaticString", "deinit"]
+- !private ["Vs12StaticString", "init"]
+- !private ["Ps10Strideable", "Stride"]
+- !private ["Ps10Strideable", "init"]
+- ["SS", "deinit"]
+- !private ["SS", "init"]
+- !private ["Ps16TextOutputStream", "init"]
+- !private ["Ps20TextOutputStreamable", "init"]
+- ["Su", "deinit"]
+- !private ["Vs6UInt16", "deinit"]
+- !private ["Vs6UInt32", "deinit"]
+- !private ["Vs6UInt64", "deinit"]
+- !private ["Vs5UInt8", "deinit"]
+- !private ["Sc", "deinit"]
+- ["Sv", "deinit"]
+- !private ["Sv", "init"]
+- ["SP", "deinit"]
+- ["SV", "deinit"]
+- !private ["OCC14SwifterSockets6Secure4X50918VerificationResult", "RawValue"]
+- ["OCC14SwifterSockets6Secure4X50918VerificationResult", "deinit"]
+- !private ["OCC14SwifterSockets6Secure4X50918VerificationResult", "description"]
+- !private ["OCC14SwifterSockets6Secure4X50918VerificationResult", "init"]
+- !private ["OCC14SwifterSockets6Secure4X50918VerificationResult", "x509_v_ok"]
+- !private ["CC14SwifterSockets6Secure4X509", "VerificationResult"]
+- !private ["CC14SwifterSockets6Secure4X509", "init"]
+- !private ["Ps35_ExpressibleByBuiltinBooleanLiteral", "_getBuiltinLogicValue"]
+- !private ["Ps51_ExpressibleByBuiltinExtendedGraphemeClusterLiteral", "init"]
+- !private ["Ps35_ExpressibleByBuiltinIntegerLiteral", "Stride"]
+- !private ["Ps35_ExpressibleByBuiltinIntegerLiteral", "init"]
+- !private ["Ps34_ExpressibleByBuiltinStringLiteral", "init"]
+- !private ["Ps39_ExpressibleByBuiltinUTF16StringLiteral", "init"]
+- !private ["Ps41_ExpressibleByBuiltinUnicodeScalarLiteral", "init"]
+- !private ["Ps35_HasCustomAnyHashableRepresentation", "init"]
+- !private ["Ps9_Hashable", "RawValue"]
+- !private ["Ps9_Hashable", "Stride"]
+- !private ["Ps9_Hashable", "_getBuiltinLogicValue"]
+- !private ["Ps9_Hashable", "description"]
+- !private ["Ps9_Hashable", "init"]
+- !private ["Ps9_Hashable", "x509_v_ok"]
+- !private ["Ps14_Incrementable", "Stride"]
+- !private ["Ps14_Incrementable", "init"]
+- !private ["Ps8_Integer", "Stride"]
+- !private ["Ps8_Integer", "init"]
+- !private ["Ps18_IntegerArithmetic", "Stride"]
+- !private ["Ps18_IntegerArithmetic", "init"]
+- !private ["Ps21_ObjectiveCBridgeable", "Stride"]
+- !private ["Ps21_ObjectiveCBridgeable", "_getBuiltinLogicValue"]
+- !private ["Ps21_ObjectiveCBridgeable", "init"]
+- !private ["Vs26_OptionalNilComparisonType", "deinit"]
+- !private ["Ps8_Pointer", "init"]
+- !private ["Ps14_SignedInteger", "Stride"]
+- !private ["Ps14_SignedInteger", "init"]
+- !private ["Ps11_Strideable", "Stride"]
+- !private ["Ps11_Strideable", "init"]
+depends-nominal:
+- "Ps9AnyObject"
+- !private "Ps17BitwiseOperations"
+- "Sb"
+- !private "Ps7CVarArg"
+- !private "Vs9Character"
+- !private "Vs11ClosedRange"
+- !private "Ps10Comparable"
+- !private "Vs20CountableClosedRange"
+- !private "Vs14CountableRange"
+- "CC14SwifterSockets6Secure3Ctx"
+- !private "Ps28CustomDebugStringConvertible"
+- !private "Ps29CustomPlaygroundQuickLookable"
+- !private "Ps17CustomReflectable"
+- "Ps23CustomStringConvertible"
+- "V10Foundation4Date"
+- !private "Sd"
+- "Ps9Equatable"
+- !private "Ps27ExpressibleByBooleanLiteral"
+- !private "Ps43ExpressibleByExtendedGraphemeClusterLiteral"
+- !private "Ps27ExpressibleByIntegerLiteral"
+- !private "Ps32ExpressibleByStringInterpolation"
+- !private "Ps26ExpressibleByStringLiteral"
+- !private "Ps33ExpressibleByUnicodeScalarLiteral"
+- !private "Sf"
+- !private "Ps8Hashable"
+- "SQ"
+- "Si"
+- !private "Vs5Int16"
+- "Vs5Int32"
+- !private "Vs5Int64"
+- !private "Vs4Int8"
+- !private "Ps7Integer"
+- !private "Ps17IntegerArithmetic"
+- !private "Ps25LosslessStringConvertible"
+- !private "Ps10MirrorPath"
+- !private "PSo8NSCoding"
+- !private "PSo9NSCopying"
+- !private "PSo16NSMutableCopying"
+- !private "CSo8NSObject"
+- !private "PSo16NSObjectProtocol"
+- !private "PSo14NSSecureCoding"
+- !private "CSo8NSString"
+- "Os5Never"
+- "Vs13OpaquePointer"
+- "Sq"
+- !private "Vs5Range"
+- !private "Ps16RawRepresentable"
+- "O14SwifterSockets6Result"
+- "C14SwifterSockets6Secure"
+- "O14SwifterSockets12SelectResult"
+- !private "Ps13SignedInteger"
+- !private "Ps12SignedNumber"
+- "CC14SwifterSockets6Secure3Ssl"
+- "OCC14SwifterSockets6Secure3Ssl9SslResult"
+- "Vs12StaticString"
+- !private "Ps10Strideable"
+- "SS"
+- !private "Ps16TextOutputStream"
+- !private "Ps20TextOutputStreamable"
+- "Su"
+- !private "Vs6UInt16"
+- !private "Vs6UInt32"
+- !private "Vs6UInt64"
+- !private "Vs5UInt8"
+- !private "Sc"
+- "Sv"
+- "SP"
+- "SV"
+- "OCC14SwifterSockets6Secure4X50918VerificationResult"
+- !private "CC14SwifterSockets6Secure4X509"
+- !private "Ps35_ExpressibleByBuiltinBooleanLiteral"
+- !private "Ps51_ExpressibleByBuiltinExtendedGraphemeClusterLiteral"
+- !private "Ps35_ExpressibleByBuiltinIntegerLiteral"
+- !private "Ps34_ExpressibleByBuiltinStringLiteral"
+- !private "Ps39_ExpressibleByBuiltinUTF16StringLiteral"
+- !private "Ps41_ExpressibleByBuiltinUnicodeScalarLiteral"
+- !private "Ps35_HasCustomAnyHashableRepresentation"
+- !private "Ps9_Hashable"
+- !private "Ps14_Incrementable"
+- !private "Ps8_Integer"
+- !private "Ps18_IntegerArithmetic"
+- !private "Ps21_ObjectiveCBridgeable"
+- !private "Vs26_OptionalNilComparisonType"
+- !private "Ps8_Pointer"
+- !private "Ps14_SignedInteger"
+- !private "Ps11_Strideable"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Swift.swiftmodule"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/Sources/SwifterSockets-Bridge.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ssl.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/e_os2.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/opensslconf.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/clang/include/inttypes.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Darwin.swiftmodule"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/comp.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/crypto.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/stack.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/safestack.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/opensslv.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ossl_typ.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/symhacks.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/bio.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/x509.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/buffer.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/evp.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/objects.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/obj_mac.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/asn1.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/bn.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ec.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/rsa.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/dsa.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/dh.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/sha.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/x509_vfy.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/lhash.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/pkcs7.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/pem.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/pem2.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/hmac.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/async.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ct.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ssl2.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/ssl3.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/tls1.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/dtls1.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/srtp.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/err.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/x509v3.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/../openssl/include/openssl/conf.h"
+- "/Volumes/Home/Users/Rien/spm/SwifterSockets/Sources/SwifterSockets.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/SwiftOnoneSupport.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/IOKit.swiftmodule"
+interface-hash: "e65947362b49ed0c33b0ced87ac8cd7a"
