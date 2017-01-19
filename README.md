@@ -5,7 +5,7 @@ SwifterSockets is part of the 5 packages that make up the [Swiftfire](http://swi
 
 #####[SecureSockets](https://github.com/Swiftrien/SecureSockets)
 
-An extenstion to SwifterSockets for SSL connections.
+An extension to SwifterSockets for SSL connections.
 
 #####[Swiftfire](https://github.com/Swiftrien/Swiftfire)
 
@@ -21,19 +21,17 @@ General purpose JSON framework.
 
 #Features
 - Shields the Swift application from the complexity of the Unix socket calls.
-- Directly interfaces with the POSIX calles using:
+- Directly interfaces with the POSIX calls using:
 	- connectToTipServer
 	- tipTransfer
 	- tipReceiverLoop
-	-  
-- Implement a client with InitClient, Transfer, Close.
-- Implement a server with InitServer, Accept, Receive, Transfer, Close.
-- Can be used in three ways:
-	- Synchronously with result codes.
-	- Synchronously with exceptions.
-	- Asynchronously for implicit multithreading.
+	- tipAccept
+	- setupTipServer
+- Implements a framework on top of the POSIX calls with:
+	- Connection (class)
+	- connectToTipServer (returns a connection)
+	- TipServer (class, produces connections)
 - Includes replacements for the FD_SET, FD_CLR, FD_ZERO and FD_ISSET macro's.
-- Comes with some example code.
 
 #Version history
 
@@ -46,9 +44,13 @@ Note: Planned releases are for information only, they are subject to change with
 
 ####v1.0.0 (Planned)
 
-- Upgrade to Swift 3
+- The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-####v0.9.7 (Current)
+####v0.9.8 (Upcoming)
+
+- Major redesign to support SecureSockets the SSL complement to SwifterSockets. The old interfaces have changed and the thread related operations have been replaced by the new approach to use Connection objects rather than directly interfacing with the threads.
+
+####v0.9.7
 
 - Upgraded to Xcode 8 beta 6 (Swift 3)
 
