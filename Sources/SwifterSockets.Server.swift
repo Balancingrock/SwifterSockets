@@ -405,9 +405,9 @@ public class TipServer: ServerProtocol {
                     
                     // Get a connection object
                     
-                    let connectionType = TipConnection(clientSocket)
+                    let intf = TipInterface(clientSocket)
                     
-                    if let connectedClient = self.connectionObjectFactory!(connectionType, clientAddress) {
+                    if let connectedClient = self.connectionObjectFactory!(intf, clientAddress) {
                     
                         // Start receiver loop
                         

@@ -56,60 +56,73 @@
 import Foundation
 
 
-/// The connection type can either be socket based or ssl based.
+/// An object implementing this protocol glues a connection object to an actual interface.
+///
+/// - Note: API users do not have to implement this protocol
 
-public class ConnectionType {
-    /*
-    case socket(socket: Int32)
+public protocol InterfaceAccess {
+
+
+    /// Closes the connection and frees associated resources.
+    ///
+    /// - Note: Data transfers are aborted and may result in error messages on the receiver/transmitter protocols.
     
-    #if USE_OPEN_SSL
+    mutating func close()
     
-    case ssl(ssl: Secure.Ssl, socket: Int32)
     
-    #else
-    
-    case ssl(ssl: Int, socket: Int32)
-    
-    #endif
-    */
-    func close() {}
+    /// Transfers the data in the buffer to the peer. The transfer can be monitored by the progress closure while callback are used to provide feedback about the status of the transfer.
     
     func transfer(
         buffer: UnsafeBufferPointer<UInt8>,
         timeout: TimeInterval?,
-        callback: TransmitterProtocol? = nil,
-        progress: TransmitterProgressMonitor? = nil) -> TransferResult? {
-        
-        return TransferResult.error(message: "Function must be overriden")
-    }
+        callback: TransmitterProtocol?,
+        progress: TransmitterProgressMonitor?) -> TransferResult?
+    
+    
+    /// Starts a receiver loop that will call the operations as defined in the ReceiverProtocol on the receiver.
     
     func receiverLoop(
-        bufferSize: Int = 20 * 1024,
-        duration: TimeInterval = 10,
-        receiver: ReceiverProtocol
-        ) {}
+        bufferSize: Int,
+        duration: TimeInterval,
+        receiver: ReceiverProtocol)
 }
 
-public class TipConnection: ConnectionType {
+
+/// This class implements the InterfaceAccess protocol for a TCP/IP connection at basic POSIX socket level.
+///
+/// - Note: API users should not have to create instances of this struct. That will be done by the 'connectToTipServer' resp 'TipServer' when necessary.
+
+public struct TipInterface: InterfaceAccess {
     
-    var socket: Int32?
+    
+    /// The socket for this connection.
+    
+    private(set) var socket: Int32?
+    
+    
+    /// Returns true if the connection is still usable.
+    ///
+    /// - Note: Even if 'true' is returned it is still possible that the next attempt to use the interface will immediately result in a termination of the connection. This could happen if the peer has already closed its side of the connection.
     
     var isValid: Bool {
-        set {
-            socket = nil
-        }
-        get {
-            if socket == nil { return false }
-            if socket! < 0 { return false }
-            return true
-        }
+    
+        if socket == nil { return false }
+        if socket! < 0 { return false }
+        return true
     }
     
+    
+    /// Creates a new 'physical' interface.
+    
     init(_ socket: Int32) {
+    
         self.socket = socket
     }
     
-    override func close() {
+    
+    /// Closes this end of a connection.
+
+    public mutating func close() {
         
         if isValid {
             closeSocket(socket)
@@ -117,7 +130,17 @@ public class TipConnection: ConnectionType {
         }
     }
 
-    override func transfer(
+    
+    /// Transfers the data via the socket to the peer. This operation returns when the data has been accepted by the POSIX layer, i.e. the physical transfer may still be ongoing.
+    ///
+    /// - Parameter buffer: The buffer containing the data to be transferred.
+    /// - Parameter timeout: The timeout that applies to the transfer.
+    /// - Parameter callback: If an object is present, it will receive callbacks about the status of the transfer.
+    /// - Parameter progress: If an closure is present it will be executed periodically until the transfer is ready.
+    ///
+    /// - Returns: The result of the operations (ready, closed, timeout or error)
+    
+    public func transfer(
         buffer: UnsafeBufferPointer<UInt8>,
         timeout: TimeInterval?,
         callback: TransmitterProtocol? = nil,
@@ -131,12 +154,21 @@ public class TipConnection: ConnectionType {
                 timeout: timeout ?? 10,
                 callback: callback,
                 progress: progress)
-        }
         
-        return nil
+        } else {
+        
+            return nil
+        }
     }
     
-    override func receiverLoop(
+    
+    /// Starts the receiver loop.
+    /// 
+    /// - Parameter bufferSize: The size of the data buffer that will be allocated.
+    /// - Parameter duration: The duration of the receiver loop, i.e. the maximum interval between two pollings of the interface. If an interface is closed, this is the maximum delay before the receiver will be informed of the close event.
+    /// - Parameter receiver: The object that will receive the receiver protocol callbacks.
+    
+    public func receiverLoop(
         bufferSize: Int = 20 * 1024,
         duration: TimeInterval = 10,
         receiver: ReceiverProtocol
@@ -153,16 +185,17 @@ public class TipConnection: ConnectionType {
     }
 }
 
+
 /// Signature of a closure that is invoked to retrieve/create a connection object. The application should create a connection object with the given socket. If necessary the application can check if the remote address or certificate is acceptable. The application should not start the receiver loop of the returned connection object. That will be done by the Server or the Ssl.Server. If the server
 ///
 /// - Note: The factory is responsible to retain the connection object. I.e. the factory should ensure that the connection object remains allocated until it is no longer needed (i.e. until the connection is closed).
 ///
 /// - Note: The connection must close/free any system resources it is using when the connection is no longer needed.
 ///
-/// - Parameter connectionType: The type of connection that must be created.
+/// - Parameter intf: Provides acces to the underlying 'physical' interface.
 /// - Parameter remoteAddress: A textual representation of the IP address of the remote computer.
 
-public typealias ConnectionObjectFactory = (_ ctype: ConnectionType, _ address: String) -> Connection?
+public typealias ConnectionObjectFactory = (_ intf: InterfaceAccess, _ address: String) -> Connection?
 
 
 /// Represents a connection with another computer. It is intended to be subclassed. A Connection object has default implementations for the SwifterSocketsReceiver and SwifterSocketsTransmitterCallback protocols. A subclass should override the operations it needs.
@@ -171,7 +204,7 @@ public typealias ConnectionObjectFactory = (_ ctype: ConnectionType, _ address: 
 ///
 /// - Note: By default a connection stays open until the peer closes it. This is normally __unacceptable for a server!__
 
-public class Connection: ReceiverProtocol, TransmitterProtocol {
+open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     
     /// Initialization options
@@ -190,21 +223,6 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// A callback closure that can be used to monitor (and abort) long running transmissions. There are no rules to determine how manytimes it will be called, however it will be invoked at least once when the transmission completes. If the closure returns 'false', the transmission will be aborted.
-    
-    private var transmitterProgressMonitor: TransmitterProgressMonitor?
-    
-    
-    // The type of connection.
-    
-    private var type: ConnectionType?
-    
-    
-    /// The remote computer's address.
-    
-    private(set) var remoteAddress: String = "-"
-    
-    
     // The queue on which the transmissions will take place, if present.
     
     private(set) var transmitterQueue: DispatchQueue?
@@ -217,12 +235,17 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     
     // The timeout for transmission on this connection.
     
-    private(set) var transmitterTimeoutValue: TimeInterval = 1
+    private(set) var transmitterTimeoutValue: TimeInterval = 10
     
     
     // An optional callback for transmitter calls, if not provided, this object itself will receive the callbacks.
     
     private var transmitterProtocol: TransmitterProtocol?
+    
+
+    /// A callback closure that can be used to monitor (and abort) long running transmissions. There are no rules to determine how manytimes it will be called, however it will be invoked at least once when the transmission completes. If the closure returns 'false', the transmission will be aborted.
+    
+    private var transmitterProgressMonitor: TransmitterProgressMonitor?
     
     
     // The queue on which the receiver will run
@@ -250,6 +273,16 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     private(set) var errorHandler: ErrorHandler?
     
     
+    // The type of connection.
+    
+    private var interface: InterfaceAccess?
+    
+    
+    /// The remote computer's address.
+    
+    private(set) var remoteAddress: String = "-"
+    
+    
     /// Allow the creation of untyped connetions. This is done to allow the creation of connection-pools of reusable connection objects. Connection objects __must__ be prepeared for use by calling the "prepare" method.
     
     public init() {}
@@ -258,18 +291,18 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     /// Prepares the internal status of this object for usage.
     /// - Note: Will first reset all internal members to their default state.
     
-    public func prepare(forType type: ConnectionType, remoteAddress address: String, options: Option...) -> Bool {
-        return prepare(forType: type, remoteAddress: address, options: options)
+    public func prepare(for interface: InterfaceAccess, remoteAddress address: String, options: Option...) -> Bool {
+        return prepare(for: interface, remoteAddress: address, options: options)
     }
     
     
     /// Prepares the internal status of this object for usage.
     /// - Note: Will first reset all internal members to their default state.
     
-    public func prepare(forType type: ConnectionType, remoteAddress address: String, options: [Option]) -> Bool {
-        guard self.type == nil else { return false }
+    public func prepare(for interface: InterfaceAccess, remoteAddress address: String, options: [Option]) -> Bool {
+        guard self.interface == nil else { return false }
         reset()
-        self.type = type
+        self.interface = interface
         self.remoteAddress = address
         setOptions(options)
         return true
@@ -279,7 +312,7 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     // Resets the internal members of this object to their default state.
     
     private func reset() {
-        self.type = nil
+        self.interface = nil
         self.remoteAddress = "-"
         self.transmitterQueue = nil
         self.transmitterQueueQoS = nil
@@ -348,12 +381,18 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     /// - Note: The callee must ensure that the buffer remains allocated until the transfer is complete.
     ///
     /// - Parameter buffer: A pointer to a buffer with bytes to be transferred. The callee must ensure that the buffer remains allocated until the transfer is complete.
+    /// - Parameter timeout: The timeout for the data transfer.
     /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on the transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by self. Child classes can override those callback operations they need.
+    /// - Parameter progress: A closure that is invoked periodically to inform of the amount of data transferred.
     ///
     /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
     
     @discardableResult
-    public func transfer(_ buffer: UnsafeBufferPointer<UInt8>, callback: TransmitterProtocol? = nil, progress: TransmitterProgressMonitor? = nil) -> TransferResult? {
+    public func transfer(
+        _ buffer: UnsafeBufferPointer<UInt8>,
+        timeout: TimeInterval? = nil,
+        callback: TransmitterProtocol? = nil,
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult? {
         
         if let queue = tqueue() {
             
@@ -361,48 +400,11 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
                 
                 [weak self] in
                 
-                // Need to handle two special situations:
-                // 1) The object (self) is still valid, but the connection has been closed. In that case the type = socket and the socket is < 0.
-                // 2) The object (self) has been deallocated before this code fragment is executed.
-                
-                _ = self?.type?.transfer(
+                _ = self?.interface?.transfer(
                     buffer: buffer,
-                    timeout: self?.transmitterTimeoutValue ?? 10,
+                    timeout: timeout ?? self?.transmitterTimeoutValue,
                     callback: callback ?? self?.transmitterProtocol ?? self,
                     progress: progress ?? self?.transmitterProgressMonitor)
-                /*
-                switch self?.type {
-                    
-                case nil: break // self was deallocated, don't do anything
-                    
-                case let .socket(sock)?:
-                    
-                    // Prevent execution if the socket was already closed
-                    if sock >= 0 {
-                        
-                        tipTransfer(
-                            socket: sock,
-                            buffer: buffer,
-                            timeout: self?.transmitterTimeoutValue ?? 1,
-                            callback: self?.transmitterProtocol ?? self,
-                            progress: self?.transmitterProgressMonitor)
-                    }
-                    
-                    
-                case let .ssl(ssl, _)?:
-                    
-                    // Note: This connection is always valid because closing this connection will reset the type to socket(-2)
-                    
-                    #if USE_OPEN_SSL
-                        
-                        sslTransfer(
-                            ssl: ssl,
-                            buffer: buffer,
-                            timeout: self?.transmitterTimeoutValue ?? 1,
-                            callback: self?.transmitterProtocol ?? self,
-                            progress: self?.transmitterProgressMonitor)
-                    #endif
-                }*/
             }
             
             return nil
@@ -411,44 +413,11 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
             
             // In direct (in-line) execution self is guaranteed valid, but the connection may be closed.
             
-            return self.type?.transfer(
+            return self.interface?.transfer(
                 buffer: buffer,
-                timeout: transmitterTimeoutValue,
+                timeout: timeout ?? transmitterTimeoutValue,
                 callback: callback ?? transmitterProtocol ?? self,
                 progress: progress ?? transmitterProgressMonitor)
-
-            /*
-            switch self.type {
-                
-            case nil: return .error(message: "No type specified")
-                
-            case let .socket(sock)?:
-                
-                return tipTransfer(
-                    socket: sock,
-                    buffer: buffer,
-                    timeout: self.transmitterTimeoutValue,
-                    callback: self.transmitterProtocol ?? self,
-                    progress: self.transmitterProgressMonitor)
-                
-                
-            case let .ssl(ssl, _)?:
-                
-                #if USE_OPEN_SSL
-                    
-                    return sslTransfer(
-                        ssl: ssl,
-                        buffer: buffer,
-                        timeout: self.transmitterTimeoutValue,
-                        callback: self.transmitterProtocol ?? self,
-                        progress: self.transmitterProgressMonitor)
-                    
-                #else
-                    
-                    return nil
-                    
-                #endif
-            }*/
         }
     }
     
@@ -459,16 +428,22 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     /// - Note: The callee must ensure that the Data object remains allocated until the transfer is complete.
     ///
     /// - Parameter data: A data object containing the bytes to be transferred. The callee must ensure that this object remains allocated until the transfer is complete.
-    /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on the transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by this object itself. Child classes can override those callback operations that they need.
+    /// - Parameter timeout: The timeout for the data transfer.
+    /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on the transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by self. Child classes can override those callback operations they need.
+    /// - Parameter progress: A closure that is invoked periodically to inform of the amount of data transferred.
     ///
     /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
     
     @discardableResult
-    public func transfer(_ data: Data, callback: TransmitterProtocol? = nil) -> TransferResult? {
+    public func transfer(
+        _ data: Data,
+        timeout: TimeInterval? = nil,
+        callback: TransmitterProtocol? = nil,
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult? {
         
         return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult? in
             let buffer = UnsafeBufferPointer<UInt8>.init(start: ptr, count: data.count)
-            return self.transfer(buffer, callback: callback)
+            return self.transfer(buffer, timeout: timeout, callback: callback, progress: progress)
         }
     }
     
@@ -479,15 +454,21 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     /// - Note: The callee must ensure that the String object remains allocated until the transfer is complete.
     ///
     /// - Parameter string: The string to be transferred as UTF-8. The callee must ensure that this object remains allocated until the transfer is complete.
-    /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on thq transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by this object itself. Child classes can override those callback operations that they need.
+    /// - Parameter timeout: The timeout for the data transfer.
+    /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on the transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by self. Child classes can override those callback operations they need.
+    /// - Parameter progress: A closure that is invoked periodically to inform of the amount of data transferred.
     ///
     /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
     
     @discardableResult
-    public func transfer(_ string: String, callback: TransmitterProtocol? = nil) -> TransferResult? {
+    public func transfer(
+        _ string: String,
+        timeout: TimeInterval? = nil,
+        callback: TransmitterProtocol? = nil,
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult? {
         
         if let data = string.data(using: String.Encoding.utf8) {
-            return self.transfer(data, callback: callback)
+            return self.transfer(data, timeout: timeout, callback: callback, progress: progress)
         } else {
             _ = transmitterProgressMonitor?(0, 0)
             (callback ?? self).transmitterError("Cannot convert string to UTF8")
@@ -502,15 +483,17 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: After releasing the resources, the type will be set to socket(-2).
     
-    public func safeCloseConnection() {
+    public func closeConnection() {
+        
+        if interface == nil { return }
         
         if let queue = tqueue() {
             
-            queue.async { [weak self] in self?.unsafeCloseConnection() }
+            queue.async { [weak self] in self?.abortConnection() }
             
         } else {
             
-            unsafeCloseConnection()
+            abortConnection()
         }
     }
     
@@ -519,66 +502,49 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: Child classes should override/extend this function to release additional resources. Be sure to call super at the end of any override. Always call "safeCloseConnection" to invoke this operation.
     
-    func unsafeCloseConnection() {
+    public func abortConnection() {
         
-        type?.close()
-        /*
-        switch type {
-            
-        case nil: break
-            
-        case let .socket(sock)?:
-            
-            if sock >= 0 { closeSocket(sock) }
-            
-            type = nil
-            
-            
-        case let .ssl(ssl, sock)?:
-            
-            #if USE_OPEN_SSL
-                
-                ssl.shutdown()
-                closeSocket(sock)
-                type = nil
-                
-            #else
-                
-                break
-                
-            #endif
-        }*/
+        interface?.close()
+        interface = nil
     }
     
     
-    // MARK: - SwifterSocketsTransmitterCallback protocol
+    // MARK: - TransmitterProtocol
     
     
     /// Default implementation: Does nothing.
+    ///
+    /// - Note: No need to call super when overriden.
     
     public func transmitterReady() {}
     
     
     /// Default implementation: Closes the connection to the client from the server side immediately.
+    ///
+    /// - Note: If overriden, call super.transmitterClosed at the end.
     
     public func transmitterClosed() {
-        unsafeCloseConnection()
+        abortConnection()
     }
     
     
     /// Default implementation: Closes the connection to the client from the server side immediately.
+    ///
+    /// - Note: If overriden, call super.transmitterTimeout at the end.
     
     public func transmitterTimeout() {
         errorHandler?("Timeout on transmission")
-        unsafeCloseConnection()
+        abortConnection()
     }
     
     
     /// Default implementation: Closes the connection to the client from the server side immediately.
+    ///
+    /// - Note: If overriden, call super.transmitterError at the end.
     
     public func transmitterError(_ message: String) {
         errorHandler?(message)
-        unsafeCloseConnection()
+        abortConnection()
     }
     
     
@@ -594,46 +560,15 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
             
             [weak self] in
             
-            self?.type?.receiverLoop(
+            self?.interface?.receiverLoop(
                 bufferSize: self?.receiverBufferSize ?? 20 * 1024,
                 duration: self?.receiverLoopDuration ?? 5,
                 receiver: self!)
-            
-            /*
-            switch self?.type {
-                
-            case nil: fatalError("No receiver type specified")
-                
-            case let .socket(sock)?:
-                
-                tipReceiveLoop(
-                    socket: sock,
-                    bufferSize: self?.receiverBufferSize ?? 20 * 1024,
-                    duration: self?.receiverLoopDuration ?? 5,
-                    receiver: self)
-                
-                
-            case let .ssl(ssl, _)?:
-                
-                #if USE_OPEN_SSL
-                    
-                    sslReceiveLoop(
-                        ssl: ssl,
-                        bufferSize: self?.receiverBufferSize ?? 20 * 1024,
-                        duration: self?.receiverLoopDuration ?? 5,
-                        receiver: self)
-                    
-                #else
-                    
-                    break
-                    
-                #endif
-            }*/
         }
     }
     
     
-    // MARK: - SwifterSocketsReceiver protocol
+    // MARK: - ReceiverProtocol
     
     
     /// Called when the connection has been terminated.
@@ -643,7 +578,7 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
     
     public func receiverClosed() {
         
-        safeCloseConnection()
+        closeConnection()
     }
     
     
@@ -667,7 +602,7 @@ public class Connection: ReceiverProtocol, TransmitterProtocol {
         
         errorHandler?(message)
         
-        safeCloseConnection()
+        closeConnection()
     }
     
     

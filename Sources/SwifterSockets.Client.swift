@@ -246,9 +246,9 @@ public func connectToTipServer(
         
     case let .success(socket):
         
-        let connectionType = TipConnection(socket)
+        let intf = TipInterface(socket)
         
-        if let connection = connectionObjectFactory(connectionType, address) {
+        if let connection = connectionObjectFactory(intf, address) {
             
             connection.startReceiverLoop()
             return .success(connection)
