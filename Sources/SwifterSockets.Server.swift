@@ -297,7 +297,7 @@ public class TipServer: ServerProtocol {
     // Interface properties
     
     private(set) var socket: Int32?
-    var isRunning: Bool { return socket != nil }
+    public var isRunning: Bool { return socket != nil }
     
     
     // Internal properties
