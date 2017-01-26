@@ -516,14 +516,14 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: No need to call super when overriden.
     
-    public func transmitterReady() {}
+    open func transmitterReady() {}
     
     
     /// Default implementation: Closes the connection to the client from the server side immediately.
     ///
     /// - Note: If overriden, call super.transmitterClosed at the end.
     
-    public func transmitterClosed() {
+    open func transmitterClosed() {
         abortConnection()
     }
     
@@ -532,7 +532,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: If overriden, call super.transmitterTimeout at the end.
     
-    public func transmitterTimeout() {
+    open func transmitterTimeout() {
         errorHandler?("Timeout on transmission")
         abortConnection()
     }
@@ -542,7 +542,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: If overriden, call super.transmitterError at the end.
     
-    public func transmitterError(_ message: String) {
+    open func transmitterError(_ message: String) {
         errorHandler?(message)
         abortConnection()
     }
@@ -576,7 +576,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: If overriden, call super.receiverClosed at the end.
     
-    public func receiverClosed() {
+    open func receiverClosed() {
         
         closeConnection()
     }
@@ -587,7 +587,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: No need to call super when overriden.
     
-    public func receiverLoop() -> Bool {
+    open func receiverLoop() -> Bool {
         
         return true
     }
@@ -598,7 +598,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: If overriden, call super.receiverError at the end.
     
-    public func receiverError(_ message: String) {
+    open func receiverError(_ message: String) {
         
         errorHandler?(message)
         
@@ -611,7 +611,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: No need to call super when overriden.
     
-    public func receiverData(_ buffer: UnsafeBufferPointer<UInt8>) -> Bool {
+    open func receiverData(_ buffer: UnsafeBufferPointer<UInt8>) -> Bool {
         
         return true
     }
