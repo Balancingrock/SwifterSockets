@@ -483,7 +483,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: After releasing the resources, the type will be set to socket(-2).
     
-    public func closeConnection() {
+    open func closeConnection() {
         
         if interface == nil { return }
         
@@ -502,7 +502,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: Child classes should override/extend this function to release additional resources. Be sure to call super at the end of any override. Always call "safeCloseConnection" to invoke this operation.
     
-    public func abortConnection() {
+    open func abortConnection() {
         
         interface?.close()
         interface = nil
@@ -552,7 +552,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// Starts the receiver loop. From now on the receiver protocol will be used to handle data transfer related issues.
     
-    public func startReceiverLoop() {
+    open func startReceiverLoop() {
         
         let queue = receiverQueue ?? DispatchQueue(label: "Receiver queue", qos: receiverQueueQoS, attributes: [], autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.inherit, target: nil)
         
