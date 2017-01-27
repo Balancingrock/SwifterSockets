@@ -1,4 +1,4 @@
-# SwifterSockets
+#SwifterSockets
 A collection of socket utilities in pure Swift
 
 SwifterSockets is part of the 5 packages that make up the [Swiftfire](http://swiftfire.nl) webserver:
@@ -47,7 +47,11 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-####v0.9.8 (Upcoming)
+####v0.9.9
+
+- Fixed some access control levels
+
+####v0.9.8
 
 - Major redesign to support SecureSockets the SSL complement to SwifterSockets. The old interfaces have changed and the thread related operations have been replaced by the new approach to use Connection objects rather than directly interfacing with the threads.
 

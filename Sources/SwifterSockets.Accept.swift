@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Accept.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.8
+//  Version:    0.9.9
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.9 - Updated access control
 // v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
 //        - Added 'AddressHandler' closure to accept routine.
 // v0.9.7 - Upgraded to Xcode 8 beta 6

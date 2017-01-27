@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.8
+//  Version:    0.9.9
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.9 - Updated access control
 // v0.9.8 - Initial release
 // =====================================================================================================================
 
