@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.InitServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.9
+//  Version:    0.9.11
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -30,7 +30,7 @@
 //   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
 //
 //  I prefer the above two, but if these options don't suit you, you might also send me a gift from my amazon.co.uk
-//  whishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
+//  wishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
 //
 //  If you like to pay in another way, please contact me at rien@balancingrock.nl
 //
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.11 - Comment change
 // v0.9.9 - Updated access control
 // v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
 // v0.9.7 - Upgraded to Xcode 8 beta 6
@@ -229,7 +230,7 @@ public class TipServer: ServerProtocol {
     public typealias AliveHandler = () -> ()
     
     
-    /// Options with which the ServerSocket can be initialized.
+    /// Options with which the TipServer can be initialized.
     
     public enum Option {
         
@@ -247,7 +248,7 @@ public class TipServer: ServerProtocol {
         
         
         /// This specifies the duration of the accept loop when no connection requests arrive.
-        /// - Note: By implication this also specifies the minimum time between two 'pulsHandler' invocations.
+        /// - Note: By implication this also specifies the minimum time between two 'aliveHandler' invocations.
         /// - Note: Default = 5 seconds
         
         case acceptLoopDuration(TimeInterval)
@@ -277,8 +278,8 @@ public class TipServer: ServerProtocol {
         case errorHandler(ErrorHandler?)
         
         
-        /// This closure is started right after a connection has been accepted, before the connection object factory is called. If it returns 'true' processing resumes as normal and the connection object factor is called. If it returns false, the connection will be terminated.
-        ///
+        /// This closure is started right after a connection has been accepted, but before the connection object factory is called. If it returns 'true' processing resumes as normal and the connection object factor is called. If it returns false, the connection will be terminated.
+
         case addressHandler(AddressHandler?)
     }
     
@@ -400,7 +401,7 @@ public class TipServer: ServerProtocol {
                 
                 switch tipAccept(onSocket: sock, timeout: self.acceptLoopDuration, addressHandler: self.addressHandler) {
                     
-                // Normal,  and
+                // Normal
                 case let .accepted(clientSocket, clientAddress):
                     
                     

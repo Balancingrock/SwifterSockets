@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.InitClient.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.9
+//  Version:    0.9.11
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -30,7 +30,7 @@
 //   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
 //
 //  I prefer the above two, but if these options don't suit you, you might also send me a gift from my amazon.co.uk
-//  whishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
+//  wishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
 //
 //  If you like to pay in another way, please contact me at rien@balancingrock.nl
 //
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.11 - Comment change
 // v0.9.9 - Updated access control
 // v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
 // v0.9.7 - Upgraded to Xcode 8 beta 6

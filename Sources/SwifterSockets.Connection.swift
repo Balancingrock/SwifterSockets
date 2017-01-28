@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.9
+//  Version:    0.9.11
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -30,7 +30,7 @@
 //   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
 //
 //  I prefer the above two, but if these options don't suit you, you can also send me a gift from my amazon.co.uk
-//  whishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
+//  wishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
 //
 //  If you like to pay in another way, please contact me at rien@balancingrock.nl
 //
@@ -49,6 +49,7 @@
 //
 // History
 //
+// v0.9.11 - Comment change
 // v0.9.9 - Updated access control
 // v0.9.8 - Initial release
 // =====================================================================================================================
@@ -480,9 +481,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// This will release system or SSL resources. If a transmitter queue is used, this operation will be scheduled on that transmitter queue such that the resources will not be released before all scheduled transfers have taken place.
     ///
-    /// - Note: Multiple occurances (calls) of safeCloseConnection are allowed, but only the first one will have effect.
-    ///
-    /// - Note: After releasing the resources, the type will be set to socket(-2).
+    /// - Note: Multiple occurances (calls) of closeConnection are allowed, but only the first one will have effect.
     
     open func closeConnection() {
         
@@ -501,7 +500,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// The actual operation that releases allocated resources.
     ///
-    /// - Note: Child classes should override/extend this function to release additional resources. Be sure to call super at the end of any override. Always call "safeCloseConnection" to invoke this operation.
+    /// - Note: Child classes can override/extend this function to release additional resources. Be sure to call super at the end of any override. Always call "closeConnection" to invoke this operation.
     
     open func abortConnection() {
         
