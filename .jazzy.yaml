@@ -1,0 +1,11 @@
+# SwifterSockets document generator jazzy settings
+
+copyright: Copyright 2016-2017 Rien van der Lugt
+author: Rien van der Lugt
+module: SwifterSockets
+hide_documentation_coverage: true
+xcodebuild_arguments: [-target, SwifterSockets]
+github_url: https://github.com/Balancingrock/SwifterSockets
+output: ~/Documents/Websites/sf/projects/swiftersockets/reference
+clean: true
+theme: fullwidth
