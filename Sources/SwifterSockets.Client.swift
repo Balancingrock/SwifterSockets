@@ -1,9 +1,9 @@
 // =====================================================================================================================
 //
-//  File:       SwifterSockets.InitClient.swift
+//  File:       SwifterSockets.Client.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.11
+//  Version:    0.9.12
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,30 +49,32 @@
 //
 // History
 //
+// v0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // v0.9.11 - Comment change
-// v0.9.9 - Updated access control
-// v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
-// v0.9.7 - Upgraded to Xcode 8 beta 6
-// v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
-// v0.9.4 - Header update
-// v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
-// v0.9.2 - Added support for logUnixSocketCalls
-//        - Moved closing of sockets to SwifterSockets.closeSocket
-//        - Upgraded to Swift 2.2
-// v0.9.1 Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
-// v0.9.0 Initial release
+// v0.9.9  - Updated access control
+// v0.9.8  - Redesign of SwifterSockets to support HTTPS connections.
+// v0.9.7  - Upgraded to Xcode 8 beta 6
+// v0.9.6  - Upgraded to Xcode 8 beta 3 (Swift 3)
+// v0.9.4  - Header update
+// v0.9.3  - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
+// v0.9.2  - Added support for logUnixSocketCalls
+//         - Moved closing of sockets to SwifterSockets.closeSocket
+//         - Upgraded to Swift 2.2
+// v0.9.1  - Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
+// v0.9.0  - Initial release
 // =====================================================================================================================
 
 
 import Foundation
 
 
-/// Sets up a socket to transmit data to the specified server on the specified port.
+/// Connects a socket to a server.
 ///
-/// - Parameter atAddress: A string with either the server URL or its IP address.
-/// - Parameter atPort: A string with the port on which to connect to the server.
+/// - Parameters:
+///   - address: A string with either the server URL or its IP address.
+///   - port: A string with the portnumber on which to connect to the server.
 ///
-/// - Returns: Either success(socket: Int32) or error(message: String).
+/// - Returns: Either .success(socket: Int32) or .error(message: String).
 
 public func connectToTipServer(atAddress address: String, atPort port: String) -> Result<Int32> {
     
@@ -229,13 +231,14 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
 }
 
 
-/// Connects the client to a server. If the connect is successful it will invoke the connectionObjectFactory closure. The object returned by that closure will be returned as the result of this function.
+/// Connects a socket to a server and returns a Connection object on success.
 ///
-/// - Parameter atAddress: The IP address of the server to connect to.
-/// - Parameter atPort: The port number of the server at which to connect.
-/// - Parameter connectionObjectFactory: A closure returning the connection object when a connection was established. The receiver of that connection will have been started.
+/// - Parameters:
+///   - address: A string with either the server URL or its IP address.
+///   - port: A string with the portnumber on which to connect to the server.
+///   - connectionObjectFactory: A closure returning the connection object when a connection was established. The receiver of that connection will have been started.
 ///
-/// - Returns: Either an error description or a connection object. The other one will always be nil.
+/// - Returns: Either .success(connection: Connection) or .error(message: String)
 
 public func connectToTipServer(
     atAddress address: String,
@@ -244,7 +247,7 @@ public func connectToTipServer(
     
     switch connectToTipServer(atAddress: address, atPort: port) {
         
-    case let .error(message): return .error(message: "SwifterSockets.connectToserver: Error on connect,\n\(message)")
+    case let .error(message): return .error(message: "SwifterSockets.connectToTipServer: Error on connect,\n\(message)")
         
     case let .success(socket):
         
@@ -256,7 +259,7 @@ public func connectToTipServer(
             return .success(connection)
             
         } else {
-            return .error(message: "GetConnection closure did not provide a connection object")
+            return .error(message: "SwifterSockets.connectToTipServer: connectionObjectFactory did not provide an object")
         }
     }
 }

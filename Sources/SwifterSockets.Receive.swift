@@ -3,13 +3,13 @@
 //  File:       SwifterSockets.Receive.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.11
+//  Version:    0.9.12
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
 //  Website:    http://swiftfire.nl/pages/projects/swiftersockets/
 //  Blog:       http://swiftrien.blogspot.com
-//  Git:        https://github.com/Swiftrien/SwifterSockets
+//  Git:        https://github.com/Balancingrock/SwifterSockets
 //
 //  Copyright:  (c) 2014-2017 Marinus van der Lugt, All rights reserved.
 //
@@ -49,37 +49,38 @@
 //
 // History
 //
+// v0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // v0.9.11 - Comment change
-// v0.9.9 - Updated access control
-// v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
-// v0.9.7 - Upgraded to Xcode 8 beta 6
-//        - Fixed type in receiveDataOrThrow (was receiveNSDataOrThrow)
-// v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
-// v0.9.4 - Header update
-// v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
-// v0.9.2 - Added support for logUnixSocketCalls
-//        - Moved closing of sockets to SwifterSockets.closeSocket
-//        - Upgraded to Swift 2.2
-//        - Changed DataEndDetector from a class to a protocol.
-//        - Added return result SERVER_CLOSED to cover the case where the server closed a connection while a receiver
-//        process is still waiting for data.
-//        - Replaced error numbers with #file.#function.#line
-// v0.9.1 - ReceiveTelemetry now inherits from NSObject
-//        - Replaced (UnsafeMutablePointer<UInt8>, length) with UnsafeMutableBufferPointer<UInt8>
-//        - Added note on DataEndDetector that it can be used to receive the data also.
-// v0.9.0 - Initial release
+// v0.9.9  - Updated access control
+// v0.9.8  - Redesign of SwifterSockets to support HTTPS connections.
+// v0.9.7  - Upgraded to Xcode 8 beta 6
+//         - Fixed type in receiveDataOrThrow (was receiveNSDataOrThrow)
+// v0.9.6  - Upgraded to Xcode 8 beta 3 (Swift 3)
+// v0.9.4  - Header update
+// v0.9.3  - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
+// v0.9.2  - Added support for logUnixSocketCalls
+//         - Moved closing of sockets to SwifterSockets.closeSocket
+//         - Upgraded to Swift 2.2
+//         - Changed DataEndDetector from a class to a protocol.
+//         - Added return result SERVER_CLOSED to cover the case where the server closed a connection while a receiver process is still waiting for data.
+//         - Replaced error numbers with #file.#function.#line
+// v0.9.1  - ReceiveTelemetry now inherits from NSObject
+//         - Replaced (UnsafeMutablePointer<UInt8>, length) with UnsafeMutableBufferPointer<UInt8>
+//         - Added note on DataEndDetector that it can be used to receive the data also.
+// v0.9.0  - Initial release
 // =====================================================================================================================
 
 
 import Foundation
 
-    
-/// This function reads data from a socket into a buffer and informs the callee of the events that occur.
+
+/// This function loops and calls out to the ReceiverProtocol data (if present) for received data and interface events. The loop does not terminate until a ReceiverProtocol method returns a status indicating termination, or an error occured.
 ///
-/// - Parameter socket: The socket to use for this operation.
-/// - Parameter bufferSize: The size of the buffer that will be allocated for the data to be received.
-/// - Parameter duration: The duration of the receive loop.
-/// - Parameter receiver: The target that implements the SwifterSocketsReceive protocol. If not provided, the receive operation will function as a data sink.
+/// - Parameters:
+///   - socket: The socket to use for this operation.
+///   - bufferSize: The size of the buffer that will be allocated for the data to be received.
+///   - duration: The duration of the receive loop. I.e. the time between two successive 'select' calls if no events occur.
+///   - receiver: The target that implements the ReceiverProtocol. If not provided, the receive operation will function as a data sink until an error occurs.
 
 public func tipReceiverLoop(
     socket: Int32,

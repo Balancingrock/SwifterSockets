@@ -3,13 +3,13 @@
 //  File:       SwifterSockets.Transmit.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.11
+//  Version:    0.9.12
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
 //  Website:    http://swiftfire.nl/pages/projects/swiftersockets/
 //  Blog:       http://swiftrien.blogspot.com
-//  Git:        https://github.com/Swiftrien/SwifterSockets
+//  Git:        https://github.com/Balancingrock/SwifterSockets
 //
 //  Copyright:  (c) 2014-2017 Marinus van der Lugt, All rights reserved.
 //
@@ -49,33 +49,29 @@
 //
 // History
 //
+// v0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // v0.9.11 - Comment change
-// v0.9.9 - Updated access control
-// v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
-// v0.9.7 - Upgraded to Xcode 8 beta 6
-// v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
-// v0.9.4 - Header update
-// v0.9.3 - Changed target to Framework to support Carthage
-// v0.9.2 - Added support for logUnixSocketCalls
-//        - Moved closing of sockets to SwifterSockets.closeSocket
-//        - Added note on buffer capture to transmitAsync:buffer
-//        - Upgraded to Swift 2.2
-//        - Added SERVER_CLOSED and CLIENT_CLOSED as possible results for harmonization with SwifterSockets.Receive
-// v0.9.1 - TransmitTelemetry now inherits from NSObject
-//        - Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
-// v0.9.0 - Initial release
+// v0.9.9  - Updated access control
+// v0.9.8  - Redesign of SwifterSockets to support HTTPS connections.
+// v0.9.7  - Upgraded to Xcode 8 beta 6
+// v0.9.6  - Upgraded to Xcode 8 beta 3 (Swift 3)
+// v0.9.4  - Header update
+// v0.9.3  - Changed target to Framework to support Carthage
+// v0.9.2  - Added support for logUnixSocketCalls
+//         - Moved closing of sockets to SwifterSockets.closeSocket
+//         - Added note on buffer capture to transmitAsync:buffer
+//         - Upgraded to Swift 2.2
+//         - Added SERVER_CLOSED and CLIENT_CLOSED as possible results for harmonization with SwifterSockets.Receive
+// v0.9.1  - TransmitTelemetry now inherits from NSObject
+//         - Replaced (UnsafePointer<UInt8>, length) with UnsafeBufferPointer<UInt8>
+// v0.9.0  - Initial release
 // =====================================================================================================================
 
 
 import Foundation
 
     
-/// The return type for the transmit functions. Possible values are:
-///
-/// - ready
-/// - timeout
-/// - closed
-/// - error(message: String)
+/// The return type for the tipTransmit functions.
 
 public enum TransferResult: CustomStringConvertible, CustomDebugStringConvertible {
     
@@ -120,13 +116,14 @@ public enum TransferResult: CustomStringConvertible, CustomDebugStringConvertibl
 
 /// Transmits the data from the given buffer to the specified socket. The socket will remain open after the transfer (succesful or not).
 ///
-/// - Parameter socket: The socket on which to transfer the given data.
-/// - Parameter buffer: A pointer to a buffer containing the bytes to be transferred.
-/// - Parameter timeout: The time in seconds for the complete transfer attempt.
-/// - Parameter callback: An object that will receive the SwifterSocketsTransmitterCallback protocol operations.
-/// - Parameter progress: A closure that will be activated to keep tracks of the progress of the transfer.
+/// - Parameters:
+///   - socket: The socket on which to transfer the given data.
+///   - buffer: A pointer to a buffer containing the bytes to be transferred.
+///   - timeout: The time in seconds for the complete transfer attempt.
+///   - callback: An object that will receive the TransmitterProtocol method calls (if present).
+///   - progress: A closure that will be activated to keep track of the progress of the transfer.
 ///
-/// - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
+/// - Returns: See the TransferResult definition.
 
 @discardableResult
 public func tipTransfer(
@@ -236,13 +233,14 @@ public func tipTransfer(
 
 /// Transfers the given data. The socket will remain open after the transfer (succesful or not).
 ///
-/// - Parameter socket: The socket on which to transfer the given data.
-/// - Parameter data: Data containing the bytes to be transferred.
-/// - Parameter timeout: The time in seconds for the complete transfer attempt.
-/// - Parameter callback: An object that will receive the SwifterSocketsTransmitterCallback protocol operations.
-/// - Parameter progress: A closure that will be activated to keep tracks of the progress of the transfer.
+/// - Parameters:
+///   - socket: The socket on which to transfer the given data.
+///   - data: Data containing the bytes to be transferred.
+///   - timeout: The time in seconds for the complete transfer attempt.
+///   - callback: An object that will receive the TransmitterProtocol methods calls (if present).
+///   - progress: A closure that will be activated to keep track of the progress of the transfer.
 ///
-/// - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
+/// - Returns: See the TransferResult definition.
 
 @discardableResult
 public func tipTransfer(
@@ -261,13 +259,14 @@ public func tipTransfer(
 
 /// Transmits the given string. The socket will remain open after the transfer (succesful or not).
 ///
-/// - Parameter socket: The socket on which to transfer the given data.
-/// - Parameter string: The string transformed in an array of UTF8 data.
-/// - Parameter timeout: The time in seconds for the complete transfer attempt.
-/// - Parameter callback: An object that will receive the SwifterSocketsTransmitterCallback protocol operations.
-/// - Parameter progress: A closure that will be activated to keep tracks of the progress of the transfer.
+/// - Parameters:
+///   - socket: The socket on which to transfer the given data.
+///   - string: The string to be transferred as UTF8 encoded data.
+///   - timeout: The time in seconds for the complete transfer attempt.
+///   - callback: An object that will receive the TransmitterProtocol methods calls (if present).
+///   - progress: A closure that will be activated to keep tracks of the progress of the transfer.
 ///
-/// - Returns: READY when all bytes were send, ERROR on error or TIMEOUT on timeout.
+/// - Returns: See the TransferResult definition.
 
 @discardableResult
 public func tipTransfer(

@@ -3,13 +3,13 @@
 //  File:       SwifterSockets.Accept.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.11
+//  Version:    0.9.12
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
 //  Website:    http://swiftfire.nl/pages/projects/swiftersockets/
 //  Blog:       http://swiftrien.blogspot.com
-//  Git:        https://github.com/Swiftrien/SwifterSockets
+//  Git:        https://github.com/Balancingrock/SwifterSockets
 //
 //  Copyright:  (c) 2014-2017 Marinus van der Lugt, All rights reserved.
 //
@@ -49,48 +49,55 @@
 //
 // History
 //
+// v0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // v0.9.11 - Comment change
-// v0.9.9 - Updated access control
-// v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
-//        - Added 'AddressHandler' closure to accept routine.
-// v0.9.7 - Upgraded to Xcode 8 beta 6
-// v0.9.6 - Upgraded to Xcode 8 beta 3 (Swift 3)
-// v0.9.5 - Fixed a bug where accepting an IPv6 connection would fill an IPv4 sockaddr structure.
-// v0.9.4 - Header update
-// v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
-// v0.9.2 - Added support for logUnixSocketCalls
-//        - Moved closing of sockets to SwifterSockets.closeSocket
-//        - Upgraded to Swift 2.2
-//        - Added CLOSED as a possible result (this happens when a thread is accepting while another thread closes the associated socket)
-//        - Fixed a bug that missed the error return from the select call.
-// v0.9.1 AcceptTelemetry now inherits from NSObject
-// v0.9.0 Initial release
+// v0.9.9  - Updated access control
+// v0.9.8  - Redesign of SwifterSockets to support HTTPS connections.
+//         - Added 'AddressHandler' closure to accept routine.
+// v0.9.7  - Upgraded to Xcode 8 beta 6
+// v0.9.6  - Upgraded to Xcode 8 beta 3 (Swift 3)
+// v0.9.5  - Fixed a bug where accepting an IPv6 connection would fill an IPv4 sockaddr structure.
+// v0.9.4  - Header update
+// v0.9.3  - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
+// v0.9.2  - Added support for logUnixSocketCalls
+//         - Moved closing of sockets to SwifterSockets.closeSocket
+//         - Upgraded to Swift 2.2
+//         - Added CLOSED as a possible result (this happens when a thread is accepting while another thread closes the associated socket)
+//         - Fixed a bug that missed the error return from the select call.
+// v0.9.1  - AcceptTelemetry now inherits from NSObject
+// v0.9.0  - Initial release
 // =====================================================================================================================
 
 
 import Foundation
 
 
-/// The signatre of a closure that can be invoked immediately after a client has been accepted. If the closure returns 'false' it will reject the client, if it returns 'true' it will continue nominally.
+/// Signature of a closure that can be invoked immediately after a client has been accepted.
+///
+/// - Parameter address: The address of the client.
+///
+/// - Returns: False to reject the client, True to continue nominally.
 
 public typealias AddressHandler = (_ address: String) -> Bool
 
 
-/// The return type for the accept function. Possible values are:
-///
-/// - accepted(socket, remoteAddress)
-/// - error(message: String)
-/// - timeout
-/// - closed
+/// The return type for the tipAccept function.
 
 public enum TipAcceptResult {
     
-    /// A connection was accepted, the socket descriptor and client IP adddress are enclosed
+    
+    /// A connection was accepted.
+    ///
+    /// - Parameters:
+    ///   - socket: The socket descriptor for the accepted client (with SIGPIPE disabled).
+    ///   - remoteAddress: The IP adddress of the accepted client.
     
     case accepted(socket: Int32, remoteAddress: String)
     
     
-    /// An error occured, the error message is enclosed.
+    /// An error occured
+    ///
+    /// - Parameter message: The textual description of the error that occured.
     
     case error(message: String)
     
@@ -106,12 +113,16 @@ public enum TipAcceptResult {
 }
 
 
-/// Waits for a connection request to arrive on the given socket descriptor. The function returns when a connection has been accepted, an error occured or when a timeout occured. This function does not close the accepting socket, even in the case of an error.
+/// Waits for a connection request to arrive on the given socket.
 ///
-/// - Parameter onSocket: The socket descriptor on which accept will listen for connection requests. This socket descriptor should have been initialized with "InitServerSocket" previously.
-/// - Parameter timeout: The maximum duration this function will wait for a connection request to arrive.
+/// The function returns when a connection has been accepted, an error or a timeout occured. This function does not close the accepting socket, even in the case of an error.
 ///
-/// - Returns: A "AcceptResult". If a socket descriptor is returned its SIGPIPE exception will be disabled. Note that the callee is responsible for closing of the returned socket.
+/// - Parameters:
+///   - socket: The socket on which to listen for connection requests.
+///   - timeout: The maximum duration this function will wait for a connection request to arrive.
+///   - addressHandler: A closure to be invoked when a connection request has been accepted.
+///
+/// - Returns: See the TipAcceptResult definition.
 
 public func tipAccept(
     onSocket socket: Int32,

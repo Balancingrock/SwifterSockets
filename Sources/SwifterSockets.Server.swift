@@ -1,9 +1,9 @@
 // =====================================================================================================================
 //
-//  File:       SwifterSockets.InitServer.swift
+//  File:       SwifterSockets.Server.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.11
+//  Version:    0.9.12
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,18 +49,19 @@
 //
 // History
 //
+// v0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // v0.9.11 - Comment change
-// v0.9.9 - Updated access control
-// v0.9.8 - Redesign of SwifterSockets to support HTTPS connections.
-// v0.9.7 - Upgraded to Xcode 8 beta 6
-// v0.9.6 - Upgraded to Xcode 8 beta 3 Swift 3)
-// v0.9.4 - Header update
-// v0.9.3 - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
-// v0.9.2 - Added support for logUnixSocketCalls
-//        - Moved closing of sockets to SwifterSockets.closeSocket
-//        - Upgraded to Swift 2.2
-// v0.9.1 - No changes
-// v0.9.0 - Initial release
+// v0.9.9  - Updated access control
+// v0.9.8  - Redesign of SwifterSockets to support HTTPS connections.
+// v0.9.7  - Upgraded to Xcode 8 beta 6
+// v0.9.6  - Upgraded to Xcode 8 beta 3 Swift 3)
+// v0.9.4  - Header update
+// v0.9.3  - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
+// v0.9.2  - Added support for logUnixSocketCalls
+//         - Moved closing of sockets to SwifterSockets.closeSocket
+//         - Upgraded to Swift 2.2
+// v0.9.1  - No changes
+// v0.9.0  - Initial release
 // =====================================================================================================================
 
 
@@ -69,10 +70,11 @@ import Foundation
 
 /// Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6.
 ///
-/// - Parameter onPort: A string containing the number of the port to listen on.
-/// - Parameter maxPendingConnectionRequest: The number of connections that can be kept pending before they are accepted. A connection request can be put into a queue before it is accepted or rejected. This argument specifies the size of the queue. If the queue is full further connection requests will be rejected.
+/// - Parameters:
+///   - port: A string containing the number of the port to listen on.
+///   - maxPendingConnectionRequest: The number of connections that can be kept pending before they are accepted. A connection request can be put into a queue before it is accepted or rejected. This argument specifies the size of the queue. If the queue is full further connection requests will be rejected.
 ///
-/// - Returns: Either success(socket: Int32) or error(message: String).
+/// - Returns: Either .success(socket: Int32) or .error(message: String).
 
 public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int32) -> Result<Int32> {
     
@@ -218,7 +220,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
 }
 
 
-/// This class implements a server for non-secure connections. It builds directly on top of the Darwin sockets operations.
+/// This class implements a TCP/IP server.
 ///
 /// The server has several options with which it can be configured. At a minimum the "connectionObjectFactory" must be initialized.
 
@@ -236,49 +238,57 @@ public class TipServer: ServerProtocol {
         
         
         /// The port on which the server will be listening.
-        /// - Note: Default = "80"
+        ///
+        /// Default = "80"
         
         case port(String)
         
         
         /// The maximum number of connection requests that will be queued.
-        /// - Note: Default = 20
+        ///
+        /// Default = 20
         
         case maxPendingConnectionRequests(Int)
         
         
         /// This specifies the duration of the accept loop when no connection requests arrive.
-        /// - Note: By implication this also specifies the minimum time between two 'aliveHandler' invocations.
-        /// - Note: Default = 5 seconds
+        ///
+        /// Default = 5 seconds
         
         case acceptLoopDuration(TimeInterval)
         
         
         /// The server socket operations (Accept loop and "errorProcessor") run synchronously on this queue.
-        /// - Note: Default = serial with default qos.
+        ///
+        /// Default = serial with .default qos.
         
         case acceptQueue(DispatchQueue)
         
         
         /// This closure will be invoked after a connection is accepted. It will run on the acceptQueue and block further accepts until it finishes.
-        /// - Note: Must be provided before server is started.
+        /// 
+        /// Must be provided before server is started.
         
         case connectionObjectFactory(ConnectionObjectFactory)
         
         
         /// This closure will be called when the accept loop wraps around without any activity. It will run on the accept queue and should return asap.
-        /// - Note: Default = nil
+        ///
+        /// Default = nil
         
         case aliveHandler(AliveHandler?)
         
         
         /// This closure will be called to inform the callee of possible error's during the accept loop. The accept loop will try to continue after reporting an error. It will run on the accept queue and should return asap.
-        /// - Note: Default = nil
+        ///
+        /// Default = nil
         
         case errorHandler(ErrorHandler?)
         
         
         /// This closure is started right after a connection has been accepted, but before the connection object factory is called. If it returns 'true' processing resumes as normal and the connection object factor is called. If it returns false, the connection will be terminated.
+        ///
+        /// Default = nil
 
         case addressHandler(AddressHandler?)
     }
@@ -299,6 +309,10 @@ public class TipServer: ServerProtocol {
     // Interface properties
     
     private(set) var socket: Int32?
+    
+    
+    /// - Returns true when the server is running.
+
     public var isRunning: Bool { return socket != nil }
     
     
@@ -307,12 +321,14 @@ public class TipServer: ServerProtocol {
     private var _stop = false
     
     
-    /// Allow the creation of placeholder objects.
+    /// This initializer allows the creation of placeholder objects. Before using the object it should be initialized with "setOptions".
     
     public init() {}
     
     
-    /// Create a new server socket with the given options. Only initializes internal data. Does not allocate system resources.
+    /// Create a new server with the given options. Only initializes internal data. Does not allocate system resources.
+    ///
+    /// - Parameter options: A set of options. See Option member descriptions.
     
     public init(_ options: Option ...) {
         setOptions(options)
@@ -320,12 +336,18 @@ public class TipServer: ServerProtocol {
     
     
     /// Set one or more options. Note that it is not possible to change any options while the server is running.
-    /// - Returns: Either success(true) or error(message: String)
+    ///
+    /// - Parameter options: An array of options. See Option member descriptions.
+    ///
+    /// - Returns: Either .success(true) or .error(message: String)
     
     @discardableResult
     public func setOptions(_ options: [Option]) -> Result<Bool> {
-        guard socket == nil else { return .error(message: "Socket is already active, no changes made") }
+        
+        guard socket == nil else { return .error(message: "SwifterSockets.Server.TipServer.setOptions: Socket is already active, no changes made") }
+        
         for option in options {
+        
             switch option {
             case let .port(str): port = str
             case let .maxPendingConnectionRequests(num): maxPendingConnectionRequests = num
@@ -342,7 +364,10 @@ public class TipServer: ServerProtocol {
     
     
     /// Set one or more options. Note that it is not possible to change any options while the server is running.
-    /// - Returns: Either success(true) or error(message: String)
+    ///
+    /// - Parameter options: A set of options. See Option member descriptions.
+    ///
+    /// - Returns: Either .success(true) or .error(message: String)
     
     @discardableResult
     public func setOptions(_ options: Option ...) -> Result<Bool> {
@@ -350,14 +375,14 @@ public class TipServer: ServerProtocol {
     }
     
     
-    /// Starts accepting connection requests according to the default values and the updates thereof by way of options.
+    // MARK: - ServerProtocol
+    
+    
+    /// Starts the server. If the server is running, this operation will have no effect.
     ///
-    /// If no connectionObjectFactory is set, an error will be returned.
+    /// - Note: A connectionObjectFactory must have been set.
     ///
-    /// If the server is running, this operation will have no effect.
-    ///
-    /// - Note: An connectionObjectFactory must have been set.
-    /// - Returns: Either success(true) or error(message: String)
+    /// - Returns: Either .success(true) or .error(message: String)
     
     @discardableResult
     public func start() -> Result<Bool> {
@@ -371,7 +396,7 @@ public class TipServer: ServerProtocol {
         // Exit if there is no connectionObjectFactory
         
         guard connectionObjectFactory != nil else {
-            return .error(message: "Missing ConnectionObjectFactory closure")
+            return .error(message: "SwifterSockets.Server.TipServer.start: Missing ConnectionObjectFactory closure")
         }
         
         
@@ -437,7 +462,7 @@ public class TipServer: ServerProtocol {
     }
     
     
-    /// Instructs the server socket to stop accepting new connection requests. Notice that it only stops the server and not the receiver loops that may be running.
+    /// Instructs the server to stop accepting new connection requests. Notice that it only stops the server and not the receiver loops that may be running.
     
     public func stop() {
         _stop = true

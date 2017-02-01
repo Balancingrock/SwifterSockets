@@ -38,6 +38,10 @@ General purpose JSON framework.
 
 If you need secure connections, check out [SecureSockets](https://github.com/Balancingrock/SecureSockets). SecureSockets is build on top of SwifterSockets (and OpenSSL).
 
+#Reference manual
+
+The reference manual is hosted at [Swiftfire.nl](http://swiftfire.nl/projects/swiftersockets/reference/index.html)
+
 #Installation
 
 SwifterSockets is distributed as a Swift package (SPM = Swift Package Manager) and as a framework.
@@ -66,7 +70,7 @@ This creates a subdirectory called SwifterSockets.
 
 In this subdirectory you will find an xcode project. Double click that project to open it. Once open, build the project. This will create a SwifterSockets.framework.
 
-Next in the project that will use SwifterSockets, add the SwifterSockets.framework by opening the `General` settings of the target and add the SwifterSockets.framework to the `Embedded Binaries`.
+In the project that will use SwifterSockets, add the SwifterSockets.framework by opening the `General` settings of the target and add the SwifterSockets.framework to the `Embedded Binaries`.
 
 In the swift source code import SwifterSockets by "import SwifterSockets" at the top of the file.
 
@@ -83,7 +87,15 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-####v0.9.10 (Current)
+####v0.9.12 (Current)
+
+- Improved documentation for reference manual generation
+
+####v0.9.11
+
+- Comment changes
+ 
+####v0.9.10
 
 - Added xcode project for framework generation
 

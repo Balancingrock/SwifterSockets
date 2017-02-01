@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.11
+//  Version:    0.9.12
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,30 +49,37 @@
 //
 // History
 //
+// v0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // v0.9.11 - Comment change
-// v0.9.9 - Updated access control
-// v0.9.8 - Initial release
+// v0.9.9  - Updated access control
+// v0.9.8  - Initial release
 // =====================================================================================================================
 
 
 import Foundation
 
 
-/// An object implementing this protocol glues a connection object to an actual interface.
-///
-/// - Note: API users do not have to implement this protocol
+/// The i/o functions that glue a Connection object to an interface.
 
 public protocol InterfaceAccess {
 
 
-    /// Closes the connection and frees associated resources.
+    /// Closes the connection.
     ///
-    /// - Note: Data transfers are aborted and may result in error messages on the receiver/transmitter protocols.
+    /// - Note: Data transfers will be aborted if running and may result in error messages on the receiver/transmitter protocols.
     
     mutating func close()
     
-    
-    /// Transfers the data in the buffer to the peer. The transfer can be monitored by the progress closure while callback are used to provide feedback about the status of the transfer.
+
+    /// Transfers the data in the buffer to the peer.
+    ///
+    /// - Parameters:
+    ///   - buffer: The buffer with data to be transferred.
+    ///   - timeout: The timeout for the transfer.
+    ///   - callback: The receiver for the TransmitterProtocol method calls (if present).
+    ///   - progress: The closure that is invoked after partial transfers (if any).
+    ///
+    /// - Returns: See the TransferResult definition.
     
     func transfer(
         buffer: UnsafeBufferPointer<UInt8>,
@@ -80,8 +87,15 @@ public protocol InterfaceAccess {
         callback: TransmitterProtocol?,
         progress: TransmitterProgressMonitor?) -> TransferResult?
     
-    
+
     /// Starts a receiver loop that will call the operations as defined in the ReceiverProtocol on the receiver.
+    ///
+    /// - Note: There will be no return from this function until a ReceiverProtocol method singals so, or until an error occurs.
+    ///
+    /// - Parameters:
+    ///   - bufferSize: The size of the buffer to create in bytes.
+    ///   - duration: The duration for the loop.
+    ///   - receiver: The receiver for the ReceiverProtocol method calls (if present).
     
     func receiverLoop(
         bufferSize: Int,
@@ -90,9 +104,7 @@ public protocol InterfaceAccess {
 }
 
 
-/// This class implements the InterfaceAccess protocol for a TCP/IP connection at basic POSIX socket level.
-///
-/// - Note: API users should not have to create instances of this struct. That will be done by the 'connectToTipServer' resp 'TipServer' when necessary.
+/// This class implements the InterfaceAccess protocol for the POSIX TCP/IP socket interface.
 
 public struct TipInterface: InterfaceAccess {
     
@@ -104,7 +116,7 @@ public struct TipInterface: InterfaceAccess {
     
     /// Returns true if the connection is still usable.
     ///
-    /// - Note: Even if 'true' is returned it is still possible that the next attempt to use the interface will immediately result in a termination of the connection. This could happen if the peer has already closed its side of the connection.
+    /// - Note: Even if 'true' is returned it is still possible that the next attempt to use the interface will immediately result in a termination of the connection. For example if the peer has already closed its side of the connection.
     
     var isValid: Bool {
     
@@ -114,7 +126,9 @@ public struct TipInterface: InterfaceAccess {
     }
     
     
-    /// Creates a new 'physical' interface.
+    /// Creates a new interface.
+    ///
+    /// - Parameter socket: The socket to use for this interface.
     
     init(_ socket: Int32) {
     
@@ -135,12 +149,13 @@ public struct TipInterface: InterfaceAccess {
     
     /// Transfers the data via the socket to the peer. This operation returns when the data has been accepted by the POSIX layer, i.e. the physical transfer may still be ongoing.
     ///
-    /// - Parameter buffer: The buffer containing the data to be transferred.
-    /// - Parameter timeout: The timeout that applies to the transfer.
-    /// - Parameter callback: If an object is present, it will receive callbacks about the status of the transfer.
-    /// - Parameter progress: If an closure is present it will be executed periodically until the transfer is ready.
+    /// - Parameters:
+    ///   - buffer: The buffer containing the data to be transferred.
+    ///   - timeout: The timeout that applies to the transfer.
+    ///   - callback: The receiver for the TransmitterProtocol method calls (if present).
+    ///   - progress: The closure that is invoked after partial transfers (if any).
     ///
-    /// - Returns: The result of the operations (ready, closed, timeout or error)
+    /// - Returns: See the TransferResult definition.
     
     public func transfer(
         buffer: UnsafeBufferPointer<UInt8>,
@@ -163,13 +178,16 @@ public struct TipInterface: InterfaceAccess {
         }
     }
     
-    
-    /// Starts the receiver loop.
-    /// 
-    /// - Parameter bufferSize: The size of the data buffer that will be allocated.
-    /// - Parameter duration: The duration of the receiver loop, i.e. the maximum interval between two pollings of the interface. If an interface is closed, this is the maximum delay before the receiver will be informed of the close event.
-    /// - Parameter receiver: The object that will receive the receiver protocol callbacks.
-    
+
+    /// Starts a receiver loop that will call the operations as defined in the ReceiverProtocol on the receiver.
+    ///
+    /// - Note: There will be no return from this function until a ReceiverProtocol method singals so, or until an error occurs.
+    ///
+    /// - Parameters:
+    ///   - bufferSize: The size of the buffer to create in bytes.
+    ///   - duration: The duration for the loop.
+    ///   - receiver: The receiver for the ReceiverProtocol method calls (if present).
+
     public func receiverLoop(
         bufferSize: Int = 20 * 1024,
         duration: TimeInterval = 10,
@@ -188,44 +206,92 @@ public struct TipInterface: InterfaceAccess {
 }
 
 
-/// Signature of a closure that is invoked to retrieve/create a connection object. The application should create a connection object with the given socket. If necessary the application can check if the remote address or certificate is acceptable. The application should not start the receiver loop of the returned connection object. That will be done by the Server or the Ssl.Server. If the server
+/// Signature of a closure that is invoked to retrieve/create a connection object.
 ///
 /// - Note: The factory is responsible to retain the connection object. I.e. the factory should ensure that the connection object remains allocated until it is no longer needed (i.e. until the connection is closed).
 ///
-/// - Note: The connection must close/free any system resources it is using when the connection is no longer needed.
-///
-/// - Parameter intf: Provides acces to the underlying 'physical' interface.
-/// - Parameter remoteAddress: A textual representation of the IP address of the remote computer.
+/// - Parameter intf: Provides acces to the underlying interface.
+/// - Parameter address: The IP address of the peer.
 
 public typealias ConnectionObjectFactory = (_ intf: InterfaceAccess, _ address: String) -> Connection?
 
 
-/// Represents a connection with another computer. It is intended to be subclassed. A Connection object has default implementations for the SwifterSocketsReceiver and SwifterSocketsTransmitterCallback protocols. A subclass should override the operations it needs.
+/// Objects of this class represents a connection with another computer.
 ///
-/// - Note: Every connection object is made ready for use with the "prepare" operation. The "init" operation is ineffective for that.
+/// It is intended to be subclassed for connections that are able to receive data. A Connection object has default implementations for the ReceiverProtocol and TransmitterProtocol. A subclass should override the methods it needs.
+///
+/// - Note: Every connection object is made ready for use with the "prepare" method. The "init" is ineffective for that.
 ///
 /// - Note: By default a connection stays open until the peer closes it. This is normally __unacceptable for a server!__
 
 open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     
-    /// Initialization options
+    /// Initialization options for a Connection object.
     
     public enum Option {
+        
+        
+        /// The queue to use for the transmission methods. If no queue is given a queue will be created if te transmitterQueueQoS is set. If no transmitterQueueQoS is set all transmission will take place immediately on the thread of the transmit caller.
+        
         case transmitterQueue(DispatchQueue)
+        
+        
+        /// The quality of service for a transmitterQueue to be created if no transmitterQueue is set. Without either transmitterQueueQoS or transmitterQueue all transmissions will take place immediately on the thread of the transmit caller.
+        
         case transmitterQueueQoS(DispatchQoS)
+        
+        
+        /// The timeout for transmissions.
+        ///
+        /// Default is 10 seconds.
+
         case transmitterTimeout(TimeInterval)
+        
+        
+        /// The receiver for TransmitterProtocol method calls.
+        
         case transmitterProtocol(TransmitterProtocol)
+        
+        
+        /// The closure to use to monitor the transfers. Note that transfers are all scheduled in series.
+        
         case transmitterProgressMonitor(TransmitterProgressMonitor)
+        
+        
+        /// The queue on which the receiver loop will run. If no receiverQueue is set, a new queue will be created with the quality of service as given in receiverQueueQoS.
+        
         case receiverQueue(DispatchQueue)
+        
+        
+        /// The quality of service for the receiverQueue to be created if no receiverQueue is set.
+        ///
+        /// Default is .default
+
         case receiverQueueQoS(DispatchQoS)
+        
+        
+        /// The duration of the receiverLoop.
+        ///
+        /// Default is 5 seconds.
+        
         case receiverLoopDuration(TimeInterval)
+        
+        
+        /// The size for the receiver buffer.
+        ///
+        /// Default is 20 * 1024
+        
         case receiverBufferSize(Int)
+        
+        
+        /// A closure that will be invoked when errors occur that do not result in either a TransmitterProtocol method call or a ReceiverProtocol method call.
+        
         case errorHandler(ErrorHandler)
     }
     
     
-    // The queue on which the transmissions will take place, if present.
+    /// The queue on which the transmissions will take place, if present.
     
     private(set) var transmitterQueue: DispatchQueue?
     
@@ -235,7 +301,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     private var transmitterQueueQoS: DispatchQoS?
     
     
-    // The timeout for transmission on this connection.
+    /// The timeout for transmission on this connection.
     
     private(set) var transmitterTimeoutValue: TimeInterval = 10
     
@@ -245,12 +311,12 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     private var transmitterProtocol: TransmitterProtocol?
     
 
-    /// A callback closure that can be used to monitor (and abort) long running transmissions. There are no rules to determine how manytimes it will be called, however it will be invoked at least once when the transmission completes. If the closure returns 'false', the transmission will be aborted.
+    // A callback closure that can be used to monitor (and abort) long running transmissions. There are no rules to determine how manytimes it will be called, however it will be invoked at least once when the transmission completes. If the closure returns 'false', the transmission will be aborted.
     
     private var transmitterProgressMonitor: TransmitterProgressMonitor?
     
     
-    // The queue on which the receiver will run
+    /// The queue on which the receiver will run
     
     private(set) var receiverQueue: DispatchQueue?
     
@@ -260,17 +326,17 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     private var receiverQueueQoS: DispatchQoS = .default
     
     
-    // The duration of a single receiver loop when no activity takes place
+    /// The duration of a single receiver loop when no activity takes place
     
     private(set) var receiverLoopDuration: TimeInterval = 5
     
     
-    // The size of the reciever buffer
+    /// The size of the reciever buffer
     
     private(set) var receiverBufferSize: Int = 20 * 1024
     
     
-    // The error handler that wil receive error messages (if provided)
+    /// The error handler that wil receive error messages (if provided)
     
     private(set) var errorHandler: ErrorHandler?
     
@@ -285,13 +351,21 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     private(set) var remoteAddress: String = "-"
     
     
-    /// Allow the creation of untyped connetions. This is done to allow the creation of connection-pools of reusable connection objects. Connection objects __must__ be prepeared for use by calling the "prepare" method.
+    /// The initialiser is parameterless to be able to create untyped connetions. This allows the creation of connection pools of reusable connection objects. Connection objects __must__ be prepeared for use by calling one of the "prepare" methods.
     
     public init() {}
     
     
     /// Prepares the internal status of this object for usage.
-    /// - Note: Will first reset all internal members to their default state.
+    ///
+    /// - Note: Every time it is called it will first reset all internal members to their default state.
+    ///
+    /// - Parameters:
+    ///   - interface: An InterfaceAccess glue object.
+    ///   - address: The address of the peer.
+    ///   - options: A set of options, see Connection.Object definition.
+    ///
+    /// - Returns: True if the initialization was successful. False if not. Currently the only reason for failure is if the connection object is still in use.
     
     public func prepare(for interface: InterfaceAccess, remoteAddress address: String, options: Option...) -> Bool {
         return prepare(for: interface, remoteAddress: address, options: options)
@@ -299,14 +373,42 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     
     /// Prepares the internal status of this object for usage.
-    /// - Note: Will first reset all internal members to their default state.
+    ///
+    /// - Note: Every time it is called it will first reset all internal members to their default state.
+    ///
+    /// - Parameters:
+    ///   - interface: An InterfaceAccess glue object.
+    ///   - address: The address of the peer.
+    ///   - options: A set of options, see Connection.Object definition.
+    ///
+    /// - Returns: True if the initialization was successful. False if not. Currently the only reason for failure is if the connection object is still in use.
     
     public func prepare(for interface: InterfaceAccess, remoteAddress address: String, options: [Option]) -> Bool {
+        
+        
+        // If the object is in use, this fails.
+        
         guard self.interface == nil else { return false }
+        
+        
+        // Reset to default values first
+        
         reset()
+        
+        
+        // Assign contruction parameters
+        
         self.interface = interface
         self.remoteAddress = address
+        
+        
+        // Set the options
+        
         setOptions(options)
+        
+        
+        // Success
+        
         return true
     }
     
@@ -314,6 +416,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     // Resets the internal members of this object to their default state.
     
     private func reset() {
+        
         self.interface = nil
         self.remoteAddress = "-"
         self.transmitterQueue = nil
@@ -329,17 +432,23 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// Sets options. Convenience
+    /// Convenience method to set the this connection's options.
+    ///
+    /// - Parameter options: A list of Connection.Option's
     
     private func setOptions(_ options: Option...) {
         setOptions(options)
     }
     
     
-    /// Sets options.
+    /// Sets the options for this object.
+    ///
+    /// - Parameter options: A array of Connection.Option's
     
     private func setOptions(_ options: [Option]) {
+        
         for option in options {
+            
             switch option {
             case let .transmitterQueue(tq): transmitterQueue = tq
             case let .transmitterQueueQoS(tqos): transmitterQueueQoS = tqos
@@ -355,7 +464,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         }
     }
     
-    
+
     /// If a transmitterQueue is set, that transmitterQueue will be returned. If no transmitterQueue is present, but a quality of service for the transmitterQueue is set, then a new queue will be created for the specified QoS. If no queue or QoS is set, nil will be returned.
     ///
     /// - Returns: The dispatch queue on which a transmission should be placed. Returns nil when no queue is available and the transmission must take place in-line.
@@ -377,18 +486,16 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// The content of the given buffer will be transferred to the connected client.
+    /// Transfer the content of the given buffer to the peer.
     ///
-    /// - Note: If no dispatch transmitter queue is present and no dispatch transmitter queue QoS is set, then the operation will take place "in-line".
-    /// - Note: The callee must ensure that the buffer remains allocated until the transfer is complete.
-    ///
-    /// - Parameter buffer: A pointer to a buffer with bytes to be transferred. The callee must ensure that the buffer remains allocated until the transfer is complete.
-    /// - Parameter timeout: The timeout for the data transfer.
-    /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on the transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by self. Child classes can override those callback operations they need.
-    /// - Parameter progress: A closure that is invoked periodically to inform of the amount of data transferred.
+    /// - Parameters:
+    ///   - buffer: The pointer to a buffer with the bytes to be transferred. The callee must ensure that the buffer remains allocated until the transfer is complete.
+    ///   - timeout: The timeout for the data transfer.
+    ///   - callback: The receiver for the TransmitterProtocol method calls.
+    ///   - progress: The closure that is invoked after partial transfers.
     ///
     /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
-    
+
     @discardableResult
     public func transfer(
         _ buffer: UnsafeBufferPointer<UInt8>,
@@ -424,18 +531,16 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// The content of the given data object will be transferred to the connected client.
+    /// Transfer the content of the given data object to the peer.
     ///
-    /// - Note: If no dispatch transmitter queue is present and no dispatch transmitter queue QoS is set, then the operation will take place "in-line".
-    /// - Note: The callee must ensure that the Data object remains allocated until the transfer is complete.
-    ///
-    /// - Parameter data: A data object containing the bytes to be transferred. The callee must ensure that this object remains allocated until the transfer is complete.
-    /// - Parameter timeout: The timeout for the data transfer.
-    /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on the transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by self. Child classes can override those callback operations they need.
-    /// - Parameter progress: A closure that is invoked periodically to inform of the amount of data transferred.
+    /// - Parameters:
+    ///   - data: A data object containing the bytes to be transferred. The callee must ensure that this object remains allocated until the transfer is complete.
+    ///   - timeout: The timeout for the data transfer.
+    ///   - callback: The receiver for the TransmitterProtocol method calls.
+    ///   - progress: The closure that is invoked after partial transfers.
     ///
     /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
-    
+
     @discardableResult
     public func transfer(
         _ data: Data,
@@ -450,18 +555,16 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// The content of the given string will be transmitted as a UTF-8 byte sequence to the connected client.
+    /// Transfer the content of the given string to the peer.
     ///
-    /// - Note: If no dispatch transmitter queue is present and no dispatch transmitter queue QoS is set, then the operation will take place "in-line".
-    /// - Note: The callee must ensure that the String object remains allocated until the transfer is complete.
-    ///
-    /// - Parameter string: The string to be transferred as UTF-8. The callee must ensure that this object remains allocated until the transfer is complete.
-    /// - Parameter timeout: The timeout for the data transfer.
-    /// - Parameter callback: An item that implements the SwifterSocketsTransmitterCallback protocol that will receive the callbacks from the transmission process. These callbacks will be run on the transmitter queue if a queue is used. If nil is specified, the callbacks will be handled by self. Child classes can override those callback operations they need.
-    /// - Parameter progress: A closure that is invoked periodically to inform of the amount of data transferred.
+    /// - Parameters:
+    ///   - string: The string to be transferred coded in UTF-8. The callee must ensure that this object remains allocated until the transfer is complete.
+    ///   - timeout: The timeout for the data transfer.
+    ///   - callback: The receiver for the TransmitterProtocol method calls.
+    ///   - progress: The closure that is invoked after partial transfers.
     ///
     /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
-    
+
     @discardableResult
     public func transfer(
         _ string: String,
@@ -479,9 +582,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// This will release system or SSL resources. If a transmitter queue is used, this operation will be scheduled on that transmitter queue such that the resources will not be released before all scheduled transfers have taken place.
-    ///
-    /// - Note: Multiple occurances (calls) of closeConnection are allowed, but only the first one will have effect.
+    /// If a transmitter queue is used, the abortConnection will be scheduled on the transmitter queue after all scheduled transfers have taken place.
     
     open func closeConnection() {
         
@@ -498,9 +599,9 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// The actual operation that releases allocated resources.
+    /// Immediately closes the connection and frees resources.
     ///
-    /// - Note: Child classes can override/extend this function to release additional resources. Be sure to call super at the end of any override. Always call "closeConnection" to invoke this operation.
+    /// - Note: Child classes should override this function to release any additional resources that have been allocated. Be sure to call super at the end of any override.
     
     open func abortConnection() {
         
@@ -508,6 +609,24 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         interface = nil
     }
     
+
+    /// Starts the receiver loop. From now on the receiver protocol will be used to handle data transfer related issues.
+    
+    open func startReceiverLoop() {
+        
+        let queue = receiverQueue ?? DispatchQueue(label: "Receiver queue", qos: receiverQueueQoS, attributes: [], autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.inherit, target: nil)
+        
+        queue.async {
+            
+            [weak self] in
+            
+            self?.interface?.receiverLoop(
+                bufferSize: self?.receiverBufferSize ?? 20 * 1024,
+                duration: self?.receiverLoopDuration ?? 5,
+                receiver: self!)
+        }
+    }
+
     
     // MARK: - TransmitterProtocol
     
@@ -548,30 +667,9 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    // MARK: - Receiver
-    
-    /// Starts the receiver loop. From now on the receiver protocol will be used to handle data transfer related issues.
-    
-    open func startReceiverLoop() {
-        
-        let queue = receiverQueue ?? DispatchQueue(label: "Receiver queue", qos: receiverQueueQoS, attributes: [], autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.inherit, target: nil)
-        
-        queue.async {
-            
-            [weak self] in
-            
-            self?.interface?.receiverLoop(
-                bufferSize: self?.receiverBufferSize ?? 20 * 1024,
-                duration: self?.receiverLoopDuration ?? 5,
-                receiver: self!)
-        }
-    }
-    
-    
     // MARK: - ReceiverProtocol
     
     
-    /// Called when the connection has been terminated.
     /// Default implementation: Closes the connection to the client from the server side immediately.
     ///
     /// - Note: If overriden, call super.receiverClosed at the end.
@@ -582,7 +680,6 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// Called when the receiver loop wrap around.
     /// Default implementation: Does nothing.
     ///
     /// - Note: No need to call super when overriden.
@@ -593,7 +690,6 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// Called when an eror has occured.
     /// Default implementation: Closes the connection to the client from the server side immediately.
     ///
     /// - Note: If overriden, call super.receiverError at the end.
@@ -606,7 +702,6 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// Called when data has been received.
     /// Default implementation: Does nothing.
     ///
     /// - Note: No need to call super when overriden.
