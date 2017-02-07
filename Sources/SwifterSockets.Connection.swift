@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.12
+//  Version:    0.9.13
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -49,10 +49,11 @@
 //
 // History
 //
-// v0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
-// v0.9.11 - Comment change
-// v0.9.9  - Updated access control
-// v0.9.8  - Initial release
+// 0.9.13 - Allowed overriding of prepare methods.
+// 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
+// 0.9.11 - Comment change
+// 0.9.9  - Updated access control
+// 0.9.8  - Initial release
 // =====================================================================================================================
 
 
@@ -367,7 +368,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Returns: True if the initialization was successful. False if not. Currently the only reason for failure is if the connection object is still in use.
     
-    public func prepare(for interface: InterfaceAccess, remoteAddress address: String, options: Option...) -> Bool {
+    open func prepare(for interface: InterfaceAccess, remoteAddress address: String, options: Option...) -> Bool {
         return prepare(for: interface, remoteAddress: address, options: options)
     }
     
@@ -383,7 +384,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Returns: True if the initialization was successful. False if not. Currently the only reason for failure is if the connection object is still in use.
     
-    public func prepare(for interface: InterfaceAccess, remoteAddress address: String, options: [Option]) -> Bool {
+    open func prepare(for interface: InterfaceAccess, remoteAddress address: String, options: [Option]) -> Bool {
         
         
         // If the object is in use, this fails.
