@@ -51,6 +51,7 @@
 //
 // 0.9.13 - Allowed overriding of prepare methods.
 //        - Allow public access of transmitterQueue.
+//        - Added logId to InterfaceAccess
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // 0.9.11 - Comment change
 // 0.9.9  - Updated access control
@@ -65,7 +66,14 @@ import Foundation
 
 public protocol InterfaceAccess {
 
-
+    
+    /// An id that can be used for logging purposes and will differentiate between interfaces on a temporary basis.
+    ///
+    /// It should be guaranteed that no two interfaces with the same logId are active at the same time.
+    
+    var logId: Int32 { get }
+    
+    
     /// Closes the connection.
     ///
     /// - Note: Data transfers will be aborted if running and may result in error messages on the receiver/transmitter protocols.
@@ -111,9 +119,16 @@ public protocol InterfaceAccess {
 public struct TipInterface: InterfaceAccess {
     
     
+    /// An id that can be used for logging purposes and will differentiate between interfaces on a temporary basis.
+    ///
+    /// It should be guaranteed that no two interfaces with the same logId are active at the same time.
+    
+    public var logId: Int32 { return socket ?? -1 }
+
+    
     /// The socket for this connection.
     
-    private(set) var socket: Int32?
+    private var socket: Int32?
     
     
     /// Returns true if the connection is still usable.
