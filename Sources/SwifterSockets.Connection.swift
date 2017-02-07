@@ -52,7 +52,7 @@
 // 0.9.13 - Allowed overriding of prepare methods.
 //        - Allow public access of transmitterQueue.
 //        - Added logId to InterfaceAccess
-//        - Made interface member public & private(set)
+//        - Made interface and remoteAddress members public & private(set)
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // 0.9.11 - Comment change
 // 0.9.9  - Updated access control
@@ -366,7 +366,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// The remote computer's address.
     
-    private(set) var remoteAddress: String = "-"
+    public private(set) var remoteAddress: String = "-"
     
     
     /// The initialiser is parameterless to be able to create untyped connetions. This allows the creation of connection pools of reusable connection objects. Connection objects __must__ be prepeared for use by calling one of the "prepare" methods.
