@@ -50,6 +50,7 @@
 // History
 //
 // 0.9.13 - Allowed overriding of prepare methods.
+//        - Allow public access of transmitterQueue.
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // 0.9.11 - Comment change
 // 0.9.9  - Updated access control
@@ -294,7 +295,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// The queue on which the transmissions will take place, if present.
     
-    private(set) var transmitterQueue: DispatchQueue?
+    public private(set) var transmitterQueue: DispatchQueue?
     
     
     // The quality of service for a transmission queue if it must be created.
