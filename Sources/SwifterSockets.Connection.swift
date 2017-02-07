@@ -52,6 +52,7 @@
 // 0.9.13 - Allowed overriding of prepare methods.
 //        - Allow public access of transmitterQueue.
 //        - Added logId to InterfaceAccess
+//        - Made interface member public & private(set)
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // 0.9.11 - Comment change
 // 0.9.9  - Updated access control
@@ -360,7 +361,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     // The type of connection.
     
-    private var interface: InterfaceAccess?
+    public private(set) var interface: InterfaceAccess?
     
     
     /// The remote computer's address.
