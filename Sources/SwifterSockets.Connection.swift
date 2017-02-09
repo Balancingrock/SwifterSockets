@@ -22,9 +22,8 @@
 //
 //  I also ask you to please leave this header with the source code.
 //
-//  I strongly believe that the Non Agression Principle is the way for societies to function optimally. I thus reject
-//  the implicit use of force to extract payment. Since I cannot negotiate with you about the price of this code, I
-//  have choosen to leave it up to you to determine its price. You pay me whatever you think this code is worth to you.
+//  I strongly believe that voluntarism is the way for societies to function optimally. Thus I have choosen to leave it
+//  up to you to determine the price for this code. You pay me whatever you think this code is worth to you.
 //
 //   - You can send payment via paypal to: sales@balancingrock.nl
 //   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
@@ -53,6 +52,8 @@
 //        - Allow public access of transmitterQueue.
 //        - Added logId to InterfaceAccess
 //        - Made interface and remoteAddress members public & private(set)
+//        - General overhaul of public/private access.
+//        - Comment section update
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // 0.9.11 - Comment change
 // 0.9.9  - Updated access control
@@ -129,14 +130,14 @@ public struct TipInterface: InterfaceAccess {
     
     /// The socket for this connection.
     
-    private var socket: Int32?
+    public private(set) var socket: Int32?
     
     
     /// Returns true if the connection is still usable.
     ///
     /// - Note: Even if 'true' is returned it is still possible that the next attempt to use the interface will immediately result in a termination of the connection. For example if the peer has already closed its side of the connection.
     
-    var isValid: Bool {
+    public var isValid: Bool {
     
         if socket == nil { return false }
         if socket! < 0 { return false }
@@ -148,7 +149,7 @@ public struct TipInterface: InterfaceAccess {
     ///
     /// - Parameter socket: The socket to use for this interface.
     
-    init(_ socket: Int32) {
+    public init(_ socket: Int32) {
     
         self.socket = socket
     }
@@ -316,47 +317,47 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     // The quality of service for a transmission queue if it must be created.
     
-    private var transmitterQueueQoS: DispatchQoS?
+    public private(set) var transmitterQueueQoS: DispatchQoS?
     
     
     /// The timeout for transmission on this connection.
     
-    private(set) var transmitterTimeoutValue: TimeInterval = 10
+    public private(set) var transmitterTimeoutValue: TimeInterval = 10
     
     
     // An optional callback for transmitter calls, if not provided, this object itself will receive the callbacks.
     
-    private var transmitterProtocol: TransmitterProtocol?
+    public private(set) var transmitterProtocol: TransmitterProtocol?
     
 
     // A callback closure that can be used to monitor (and abort) long running transmissions. There are no rules to determine how manytimes it will be called, however it will be invoked at least once when the transmission completes. If the closure returns 'false', the transmission will be aborted.
     
-    private var transmitterProgressMonitor: TransmitterProgressMonitor?
+    public private(set) var transmitterProgressMonitor: TransmitterProgressMonitor?
     
     
     /// The queue on which the receiver will run
     
-    private(set) var receiverQueue: DispatchQueue?
+    public private(set) var receiverQueue: DispatchQueue?
     
     
     // The quality of service for the receiver loop
     
-    private var receiverQueueQoS: DispatchQoS = .default
+    public private(set) var receiverQueueQoS: DispatchQoS = .default
     
     
     /// The duration of a single receiver loop when no activity takes place
     
-    private(set) var receiverLoopDuration: TimeInterval = 5
+    public private(set) var receiverLoopDuration: TimeInterval = 5
     
     
     /// The size of the reciever buffer
     
-    private(set) var receiverBufferSize: Int = 20 * 1024
+    public private(set) var receiverBufferSize: Int = 20 * 1024
     
     
     /// The error handler that wil receive error messages (if provided)
     
-    private(set) var errorHandler: ErrorHandler?
+    public private(set) var errorHandler: ErrorHandler?
     
     
     // The type of connection.
@@ -378,6 +379,8 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: Every time it is called it will first reset all internal members to their default state.
     ///
+    /// - Note: Overriding: must call super.
+    ///
     /// - Parameters:
     ///   - interface: An InterfaceAccess glue object.
     ///   - address: The address of the peer.
@@ -393,6 +396,8 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// Prepares the internal status of this object for usage.
     ///
     /// - Note: Every time it is called it will first reset all internal members to their default state.
+    ///
+    /// - Note: Overriding: must call super.
     ///
     /// - Parameters:
     ///   - interface: An InterfaceAccess glue object.
@@ -431,9 +436,11 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    // Resets the internal members of this object to their default state.
+    /// Resets the internal members of this object to their default state.
+    ///
+    /// - Note: Overriding: must call super.
     
-    private func reset() {
+    open func reset() {
         
         self.interface = nil
         self.remoteAddress = "-"
@@ -601,8 +608,10 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     
     /// If a transmitter queue is used, the abortConnection will be scheduled on the transmitter queue after all scheduled transfers have taken place.
+    ///
+    /// - Note: Overriding: must call super.
     
-    open func closeConnection() {
+    public func closeConnection() {
         
         if interface == nil { return }
         
@@ -619,7 +628,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// Immediately closes the connection and frees resources.
     ///
-    /// - Note: Child classes should override this function to release any additional resources that have been allocated. Be sure to call super at the end of any override.
+    /// - Note: Child classes should override this function to release any additional resources that have been allocated. Must call super.
     
     open func abortConnection() {
         
@@ -630,7 +639,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
 
     /// Starts the receiver loop. From now on the receiver protocol will be used to handle data transfer related issues.
     
-    open func startReceiverLoop() {
+    public func startReceiverLoop() {
         
         let queue = receiverQueue ?? DispatchQueue(label: "Receiver queue", qos: receiverQueueQoS, attributes: [], autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.inherit, target: nil)
         

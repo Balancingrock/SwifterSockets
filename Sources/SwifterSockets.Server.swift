@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Server.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.12
+//  Version:    0.9.13
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -22,9 +22,8 @@
 //
 //  I also ask you to please leave this header with the source code.
 //
-//  I strongly believe that the Non Agression Principle is the way for societies to function optimally. I thus reject
-//  the implicit use of force to extract payment. Since I cannot negotiate with you about the price of this code, I
-//  have choosen to leave it up to you to determine its price. You pay me whatever you think this code is worth to you.
+//  I strongly believe that voluntarism is the way for societies to function optimally. Thus I have choosen to leave it
+//  up to you to determine the price for this code. You pay me whatever you think this code is worth to you.
 //
 //   - You can send payment via paypal to: sales@balancingrock.nl
 //   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
@@ -49,19 +48,21 @@
 //
 // History
 //
-// v0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
-// v0.9.11 - Comment change
-// v0.9.9  - Updated access control
-// v0.9.8  - Redesign of SwifterSockets to support HTTPS connections.
-// v0.9.7  - Upgraded to Xcode 8 beta 6
-// v0.9.6  - Upgraded to Xcode 8 beta 3 Swift 3)
-// v0.9.4  - Header update
-// v0.9.3  - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
-// v0.9.2  - Added support for logUnixSocketCalls
+// 0.9.13 - General overhaul of public/private access.
+//        - Comment section update
+// 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
+// 0.9.11 - Comment change
+// 0.9.9  - Updated access control
+// 0.9.8  - Redesign of SwifterSockets to support HTTPS connections.
+// 0.9.7  - Upgraded to Xcode 8 beta 6
+// 0.9.6  - Upgraded to Xcode 8 beta 3 Swift 3)
+// 0.9.4  - Header update
+// 0.9.3  - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
+// 0.9.2  - Added support for logUnixSocketCalls
 //         - Moved closing of sockets to SwifterSockets.closeSocket
 //         - Upgraded to Swift 2.2
-// v0.9.1  - No changes
-// v0.9.0  - Initial release
+// 0.9.1  - No changes
+// 0.9.0  - Initial release
 // =====================================================================================================================
 
 
@@ -296,19 +297,19 @@ public class TipServer: ServerProtocol {
     
     // Optioned properties
     
-    private(set) var port: String = "80"
-    private(set) var maxPendingConnectionRequests: Int = 20
-    private(set) var acceptLoopDuration: TimeInterval = 5
-    private(set) var acceptQueue: DispatchQueue!
-    private(set) var connectionObjectFactory: ConnectionObjectFactory?
-    private(set) var aliveHandler: AliveHandler?
-    private(set) var errorHandler: ErrorHandler?
-    private(set) var addressHandler: AddressHandler?
+    public private(set) var port: String = "80"
+    public private(set) var maxPendingConnectionRequests: Int = 20
+    public private(set) var acceptLoopDuration: TimeInterval = 5
+    public private(set) var acceptQueue: DispatchQueue!
+    public private(set) var connectionObjectFactory: ConnectionObjectFactory?
+    public private(set) var aliveHandler: AliveHandler?
+    public private(set) var errorHandler: ErrorHandler?
+    public private(set) var addressHandler: AddressHandler?
     
     
     // Interface properties
     
-    private(set) var socket: Int32?
+    public private(set) var socket: Int32?
     
     
     /// - Returns true when the server is running.

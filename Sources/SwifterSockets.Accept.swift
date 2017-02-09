@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Accept.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.12
+//  Version:    0.9.13
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -22,9 +22,8 @@
 //
 //  I also ask you to please leave this header with the source code.
 //
-//  I strongly believe that the Non Agression Principle is the way for societies to function optimally. I thus reject
-//  the implicit use of force to extract payment. Since I cannot negotiate with you about the price of this code, I
-//  have choosen to leave it up to you to determine its price. You pay me whatever you think this code is worth to you.
+//  I strongly believe that voluntarism is the way for societies to function optimally. Thus I have choosen to leave it
+//  up to you to determine the price for this code. You pay me whatever you think this code is worth to you.
 //
 //   - You can send payment via paypal to: sales@balancingrock.nl
 //   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
@@ -49,23 +48,24 @@
 //
 // History
 //
-// v0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
-// v0.9.11 - Comment change
-// v0.9.9  - Updated access control
-// v0.9.8  - Redesign of SwifterSockets to support HTTPS connections.
+// 0.9.13 - Comment section update
+// 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
+// 0.9.11 - Comment change
+// 0.9.9  - Updated access control
+// 0.9.8  - Redesign of SwifterSockets to support HTTPS connections.
 //         - Added 'AddressHandler' closure to accept routine.
-// v0.9.7  - Upgraded to Xcode 8 beta 6
-// v0.9.6  - Upgraded to Xcode 8 beta 3 (Swift 3)
-// v0.9.5  - Fixed a bug where accepting an IPv6 connection would fill an IPv4 sockaddr structure.
-// v0.9.4  - Header update
-// v0.9.3  - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
-// v0.9.2  - Added support for logUnixSocketCalls
+// 0.9.7  - Upgraded to Xcode 8 beta 6
+// 0.9.6  - Upgraded to Xcode 8 beta 3 (Swift 3)
+// 0.9.5  - Fixed a bug where accepting an IPv6 connection would fill an IPv4 sockaddr structure.
+// 0.9.4  - Header update
+// 0.9.3  - Adding Carthage support: Changed target to Framework, added public declarations, removed SwifterLog.
+// 0.9.2  - Added support for logUnixSocketCalls
 //         - Moved closing of sockets to SwifterSockets.closeSocket
 //         - Upgraded to Swift 2.2
 //         - Added CLOSED as a possible result (this happens when a thread is accepting while another thread closes the associated socket)
 //         - Fixed a bug that missed the error return from the select call.
-// v0.9.1  - AcceptTelemetry now inherits from NSObject
-// v0.9.0  - Initial release
+// 0.9.1  - AcceptTelemetry now inherits from NSObject
+// 0.9.0  - Initial release
 // =====================================================================================================================
 
 
