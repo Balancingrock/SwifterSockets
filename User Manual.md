@@ -165,5 +165,3 @@ public enum Option {
 Of course to be usefull, at least the connectionObjectFactory should be set.
 
 When a connection is accepted and the connectionObjectFactor returned a connection object, the receiverloop of the connection object will be started automatically. Hence the connection object can immediately start servicing the incoming request without additional setup.
-
-=== document end ===

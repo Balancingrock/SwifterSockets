@@ -1,23 +1,7 @@
 #SwifterSockets
 A collection of socket utilities in pure Swift
 
-SwifterSockets is part of the 5 packages that make up the [Swiftfire](http://swiftfire.nl) webserver:
-
-#####[SecureSockets](https://github.com/Swiftrien/SecureSockets)
-
-An extension to SwifterSockets for SSL connections.
-
-#####[Swiftfire](https://github.com/Swiftrien/Swiftfire)
-
-An open source web server in Swift.
-
-#####[SwifterLog](https://github.com/Swiftrien/SwifterLog)
-
-General purpose logging utility.
-
-#####[SwifterJSON](https://github.com/Swiftrien/SwifterJSON)
-
-General purpose JSON framework.
+SwifterSockets is part of [Swiftfire](http://swiftfire.nl), the next generation personal webserver.
 
 #Features
 - Shields the Swift application from the complexity of the Unix socket calls.
@@ -44,7 +28,7 @@ The reference manual is hosted at [Swiftfire.nl](http://swiftfire.nl/projects/sw
 
 #Installation
 
-SwifterSockets is distributed as a Swift package (SPM = Swift Package Manager) and as a framework.
+SwifterSockets is distributed as a Swift package and as a framework.
 
 ##Use as a SPM package
 
@@ -87,7 +71,13 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-####v0.9.12 (Current)
+####v0.9.13 (Current)
+
+- Re-evaluated open/public access
+- Added logId fo the InterfaceAccess protocol
+- Updated comments
+
+####v0.9.12
 
 - Improved documentation for reference manual generation
 
