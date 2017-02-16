@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Receive.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.12
+//  Version:    0.9.14
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.9.14 - Moved receiver protocol to this file
 // 0.9.13 - Comment section update
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // 0.9.11 - Comment change
@@ -72,6 +73,45 @@
 
 
 import Foundation
+
+
+/// A collection of methods used by a receiver loop to inform a data receiver of the events occuring on the interface.
+
+public protocol ReceiverProtocol {
+    
+    
+    /// Called when an error occured while receiving.
+    ///
+    /// The receiver has stopped, but the connection has not been closed or released.
+    ///
+    /// - Parameter message: A textual description of the error that occured.
+    
+    func receiverError(_ message: String)
+    
+    
+    /// Some data was received and is ready for processing.
+    ///
+    /// Data can arrive in multiple blocks. End detection is the responsibility of the receiver.
+    ///
+    /// - Parameter buffer: A buffer where the data that was received is located.
+    /// - Returns: Return true to continue receiving, false to stop receiving. The connection will not be closed or released.
+    
+    func receiverData(_ buffer: UnsafeBufferPointer<UInt8>) -> Bool
+    
+    
+    /// The connection was unexpectedly closed. It is not sure that the connection has been properly closed or deallocated.
+    ///
+    /// Probably by the other side or because of a parralel operation on a different thread.
+    
+    func receiverClosed()
+    
+    
+    /// Since the last data transfer (or start of operation) a timeinterval as specified in "ReceiverLoopDuration" has elapsed without any activity.
+    ///
+    /// - Returns: Return true to continue receiving, false to stop receiving. The connection will not be closed or released.
+    
+    func receiverLoop() -> Bool
+}
 
 
 /// This function loops and calls out to the ReceiverProtocol data (if present) for received data and interface events. The loop does not terminate until a ReceiverProtocol method returns a status indicating termination, or an error occured.
