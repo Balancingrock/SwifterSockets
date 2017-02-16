@@ -50,6 +50,7 @@
 //
 // 0.9.14 - Moved receiver protocol to receiver file
 //        - Moved transmitter protocol to transmitter file
+//        - Moved progress signature to transmitter file
 //        - Moved server protocol to server file
 // 0.9.13 - Comment section update
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
@@ -98,20 +99,6 @@ public enum Result<T> {
 /// - Parameter message: Contains a textual description of the error.
 
 public typealias ErrorHandler = (_ message: String) -> ()
-
-
-/// Signature of a closure that can be used as a progress indicator for lengthy transfers. It can also be used to abort a transfer.
-///
-/// - Parameter bytesTransferred: The number of bytes transferred so far.
-/// - Parameter ofTotal: The total number of bytes to be transferred. Can be zero and may be reset to "bytesTransferred" if a previous execution of the closure returned 'false'.
-///
-/// - Returns: True to continue the transfer. False to abort.
-///
-/// - Note: During the execution of the progress function the transfer will be temporary interrupted.
-///
-/// - Note: After this operation returns 'false', there will be a second call of transmitProgress indicating that the transfer is complete ("bytesTransferred" is reduced to fit the amount transmitted) after which the transmit callback "transmitReady" is called.
-
-public typealias TransmitterProgressMonitor = (_ bytesTransferred: Int, _ ofTotal: Int) -> Bool
 
 
 /// Return values of the _waitForSelect_ function.
