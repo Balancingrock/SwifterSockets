@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Server.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.13
+//  Version:    0.9.14
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.9.14 - Moved server protocol to this file
 // 0.9.13 - General overhaul of public/private access.
 //        - Comment section update
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
@@ -67,6 +68,26 @@
 
 
 import Foundation
+
+
+/// Control methods for a server.
+
+public protocol ServerProtocol {
+    
+    
+    /// Starts the server.
+    ///
+    /// - Returns: Either .success(true), or .error(message: String) with the message detailing the kind of error that occured.
+    
+    func start() -> Result<Bool>
+    
+    
+    /// Stops the server.
+    ///
+    /// - Note: There are delays involved, the accept loop may still accept new requests until it loops around. Requests being processed will be allowed to continue normally.
+    
+    func stop()
+}
 
 
 /// Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6.
