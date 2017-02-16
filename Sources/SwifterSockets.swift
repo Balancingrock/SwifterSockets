@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.13
+//  Version:    0.9.14
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,9 @@
 //
 // History
 //
+// 0.9.14 - Moved receiver protocol to receiver file
+//        - Moved transmitter protocol to transmitter file
+//        - Moved server protocol to server file
 // 0.9.13 - Comment section update
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // 0.9.11 - Comment change
@@ -69,101 +72,6 @@
 
 
 import Foundation
-
-
-/// A collection of methods used by a receiver loop to inform a data receiver of the events occuring on the interface.
-
-public protocol ReceiverProtocol {
-    
-    
-    /// Called when an error occured while receiving.
-    ///
-    /// The receiver has stopped, but the connection has not been closed or released.
-    ///
-    /// - Parameter message: A textual description of the error that occured.
-
-    func receiverError(_ message: String)
-    
-    
-    /// Some data was received and is ready for processing.
-    ///
-    /// Data can arrive in multiple blocks. End detection is the responsibility of the receiver.
-    ///
-    /// - Parameter buffer: A buffer where the data that was received is located.
-    /// - Returns: Return true to continue receiving, false to stop receiving. The connection will not be closed or released.
-    
-    func receiverData(_ buffer: UnsafeBufferPointer<UInt8>) -> Bool
-    
-    
-    /// The connection was unexpectedly closed. It is not sure that the connection has been properly closed or deallocated.
-    ///
-    /// Probably by the other side or because of a parralel operation on a different thread.
-    
-    func receiverClosed()
-    
-    
-    /// Since the last data transfer (or start of operation) a timeinterval as specified in "ReceiverLoopDuration" has elapsed without any activity.
-    ///
-    /// - Returns: Return true to continue receiving, false to stop receiving. The connection will not be closed or released.
-    
-    func receiverLoop() -> Bool
-}
-
-
-/// A collection of methods used by a transmit operation to inform the transmitter of the events occuring on the interface.
-
-public protocol TransmitterProtocol {
-    
-    
-    /// An error occured during transmission.
-    ///
-    /// The transmitter has stopped, but the connection has not been closed or released.
-    ///
-    /// - Parameter message: A textual description of the error that occured.
-    
-    func transmitterError(_ message: String)
-    
-    
-    /// A timeout occured during (or waiting for) transmission.
-    ///
-    /// The connection has not been closed or released.
-    ///
-    /// The data transfer is in an unknown state, i.e. it is uncertain how much data was transferred before this happenend.
-    
-    func transmitterTimeout()
-    
-    
-    /// The connection was unexpectedly closed. It is not sure that the connection has been properly closed or deallocated.
-    ///
-    /// Probably by the other side or because of a parralel operation on a different thread.
-    
-    func transmitterClosed()
-    
-    
-    /// The transmission has successfully concluded.
-    
-    func transmitterReady()
-}
-
-
-/// Control methods for a server.
-
-public protocol ServerProtocol {
-    
-
-    /// Starts the server.
-    ///
-    /// - Returns: Either .success(true), or .error(message: String) with the message detailing the kind of error that occured.
-    
-    func start() -> Result<Bool>
-    
-    
-    /// Stops the server.
-    ///
-    /// - Note: There are delays involved, the accept loop may still accept new requests until it loops around. Requests being processed will be allowed to continue normally.
-    
-    func stop()
-}
 
 
 /// A general purpose return value. Possible values are:
