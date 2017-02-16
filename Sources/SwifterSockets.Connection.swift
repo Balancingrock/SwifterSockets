@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.13
+//  Version:    0.9.14
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,8 @@
 //
 // History
 //
+// 0.9.14 - Updated the transfer protocol methods to include the buffer pointer.
+//        - Added buffered transfer functions.
 // 0.9.13 - Allowed overriding of prepare methods.
 //        - Allow public access of transmitterQueue.
 //        - Added logId to InterfaceAccess
@@ -526,7 +528,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         _ buffer: UnsafeBufferPointer<UInt8>,
         timeout: TimeInterval? = nil,
         callback: TransmitterProtocol? = nil,
-        progress: TransmitterProgressMonitor? = nil) -> TransferResult? {
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         if let queue = tqueue() {
             
@@ -541,7 +543,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                     progress: progress ?? self?.transmitterProgressMonitor)
             }
             
-            return nil
+            return .queued(id: Int(bitPattern: buffer.baseAddress))
             
         } else {
             
@@ -551,29 +553,31 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                 buffer: buffer,
                 timeout: timeout ?? transmitterTimeoutValue,
                 callback: callback ?? transmitterProtocol ?? self,
-                progress: progress ?? transmitterProgressMonitor)
+                progress: progress ?? transmitterProgressMonitor) ?? .error(message: "Interface no longer available")
         }
     }
     
     
     /// Transfer the content of the given data object to the peer.
     ///
+    /// - Note: The callee must ensure that this object remains allocated until the transfer is complete.
+    ///
     /// - Parameters:
-    ///   - data: A data object containing the bytes to be transferred. The callee must ensure that this object remains allocated until the transfer is complete.
+    ///   - data: A data object containing the bytes to be transferred. ___The callee must ensure that this object remains allocated until the transfer is complete.___
     ///   - timeout: The timeout for the data transfer.
     ///   - callback: The receiver for the TransmitterProtocol method calls.
     ///   - progress: The closure that is invoked after partial transfers.
     ///
-    /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
+    /// - Returns: If the operation takes place on a dispatch queue, .queued(id) will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
 
     @discardableResult
     public func transfer(
         _ data: Data,
         timeout: TimeInterval? = nil,
         callback: TransmitterProtocol? = nil,
-        progress: TransmitterProgressMonitor? = nil) -> TransferResult? {
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
-        return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult? in
+        return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult in
             let buffer = UnsafeBufferPointer<UInt8>.init(start: ptr, count: data.count)
             return self.transfer(buffer, timeout: timeout, callback: callback, progress: progress)
         }
@@ -582,30 +586,133 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// Transfer the content of the given string to the peer.
     ///
+    /// - Note: The callee must ensure that this object remains allocated until the transfer is complete.
+    ///
     /// - Parameters:
-    ///   - string: The string to be transferred coded in UTF-8. The callee must ensure that this object remains allocated until the transfer is complete.
+    ///   - string: The string to be transferred coded in UTF-8. ___The callee must ensure that this object remains allocated until the transfer is complete.___
     ///   - timeout: The timeout for the data transfer.
     ///   - callback: The receiver for the TransmitterProtocol method calls.
     ///   - progress: The closure that is invoked after partial transfers.
     ///
-    /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
+    /// - Returns: If the operation takes place on a dispatch queue, .queued(id) will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
 
     @discardableResult
     public func transfer(
         _ string: String,
         timeout: TimeInterval? = nil,
         callback: TransmitterProtocol? = nil,
-        progress: TransmitterProgressMonitor? = nil) -> TransferResult? {
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         if let data = string.data(using: String.Encoding.utf8) {
             return self.transfer(data, timeout: timeout, callback: callback, progress: progress)
         } else {
             _ = transmitterProgressMonitor?(0, 0)
-            (callback ?? self).transmitterError("Cannot convert string to UTF8")
+            (callback ?? self).transmitterError(0, "Cannot convert string to UTF8")
             return .error(message: "Cannot convert string to UTF8")
         }
     }
     
+    
+    /// Copy the content of the given buffer and transfer that to the peer. The original buffer can immediately be used again or deallocated.
+    ///
+    /// - Parameters:
+    ///   - buffer: The pointer to a buffer with the bytes to be transferred.
+    ///   - timeout: The timeout for the data transfer.
+    ///   - callback: The receiver for the TransmitterProtocol method calls.
+    ///   - progress: The closure that is invoked after partial transfers.
+    ///
+    /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
+    
+    @discardableResult
+    public func bufferedTransfer(
+        _ buffer: UnsafeBufferPointer<UInt8>,
+        timeout: TimeInterval? = nil,
+        callback: TransmitterProtocol? = nil,
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult {
+        
+        if let queue = tqueue() {
+            
+            let copy = UnsafeMutableRawBufferPointer.allocate(count: buffer.count)
+            memcpy(copy.baseAddress, buffer.baseAddress, buffer.count)
+            
+            queue.async {
+                
+                [weak self] in
+                
+                _ = self?.interface?.transfer(
+                    buffer: UnsafeBufferPointer(start: copy.baseAddress!.assumingMemoryBound(to: UInt8.self), count: buffer.count),
+                    timeout: timeout ?? self?.transmitterTimeoutValue,
+                    callback: callback ?? self?.transmitterProtocol ?? self,
+                    progress: progress ?? self?.transmitterProgressMonitor)
+                
+                copy.deallocate()
+            }
+            
+            return .queued(id: Int(bitPattern: buffer.baseAddress))
+            
+        } else {
+            
+            // In direct (in-line) execution self is guaranteed valid, but the connection may be closed.
+            
+            return self.interface?.transfer(
+                buffer: buffer,
+                timeout: timeout ?? transmitterTimeoutValue,
+                callback: callback ?? transmitterProtocol ?? self,
+                progress: progress ?? transmitterProgressMonitor) ?? .error(message: "Interface no longer available")
+        }
+    }
+
+    
+    /// Copy the content of the given data object and transfer that to the peer. The original data object can immediately be used again or deallocated.
+    ///
+    /// - Parameters:
+    ///   - data: A data object containing the bytes to be transferred.
+    ///   - timeout: The timeout for the data transfer.
+    ///   - callback: The receiver for the TransmitterProtocol method calls.
+    ///   - progress: The closure that is invoked after partial transfers.
+    ///
+    /// - Returns: If the operation takes place on a dispatch queue, .queued(id) will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
+    
+    @discardableResult
+    public func bufferedTransfer(
+        _ data: Data,
+        timeout: TimeInterval? = nil,
+        callback: TransmitterProtocol? = nil,
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult {
+        
+        return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult in
+            let buffer = UnsafeBufferPointer<UInt8>.init(start: ptr, count: data.count)
+            return self.bufferedTransfer(buffer, timeout: timeout, callback: callback, progress: progress)
+        }
+    }
+    
+    
+    /// Copy the content of the given string and transfer that to the peer. The original string can immediately be used again or deallocated.
+    ///
+    /// - Parameters:
+    ///   - string: The string to be transferred coded in UTF-8.
+    ///   - timeout: The timeout for the data transfer.
+    ///   - callback: The receiver for the TransmitterProtocol method calls.
+    ///   - progress: The closure that is invoked after partial transfers.
+    ///
+    /// - Returns: If the operation takes place on a dispatch queue, .queued(id) will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
+    
+    @discardableResult
+    public func bufferedTransfer(
+        _ string: String,
+        timeout: TimeInterval? = nil,
+        callback: TransmitterProtocol? = nil,
+        progress: TransmitterProgressMonitor? = nil) -> TransferResult {
+        
+        if let data = string.data(using: String.Encoding.utf8) {
+            return self.bufferedTransfer(data, timeout: timeout, callback: callback, progress: progress)
+        } else {
+            _ = transmitterProgressMonitor?(0, 0)
+            (callback ?? self).transmitterError(0, "Cannot convert string to UTF8")
+            return .error(message: "Cannot convert string to UTF8")
+        }
+    }
+
     
     /// If a transmitter queue is used, the abortConnection will be scheduled on the transmitter queue after all scheduled transfers have taken place.
     ///
@@ -653,7 +760,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                 receiver: self!)
         }
     }
-
+    
     
     // MARK: - TransmitterProtocol
     
@@ -662,14 +769,14 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: No need to call super when overriden.
     
-    open func transmitterReady() {}
+    open func transmitterReady(_ id: Int) {}
     
     
     /// Default implementation: Closes the connection to the client from the server side immediately.
     ///
     /// - Note: If overriden, call super.transmitterClosed at the end.
     
-    open func transmitterClosed() {
+    open func transmitterClosed(_ id: Int) {
         abortConnection()
     }
     
@@ -678,7 +785,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: If overriden, call super.transmitterTimeout at the end.
     
-    open func transmitterTimeout() {
+    open func transmitterTimeout(_ id: Int) {
         errorHandler?("Timeout on transmission")
         abortConnection()
     }
@@ -688,7 +795,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Note: If overriden, call super.transmitterError at the end.
     
-    open func transmitterError(_ message: String) {
+    open func transmitterError(_ id: Int, _ message: String) {
         errorHandler?(message)
         abortConnection()
     }
