@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Transmit.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.13
+//  Version:    0.9.14
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,9 @@
 //
 // History
 //
+// 0.9.14 - Moved transmitter protocol to this file
+//        - Added id to transmitter protocol methods
+//        - Added queued to transfer result
 // 0.9.13 - Comment section update
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // 0.9.11 - Comment change
@@ -70,7 +73,55 @@
 
 import Foundation
 
+
+/// A collection of methods used by a transmit operation to inform the transmitter of the events occuring on the interface.
+
+public protocol TransmitterProtocol {
     
+    
+    /// An error occured during transmission.
+    ///
+    /// The transmitter has stopped, but the connection has not been closed or released.
+    ///
+    /// - Parameters:
+    ///   - id: An id that is associated with the transfer. Only usefull if the transfer is scheduled in a dispatch queue.
+    ///   - message: A textual description of the error that occured.
+    
+    func transmitterError(_ id: Int, _ message: String)
+    
+    
+    /// A timeout occured during (or waiting for) transmission.
+    ///
+    /// The connection has not been closed or released.
+    ///
+    /// The data transfer is in an unknown state, i.e. it is uncertain how much data was transferred before this happenend.
+    ///
+    /// - Parameters:
+    ///   - id: An id that is associated with the transfer. Only usefull if the transfer is scheduled in a dispatch queue.
+
+    
+    func transmitterTimeout(_ id: Int)
+    
+    
+    /// The connection was unexpectedly closed. It is not sure that the connection has been properly closed or deallocated.
+    ///
+    /// Probably by the other side or because of a parralel operation on a different thread.
+    ///
+    /// - Parameters:
+    ///   - id: An id that is associated with the transfer. Only usefull if the transfer is scheduled in a dispatch queue.
+
+    func transmitterClosed(_ id: Int)
+    
+    
+    /// The transmission has successfully concluded.
+    ///
+    /// - Parameters:
+    ///   - id: An id that is associated with the transfer. Only usefull if the transfer is scheduled in a dispatch queue.
+    
+    func transmitterReady(_ id: Int)
+}
+
+
 /// The return type for the tipTransmit functions.
 
 public enum TransferResult: CustomStringConvertible, CustomDebugStringConvertible {
@@ -96,6 +147,12 @@ public enum TransferResult: CustomStringConvertible, CustomDebugStringConvertibl
     case error(message: String)
     
     
+    /// The transfer is sheduled in a dispatch queue, the contained ID can be used to associate the transfer protocol methods with the transfer request.
+    
+    case queued(id: Int)
+    
+    
+    /// The transfer has been started, the identifier is a unique identifier that references the transmission.
     /// The CustomStringConvertible protocol
     
     public var description: String {
@@ -103,6 +160,7 @@ public enum TransferResult: CustomStringConvertible, CustomDebugStringConvertibl
         case .ready: return "Ready"
         case .timeout: return "Timeout"
         case .closed: return "Closed"
+        case let .queued(id): return "Queued(id: \(id))"
         case let .error(msg): return "Error(message: \(msg))"
         }
     }
@@ -133,11 +191,17 @@ public func tipTransfer(
     callback: TransmitterProtocol? = nil,
     progress: TransmitterProgressMonitor? = nil) -> TransferResult {
     
+    
+    // Create the id
+    
+    let id = Int(bitPattern: buffer.baseAddress)
+    
+    
     // Check if there is data to transmit
     
     if buffer.count == 0 {
         _ = progress?(0, 0)
-        callback?.transmitterReady()
+        callback?.transmitterReady(id)
         return .ready
     }
     
@@ -172,17 +236,17 @@ public func tipTransfer(
         switch selres {
         case .timeout:
             _ = progress?(bytesTransferred, buffer.count)
-            callback?.transmitterTimeout()
+            callback?.transmitterTimeout(id)
             return .timeout
             
         case let .error(message):
             _ = progress?(bytesTransferred, buffer.count)
-            callback?.transmitterError(message)
+            callback?.transmitterError(id, message)
             return .error(message: message)
             
         case .closed:
             _ = progress?(bytesTransferred, buffer.count)
-            callback?.transmitterClosed()
+            callback?.transmitterClosed(id)
             return .closed
             
         case .ready: break
@@ -203,12 +267,12 @@ public func tipTransfer(
         case Int.min ... -1: // An error occured
             let message = String(validatingUTF8: strerror(errno)) ?? "Unknown error code '\(errno)'"
             _ = progress?(bytesTransferred, buffer.count)
-            callback?.transmitterError(message)
+            callback?.transmitterError(id, message)
             return .error(message: message)
             
         case 0: // Other side closed connection
             _ = progress?(bytesTransferred, buffer.count)
-            callback?.transmitterClosed()
+            callback?.transmitterClosed(id)
             return .closed
             
         case 1 ... Int.max: // Data was transferred
@@ -226,7 +290,7 @@ public func tipTransfer(
     // All data was transferred
     
     _ = progress?(bytesTransferred, buffer.count)
-    callback?.transmitterReady()
+    callback?.transmitterReady(id)
     return .ready
 }
 
@@ -280,7 +344,7 @@ public func tipTransfer(
         return tipTransfer(socket: socket, data: data, timeout: timeout, callback: callback, progress: progress)
     } else {
         _ = progress?(0, 0)
-        callback?.transmitterError("Cannot convert string to UTF8")
+        callback?.transmitterError(0, "Cannot convert string to UTF8")
         return .error(message: "Cannot convert string to UTF8")
     }
 }
