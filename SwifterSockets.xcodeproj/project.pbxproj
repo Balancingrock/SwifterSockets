@@ -14,6 +14,7 @@
 		86407D071E2FA76300F47B48 /* SwifterSockets.Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86407D061E2FA76300F47B48 /* SwifterSockets.Connection.swift */; };
 		86407D091E2FA89000F47B48 /* SwifterSockets.Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86407D081E2FA89000F47B48 /* SwifterSockets.Client.swift */; };
 		86407D421E2FE1F200F47B48 /* SwifterSockets.Server.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86407D0A1E2FA9AD00F47B48 /* SwifterSockets.Server.swift */; };
+		86BC570B1E55FC3F0087F0D7 /* SwifterSockets.ConnectionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86BC570A1E55FC3F0087F0D7 /* SwifterSockets.ConnectionPool.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		86407D061E2FA76300F47B48 /* SwifterSockets.Connection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Connection.swift; sourceTree = "<group>"; };
 		86407D081E2FA89000F47B48 /* SwifterSockets.Client.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Client.swift; sourceTree = "<group>"; };
 		86407D0A1E2FA9AD00F47B48 /* SwifterSockets.Server.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.Server.swift; sourceTree = "<group>"; };
+		86BC570A1E55FC3F0087F0D7 /* SwifterSockets.ConnectionPool.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwifterSockets.ConnectionPool.swift; sourceTree = "<group>"; };
 		OBJ_12 /* SwifterSocketsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwifterSocketsTests.swift; sourceTree = "<group>"; };
 		OBJ_14 /* SwifterSockets.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SwifterSockets.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
@@ -101,6 +103,7 @@
 				86407D061E2FA76300F47B48 /* SwifterSockets.Connection.swift */,
 				86407D081E2FA89000F47B48 /* SwifterSockets.Client.swift */,
 				86407D0A1E2FA9AD00F47B48 /* SwifterSockets.Server.swift */,
+				86BC570A1E55FC3F0087F0D7 /* SwifterSockets.ConnectionPool.swift */,
 			);
 			name = SwifterSockets;
 			path = Sources;
@@ -166,6 +169,7 @@
 				86407D091E2FA89000F47B48 /* SwifterSockets.Client.swift in Sources */,
 				86407D031E2FA6EF00F47B48 /* SwifterSockets.Receive.swift in Sources */,
 				86407D421E2FE1F200F47B48 /* SwifterSockets.Server.swift in Sources */,
+				86BC570B1E55FC3F0087F0D7 /* SwifterSockets.ConnectionPool.swift in Sources */,
 				86407CFF1E2FA42500F47B48 /* SwifterSockets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
