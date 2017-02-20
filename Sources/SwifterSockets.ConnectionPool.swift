@@ -59,6 +59,11 @@ import Foundation
 public final class ConnectionPool {
     
     
+    /// Disclose init
+    
+    public init() {}
+
+    
     /// Used to secure access to the pool.
     
     private let queue = DispatchQueue(
