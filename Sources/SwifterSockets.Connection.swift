@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.14
+//  Version:    0.9.15
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,20 +48,21 @@
 //
 // History
 //
-// 0.9.14 - Updated the transfer protocol methods to include the buffer pointer.
-//        - Added buffered transfer functions.
-// 0.9.13 - Allowed overriding of prepare methods.
-//        - Allow public access of transmitterQueue.
-//        - Added logId to InterfaceAccess
-//        - Made interface and remoteAddress members public & private(set)
-//        - General overhaul of public/private access.
-//        - Comment section update
-// 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
-// 0.9.11 - Comment change
-// 0.9.9  - Updated access control
-// 0.9.8  - Initial release
+// 0.9.15  - Added inactivity detection.
+// 0.9.14  - Updated the transfer protocol methods to include the buffer pointer.
+//         - Added buffered transfer functions.
+// 0.9.13  - Allowed overriding of prepare methods.
+//         - Allow public access of transmitterQueue.
+//         - Added logId to InterfaceAccess
+//         - Made interface and remoteAddress members public & private(set)
+//         - General overhaul of public/private access.
+//         - Comment section update
+// 0.9.12  - Documentation updated to accomodate the documentation tool 'jazzy'
+// 0.9.11  - Comment change
+// 0.9.9   - Updated access control
+// 0.9.8   - Initial release
+//
 // =====================================================================================================================
-
 
 import Foundation
 
@@ -237,6 +238,11 @@ public struct TipInterface: InterfaceAccess {
 public typealias ConnectionObjectFactory = (_ intf: InterfaceAccess, _ address: String) -> Connection?
 
 
+/// The signature for the inactivity handler.
+
+public typealias InactivityHandler = (_ connection: Connection) -> Void
+
+
 /// Objects of this class represents a connection with another computer.
 ///
 /// It is intended to be subclassed for connections that are able to receive data. A Connection object has default implementations for the ReceiverProtocol and TransmitterProtocol. A subclass should override the methods it needs.
@@ -306,6 +312,20 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         case receiverBufferSize(Int)
         
         
+        /// The connection will be considered inactive if no transmission has taken place for at least as long as this time interval. When a connection is considered inactive, it will be closed. To avoid closing a connection after it becomes inactive specify nil (default).
+        ///
+        /// Default is nil (none). Very small or 0 will lead to an immediate close of the connection after initial activity. This can lead to seemingly unpredictable behaviour. Servers typically use a default of 300 milli seconds or more.
+        ///
+        /// When used, this value should strike a balance between keeping a connection open in anticipation of more activity (and thus avoiding the overhead of negotiation & accepting & preparing a new connection) and closing a connection because it is consuming system resources (including the connection itself if a connection pool is used) that are needed elsewhere.
+        
+        case inactivityDetectionThreshold(TimeInterval?)
+        
+        
+        /// This is the action that will be taken when a connection goes inactive
+        
+        case inactivityAction(InactivityHandler?)
+        
+        
         /// A closure that will be invoked when errors occur that do not result in either a TransmitterProtocol method call or a ReceiverProtocol method call.
         
         case errorHandler(ErrorHandler)
@@ -357,6 +377,16 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     public private(set) var receiverBufferSize: Int = 20 * 1024
     
     
+    /// When no activity was detected for this amount of time, the inactivity action will be started.
+    
+    public private(set) var inactivityDetectionThreshold: TimeInterval?
+    
+    
+    /// The handler for the inactivity detection
+    
+    public private(set) var inactivityAction: InactivityHandler?
+    
+    
     /// The error handler that wil receive error messages (if provided)
     
     public private(set) var errorHandler: ErrorHandler?
@@ -370,6 +400,21 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// The remote computer's address.
     
     public private(set) var remoteAddress: String = "-"
+    
+    
+    /// The time of last activity
+    
+    private var lastActivity: Date = Date()
+    
+    
+    /// The count of outstanding transfers
+    
+    private var pendingTransfers: Int = 0
+    
+    
+    /// This queue is used to protect the internal data from parralel access.
+    
+    private var sQueue: DispatchQueue = DispatchQueue(label: "Connection Serialize Access")
     
     
     /// The initialiser is parameterless to be able to create untyped connetions. This allows the creation of connection pools of reusable connection objects. Connection objects __must__ be prepeared for use by calling one of the "prepare" methods.
@@ -455,7 +500,11 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         self.receiverQueueQoS = .default
         self.receiverLoopDuration = 5
         self.receiverBufferSize = 20 * 1024
+        self.inactivityDetectionThreshold = nil
+        self.inactivityAction = nil
         self.errorHandler = nil
+        self.lastActivity = Date()
+        self.pendingTransfers = 0
     }
     
     
@@ -486,12 +535,24 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
             case let .receiverQueueQoS(qos): receiverQueueQoS = qos
             case let .receiverLoopDuration(rld): receiverLoopDuration = rld
             case let .receiverBufferSize(rbs): receiverBufferSize = rbs
+            case let .inactivityDetectionThreshold(delta): inactivityDetectionThreshold = delta
+            case let .inactivityAction(ia): inactivityAction = ia
             case let .errorHandler(eh): errorHandler = eh
             }
         }
     }
     
-
+    
+    /// Start the inactivity action if necessary
+    
+    private func inactivityDetection() {
+        if inactivityDetectionThreshold == nil { return }
+        if pendingTransfers != 0 { return }
+        if abs(lastActivity.timeIntervalSinceNow) < inactivityDetectionThreshold! { return }
+        inactivityAction?(self)
+    }
+    
+    
     /// If a transmitterQueue is set, that transmitterQueue will be returned. If no transmitterQueue is present, but a quality of service for the transmitterQueue is set, then a new queue will be created for the specified QoS. If no queue or QoS is set, nil will be returned.
     ///
     /// - Returns: The dispatch queue on which a transmission should be placed. Returns nil when no queue is available and the transmission must take place in-line.
@@ -532,6 +593,8 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         
         if let queue = tqueue() {
             
+            sQueue.sync { pendingTransfers.increment() }
+            
             queue.async {
                 
                 [weak self] in
@@ -541,6 +604,15 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                     timeout: timeout ?? self?.transmitterTimeoutValue,
                     callback: callback ?? self?.transmitterProtocol ?? self,
                     progress: progress ?? self?.transmitterProgressMonitor)
+                
+                self?.sQueue.sync {
+                    self?.lastActivity = Date()
+                    self?.pendingTransfers.decrementAndExecuteOnNull {
+                        if let inactivityDetectionThreshold = self?.inactivityDetectionThreshold {
+                            self?.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
+                        }
+                    }
+                }
             }
             
             return .queued(id: Int(bitPattern: buffer.baseAddress))
@@ -549,11 +621,20 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
             
             // In direct (in-line) execution self is guaranteed valid, but the connection may be closed.
             
-            return self.interface?.transfer(
+            let result = self.interface?.transfer(
                 buffer: buffer,
                 timeout: timeout ?? transmitterTimeoutValue,
                 callback: callback ?? transmitterProtocol ?? self,
                 progress: progress ?? transmitterProgressMonitor) ?? .error(message: "Interface no longer available")
+            
+            sQueue.sync {
+                lastActivity = Date()
+                if let inactivityDetectionThreshold = inactivityDetectionThreshold {
+                    sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
+                }
+            }
+            
+            return result
         }
     }
     
@@ -631,7 +712,9 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         if let queue = tqueue() {
-            
+
+            sQueue.sync { pendingTransfers.increment() }
+
             let copy = UnsafeMutableRawBufferPointer.allocate(count: buffer.count)
             memcpy(copy.baseAddress, buffer.baseAddress, buffer.count)
             
@@ -645,6 +728,15 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                     callback: callback ?? self?.transmitterProtocol ?? self,
                     progress: progress ?? self?.transmitterProgressMonitor)
                 
+                self?.sQueue.sync {
+                    self?.lastActivity = Date()
+                    self?.pendingTransfers.decrementAndExecuteOnNull {
+                        if let inactivityDetectionThreshold = self?.inactivityDetectionThreshold {
+                            self?.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
+                        }
+                    }
+                }
+
                 copy.deallocate()
             }
             
@@ -654,11 +746,20 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
             
             // In direct (in-line) execution self is guaranteed valid, but the connection may be closed.
             
-            return self.interface?.transfer(
+            let result = self.interface?.transfer(
                 buffer: buffer,
                 timeout: timeout ?? transmitterTimeoutValue,
                 callback: callback ?? transmitterProtocol ?? self,
                 progress: progress ?? transmitterProgressMonitor) ?? .error(message: "Interface no longer available")
+            
+            sQueue.sync {
+                lastActivity = Date()
+                if let inactivityDetectionThreshold = inactivityDetectionThreshold {
+                    sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
+                }
+            }
+
+            return result
         }
     }
 
@@ -838,10 +939,17 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// Default implementation: Does nothing.
     ///
-    /// - Note: No need to call super when overriden.
+    /// - Note: Must call super when overriden.
     
     open func receiverData(_ buffer: UnsafeBufferPointer<UInt8>) -> Bool {
         
+        sQueue.sync {
+            lastActivity = Date()
+            if let inactivityDetectionThreshold = inactivityDetectionThreshold {
+                sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
+            }
+        }
+
         return true
     }
 }

@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.14
+//  Version:    0.9.15
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,31 +48,59 @@
 //
 // History
 //
-// 0.9.14 - Moved receiver protocol to receiver file
-//        - Moved transmitter protocol to transmitter file
-//        - Moved progress signature to transmitter file
-//        - Moved server protocol to server file
-// 0.9.13 - Comment section update
-// 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
-// 0.9.11 - Comment change
-// 0.9.9  - Updated access control
-// 0.9.8  - Redesign of SwifterSockets to support HTTPS connections.
-// 0.9.7  - Upgraded to Xcode 8 beta 6
+// 0.9.15  - Added Integer extension
+// 0.9.14  - Moved receiver protocol to receiver file
+//         - Moved transmitter protocol to transmitter file
+//         - Moved progress signature to transmitter file
+//         - Moved server protocol to server file
+// 0.9.13  - Comment section update
+// 0.9.12  - Documentation updated to accomodate the documentation tool 'jazzy'
+// 0.9.11  - Comment change
+// 0.9.9   - Updated access control
+// 0.9.8   - Redesign of SwifterSockets to support HTTPS connections.
+// 0.9.7   - Upgraded to Xcode 8 beta 6
 //         - Added isValidIpAddress
-// 0.9.6  - Upgraded to Xcode 8 beta 3 (Swift 3)
-// 0.9.5  - Added SocketAddress enum adopted from Marco Masser: http://blog.obdev.at/representing-socket-addresses-in-swift-using-enums
-// 0.9.4  - Header update
-// 0.9.3  - Changed target to Framework, added public declarations, removed SwifterLog.
-// 0.9.2  - Added closeSocket
+// 0.9.6   - Upgraded to Xcode 8 beta 3 (Swift 3)
+// 0.9.5   - Added SocketAddress enum adopted from Marco Masser: http://blog.obdev.at/representing-socket-addresses-in-swift-using-enums
+// 0.9.4   - Header update
+// 0.9.3   - Changed target to Framework, added public declarations, removed SwifterLog.
+// 0.9.2   - Added closeSocket
 //         - Added 'logUnixSocketCalls'
 //         - Upgraded to Swift 2.2
-// 0.9.1  - Changed type of object in 'synchronized' from AnyObject to NSObject
+// 0.9.1   - Changed type of object in 'synchronized' from AnyObject to NSObject
 //         - Added EXC_BAD_INSTRUCTION information to fd_set
-// 0.9.0  - Initial release
+// 0.9.0   - Initial release
+//
 // =====================================================================================================================
 
-
 import Foundation
+
+
+/// A helper extensions to allow increment/decrement operations on counter values
+
+extension Integer {
+
+    
+    /// Increases self by one
+    
+    mutating func increment() {
+        self = self + 1
+    }
+    
+    
+    /// Decreases self by 1 if self > 0, then starts the closure if self == 0.
+    
+    mutating func decrementAndExecuteOnNull<T>(execute: (() throws -> T)) rethrows -> T? {
+        if self > 0 {
+            self = self - 1
+        }
+        if self == 0 {
+            return try execute()
+        } else {
+            return nil
+        }
+    }
+}
 
 
 /// A general purpose return value. Possible values are:
