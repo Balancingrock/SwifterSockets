@@ -435,7 +435,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///
     /// - Returns: True if the initialization was successful. False if not. Currently the only reason for failure is if the connection object is still in use.
     
-    open func prepare(for interface: InterfaceAccess, remoteAddress address: String, options: Option...) -> Bool {
+    public func prepare(for interface: InterfaceAccess, remoteAddress address: String, options: Option...) -> Bool {
         return prepare(for: interface, remoteAddress: address, options: options)
     }
     
