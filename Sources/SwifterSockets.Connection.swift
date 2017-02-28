@@ -553,6 +553,32 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
+    /// Call this function to indicate that the inactivity timeout detection has to be restarted
+    
+    public func inactivityDetectionRestart() {
+        sQueue.sync {
+            lastActivity = Date()
+            if let inactivityDetectionThreshold = inactivityDetectionThreshold {
+                sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
+            }
+        }
+    }
+
+    
+    /// Call this function to indicate that the inactivity timeout detection has to be restarted but only for queued transfers that ended.
+
+    private func inactivityDetectionRestartForEndOfQueuedTransfer() {
+        sQueue.sync {
+            lastActivity = Date()
+            pendingTransfers.decrementAndExecuteOnNull {
+                if let inactivityDetectionThreshold = inactivityDetectionThreshold {
+                    sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold, execute: inactivityDetection)
+                }
+            }
+        }
+    }
+    
+    
     /// If a transmitterQueue is set, that transmitterQueue will be returned. If no transmitterQueue is present, but a quality of service for the transmitterQueue is set, then a new queue will be created for the specified QoS. If no queue or QoS is set, nil will be returned.
     ///
     /// - Returns: The dispatch queue on which a transmission should be placed. Returns nil when no queue is available and the transmission must take place in-line.
@@ -605,14 +631,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                     callback: callback ?? self?.transmitterProtocol ?? self,
                     progress: progress ?? self?.transmitterProgressMonitor)
                 
-                self?.sQueue.sync {
-                    self?.lastActivity = Date()
-                    self?.pendingTransfers.decrementAndExecuteOnNull {
-                        if let inactivityDetectionThreshold = self?.inactivityDetectionThreshold {
-                            self?.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
-                        }
-                    }
-                }
+                self?.inactivityDetectionRestartForEndOfQueuedTransfer()
             }
             
             return .queued(id: Int(bitPattern: buffer.baseAddress))
@@ -627,12 +646,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                 callback: callback ?? transmitterProtocol ?? self,
                 progress: progress ?? transmitterProgressMonitor) ?? .error(message: "Interface no longer available")
             
-            sQueue.sync {
-                lastActivity = Date()
-                if let inactivityDetectionThreshold = inactivityDetectionThreshold {
-                    sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
-                }
-            }
+            inactivityDetectionRestart()
             
             return result
         }
@@ -728,14 +742,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                     callback: callback ?? self?.transmitterProtocol ?? self,
                     progress: progress ?? self?.transmitterProgressMonitor)
                 
-                self?.sQueue.sync {
-                    self?.lastActivity = Date()
-                    self?.pendingTransfers.decrementAndExecuteOnNull {
-                        if let inactivityDetectionThreshold = self?.inactivityDetectionThreshold {
-                            self?.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
-                        }
-                    }
-                }
+                self?.inactivityDetectionRestartForEndOfQueuedTransfer()
 
                 copy.deallocate()
             }
@@ -752,12 +759,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                 callback: callback ?? transmitterProtocol ?? self,
                 progress: progress ?? transmitterProgressMonitor) ?? .error(message: "Interface no longer available")
             
-            sQueue.sync {
-                lastActivity = Date()
-                if let inactivityDetectionThreshold = inactivityDetectionThreshold {
-                    sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
-                }
-            }
+            inactivityDetectionRestart()
 
             return result
         }
@@ -843,8 +845,8 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         interface?.close()
         interface = nil
     }
-    
 
+    
     /// Starts the receiver loop. From now on the receiver protocol will be used to handle data transfer related issues.
     
     public func startReceiverLoop() {
@@ -939,17 +941,11 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// Default implementation: Does nothing.
     ///
-    /// - Note: Must call super when overriden.
+    /// - Note: Must call super when overriden or alternatively call "super.inactivityDetectionRestart"
     
     open func receiverData(_ buffer: UnsafeBufferPointer<UInt8>) -> Bool {
         
-        sQueue.sync {
-            lastActivity = Date()
-            if let inactivityDetectionThreshold = inactivityDetectionThreshold {
-                sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
-            }
-        }
-
+        inactivityDetectionRestart()
         return true
     }
 }
