@@ -115,7 +115,7 @@ public final class ConnectionPool {
     ///
     /// - Returns: The number of seconds until the connection was availeble and the connection object itself or nil after the timeout expires.
     
-    public func allocateOrTimeout(_ timeout: Int, whenWaiting: (() -> Void)?) -> (Int, Connection?) {
+    public func allocateOrTimeout(_ timeout: Int) -> (Int, Connection?) {
         
         var connection: Connection?
         var loopCount = 0
