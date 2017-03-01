@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.ConnectionPool.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.14
+//  Version:    0.9.15
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.9.15 - Added loopcount to the return of allocateOrTimeout function.
 // 0.9.14 - Initial release
 // =====================================================================================================================
 
@@ -109,11 +110,12 @@ public final class ConnectionPool {
     
     /// Allocates a connection object if it becomes available within the timeout period.
     ///
-    /// - Parameter timeout: An integer specifying the timout in seconds
+    /// - Parameters:
+    ///   - timeout: An integer specifying the timout in seconds.
     ///
-    /// - Returns: Either a connection object or nil after the timeout expires.
+    /// - Returns: The number of seconds until the connection was availeble and the connection object itself or nil after the timeout expires.
     
-    public func allocateOrTimeout(_ timeout: Int) -> Connection? {
+    public func allocateOrTimeout(_ timeout: Int, whenWaiting: (() -> Void)?) -> (Int, Connection?) {
         
         var connection: Connection?
         var loopCount = 0
@@ -121,16 +123,16 @@ public final class ConnectionPool {
             
             connection = self.allocate()
             
-            if connection != nil { return connection }
+            if connection != nil { return (loopCount, connection) }
             
-            sleep(1) // Try again in 1 second unless the specified timeout expires
+            if loopCount >= timeout { break }
+            
+            sleep(1)
             
             loopCount += 1
-            
-            if loopCount > timeout { break }
         }
         
-        return nil
+        return (loopCount, nil)
     }
     
     
