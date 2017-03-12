@@ -54,9 +54,11 @@ This creates a subdirectory called SwifterSockets.
 
 In this subdirectory you will find an xcode project. Double click that project to open it. Once open, build the project. This will create a SwifterSockets.framework.
 
+If -for whatever reason- you have to regenerate the xcode project ($ swift package generate-xcodeproj) then be sure to set the `Defines Module` to 'yes' in the `Build Settings` before creating the framework. (Otherwise the import of the framework in another project -as described below- won't work)
+
 In the project that will use SwifterSockets, add the SwifterSockets.framework by opening the `General` settings of the target and add the SwifterSockets.framework to the `Embedded Binaries`.
 
-In the swift source code import SwifterSockets by "import SwifterSockets" at the top of the file.
+In the Swift source code import SwifterSockets by "import SwifterSockets" at the top of the file.
 
 # Version history
 

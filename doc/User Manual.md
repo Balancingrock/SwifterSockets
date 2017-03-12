@@ -64,11 +64,11 @@ For this purpose SwifterSockets contains a `Connection` class that can be used d
 
 ###Connection Object Factory
 
-The project has to provide a connection object factory.
+Your project has to provide a connection object factory.
 
-This factory creates the project's connection objects on demand. Since connection objects can be expensive, the project may implement a pool of connection objects allowing them to be reused.
+This factory creates the project's connection objects on demand. Since connection objects can be expensive, the project may implement a pool of connection objects allowing them to be reused. A simple connection pool implementation is provided as a part of SwifterSockets.
 
-The connection object factory is passed as a parameter to either `connectToTipServer` or during the setup of the `TipServer` class.
+The connection object factory is passed as a parameter (closure) to either `connectToTipServer` or during the setup of the `TipServer` class.
 
 The connection object factory is defined as follows:
 
@@ -78,7 +78,7 @@ public typealias ConnectionObjectFactory = (_ intf: InterfaceAccess, _ address: 
 
 Where the `InterfaceAccess` is a protocol in and of itsef. This parameter allows the creation of other interfaces using the same mechanism. For example in SecureSockets it is used to create SSL connections.
 
-For SwifterSockets it should always be an instance of `TipInterface`.
+For SwifterSockets it always is an instance of `TipInterface`.
 
 The second parameter `address` allows the connection factory to determine if the connection request should be granted and/or to create a log of clients or servers that have been connected.
 
@@ -164,4 +164,4 @@ public enum Option {
 
 Of course to be usefull, at least the connectionObjectFactory should be set.
 
-When a connection is accepted and the connectionObjectFactor returned a connection object, the receiverloop of the connection object will be started automatically. Hence the connection object can immediately start servicing the incoming request without additional setup.
+When a connection is accepted and the connectionObjectFactory returned a connection object, the receiverloop of the connection object will be started automatically. Hence the connection object can immediately start servicing the incoming request without additional setup.
