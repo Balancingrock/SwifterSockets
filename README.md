@@ -73,7 +73,15 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-#### v0.9.15 (Current)
+#### v0.10.1 (Current)
+
+- Compile time improvement
+
+#### v0.10.0
+
+- Added a result function to process Result<T> results
+ 
+#### v0.9.15
 
 - Added inactivity detection for Connections.
 
