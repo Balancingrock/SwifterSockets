@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.15
+//  Version:    0.10.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,8 @@
 //
 // History
 //
+// 0.10.1  - Analysed compilation time and speed up
+// 0.10.0  - Added func result
 // 0.9.15  - Added Integer extension
 // 0.9.14  - Moved receiver protocol to receiver file
 //         - Moved transmitter protocol to transmitter file
@@ -119,6 +121,24 @@ public enum Result<T> {
     // The operation was sucessfull. The result is contained.
     
     case success(T)
+}
+
+
+/// A wrapper for functions that return a Result<T>
+///
+/// Executes the given function and returns the unwrapped result. If an error was returned in the function then the onError closure is invoked with the error message. This closure should then return a default value to be used instead.
+///
+/// - Parameters:
+///   - function: The closure that will be executed and evaluated.
+///   - onError: The closure that will be executed when the function returned the error case.
+///
+/// - Returns: On success the value received from the function or on error the default value from the onError closure.
+
+public func result<T>(function: (@autoclosure() -> Result<T>), onError: (String) -> T?) -> T? {
+    switch function() {
+    case .error(let message): return onError(message)
+    case .success(let t): return t
+    }
 }
 
 
@@ -574,8 +594,10 @@ public func logAddrInfoIPAddresses(_ infoPtr: UnsafeMutablePointer<addrinfo>) ->
     
     while info != addrInfoNil {
     
-        let (clientIp, service) = sockaddrDescription(info.pointee.ai_addr)
-        str += "No: \(count), HostIp: " + (clientIp ?? "?") + " at port: " + (service ?? "?") + "\n"
+        let (clientIpOrNil, serviceOrNil) = sockaddrDescription(info.pointee.ai_addr)
+        let clientIp = clientIpOrNil ?? "?"
+        let service = serviceOrNil ?? "?"
+        str += "No: \(count), HostIp: \(clientIp) at port: \(service)\n"
         count += 1
         info = info.pointee.ai_next
     }
