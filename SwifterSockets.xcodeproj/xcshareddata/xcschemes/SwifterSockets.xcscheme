@@ -14,7 +14,21 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "OBJ_16"
+               BlueprintIdentifier = "OBJ_30"
+               BuildableName = "BRUtils.framework"
+               BlueprintName = "BRUtils"
+               ReferencedContainer = "container:SwifterSockets.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "OBJ_39"
                BuildableName = "SwifterSockets.framework"
                BlueprintName = "SwifterSockets"
                ReferencedContainer = "container:SwifterSockets.xcodeproj">
@@ -32,7 +46,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "OBJ_23"
+               BlueprintIdentifier = "OBJ_55"
                BuildableName = "SwifterSocketsTests.xctest"
                BlueprintName = "SwifterSocketsTests"
                ReferencedContainer = "container:SwifterSockets.xcodeproj">
@@ -55,9 +69,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "OBJ_16"
-            BuildableName = "SwifterSockets.framework"
-            BlueprintName = "SwifterSockets"
+            BlueprintIdentifier = "OBJ_30"
+            BuildableName = "BRUtils.framework"
+            BlueprintName = "BRUtils"
             ReferencedContainer = "container:SwifterSockets.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

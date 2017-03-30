@@ -73,7 +73,11 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-#### v0.10.1 (Current)
+#### v0.10.2 (Current)
+
+- Moved Result type to BRUtils
+
+#### v0.10.1
 
 - Compile time improvement
 

@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Client.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.13
+//  Version:    0.10.2
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.2 - Added BRUtils for the Result type
 // 0.9.13 - Comment section update
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
 // 0.9.11 - Comment change
@@ -66,6 +67,7 @@
 
 
 import Foundation
+import BRUtils
 
 
 /// Connects a socket to a server.

@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Server.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.14
+//  Version:    0.10.2
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.2 - Added BRUtils for the Result type
 // 0.9.14 - Moved server protocol to this file
 // 0.9.13 - General overhaul of public/private access.
 //        - Comment section update
@@ -68,6 +69,7 @@
 
 
 import Foundation
+import BRUtils
 
 
 /// Control methods for a server.

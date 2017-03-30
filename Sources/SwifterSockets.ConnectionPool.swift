@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.ConnectionPool.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.15
+//  Version:    0.10.2
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,11 +48,13 @@
 //
 // History
 //
+// 0.10.2 - Added BRUtils for the Result type
 // 0.9.15 - Added loopcount to the return of allocateOrTimeout function.
 // 0.9.14 - Initial release
 // =====================================================================================================================
 
 import Foundation
+import BRUtils
 
 
 /// Connection pool management.

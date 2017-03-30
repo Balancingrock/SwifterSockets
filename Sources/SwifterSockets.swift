@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.1
+//  Version:    0.10.2
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.2  - Added BRUtils for the Result type
 // 0.10.1  - Analysed compilation time and speed up
 // 0.10.0  - Added func result
 // 0.9.15  - Added Integer extension
@@ -109,7 +110,8 @@ extension Integer {
 ///
 /// - error(message: String)
 /// - success(<T>)
-
+/*
+ // TODO: If BRUtils is not available, uncomment this enum
 public enum Result<T> {
     
     
@@ -121,7 +123,7 @@ public enum Result<T> {
     // The operation was sucessfull. The result is contained.
     
     case success(T)
-}
+}*/
 
 
 /// A wrapper for functions that return a Result<T>
@@ -133,13 +135,14 @@ public enum Result<T> {
 ///   - onError: The closure that will be executed when the function returned the error case.
 ///
 /// - Returns: On success the value received from the function or on error the default value from the onError closure.
-
+/*
+// TODO: If BRUtils is not available, uncomment this function
 public func result<T>(function: (@autoclosure() -> Result<T>), onError: (String) -> T?) -> T? {
     switch function() {
     case .error(let message): return onError(message)
     case .success(let t): return t
     }
-}
+}*/
 
 
 /// Signature for a closure that is used to process error messages.
