@@ -43,18 +43,15 @@ The _<version-number>_ must be replaced with the version number that must be use
 
 ## Use as a framework
 
-First clone SwifterSockets:
+First clone SwifterSockets and the create the Xcode project:
 
 At the command line:
 
     $ git clone https://github.com/Balancingrock/SwifterSockets
-    $
+    $ cd SwifterSockets
+    $ swift package generate-xcodeproj
 
-This creates a subdirectory called SwifterSockets.
-
-In this subdirectory you will find an xcode project. Double click that project to open it. Once open, build the project. This will create a SwifterSockets.framework.
-
-If -for whatever reason- you have to regenerate the xcode project ($ swift package generate-xcodeproj) then be sure to set the `Defines Module` to 'yes' in the `Build Settings` before creating the framework. (Otherwise the import of the framework in another project -as described below- won't work)
+Double click that project to open it. Once open set the `Defines Module` to 'yes' in the `Build Settings` before creating the framework. (Otherwise the import of the framework in another project won't work)
 
 In the project that will use SwifterSockets, add the SwifterSockets.framework by opening the `General` settings of the target and add the SwifterSockets.framework to the `Embedded Binaries`.
 
