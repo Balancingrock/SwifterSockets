@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.15
+//  Version:    0.10.4
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.4  - Fixed sQueue deallocation problem by making it static.
 // 0.9.15  - Added inactivity detection.
 // 0.9.14  - Updated the transfer protocol methods to include the buffer pointer.
 //         - Added buffered transfer functions.
@@ -412,9 +413,9 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     private var pendingTransfers: Int = 0
     
     
-    /// This queue is used to protect the internal data from parralel access.
+    /// This queue is used to close down a connection after inactivity.
     
-    private var sQueue: DispatchQueue = DispatchQueue(label: "Connection Serialize Access")
+    private static var sQueue: DispatchQueue = DispatchQueue(label: "Connection Serialize Access")
     
     
     /// The initialiser is parameterless to be able to create untyped connetions. This allows the creation of connection pools of reusable connection objects. Connection objects __must__ be prepeared for use by calling one of the "prepare" methods.
