@@ -557,10 +557,10 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// Call this function to indicate that the inactivity timeout detection has to be restarted
     
     public func inactivityDetectionRestart() {
-        sQueue.sync {
+        Connection.sQueue.sync {
             lastActivity = Date()
             if let inactivityDetectionThreshold = inactivityDetectionThreshold {
-                sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
+                Connection.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
             }
         }
     }
@@ -569,11 +569,11 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// Call this function to indicate that the inactivity timeout detection has to be restarted but only for queued transfers that ended.
 
     private func inactivityDetectionRestartForEndOfQueuedTransfer() {
-        sQueue.sync {
+        Connection.sQueue.sync {
             lastActivity = Date()
             pendingTransfers.decrementAndExecuteOnNull {
                 if let inactivityDetectionThreshold = inactivityDetectionThreshold {
-                    sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold, execute: inactivityDetection)
+                    Connection.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold, execute: inactivityDetection)
                 }
             }
         }
@@ -620,7 +620,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         
         if let queue = tqueue() {
             
-            sQueue.sync { pendingTransfers.increment() }
+            Connection.sQueue.sync { pendingTransfers.increment() }
             
             queue.async {
                 
@@ -728,7 +728,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         
         if let queue = tqueue() {
 
-            sQueue.sync { pendingTransfers.increment() }
+            Connection.sQueue.sync { pendingTransfers.increment() }
 
             let copy = UnsafeMutableRawBufferPointer.allocate(count: buffer.count)
             memcpy(copy.baseAddress, buffer.baseAddress, buffer.count)
