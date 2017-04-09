@@ -70,7 +70,11 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-#### v0.10.4 (Current)
+#### v0.10.5 (Current)
+
+- Added affectInactivityDetection parameter (default = true) to the transfer calls.
+
+#### v0.10.4
 
 - Bugfix: The sQueue in SwifterSocket.Connection could be deallocated before its processes were complete.
 

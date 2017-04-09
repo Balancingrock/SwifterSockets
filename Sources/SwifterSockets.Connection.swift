@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.4
+//  Version:    0.10.5
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.5  - Added affectInactivityDetection to the transfer calls.
 // 0.10.4  - Fixed sQueue deallocation problem by making it static.
 // 0.9.15  - Added inactivity detection.
 // 0.9.14  - Updated the transfer protocol methods to include the buffer pointer.
@@ -606,6 +607,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// - Parameters:
     ///   - buffer: The pointer to a buffer with the bytes to be transferred. The callee must ensure that the buffer remains allocated until the transfer is complete.
     ///   - timeout: The timeout for the data transfer.
+    ///   - affectInactivityDetection: Set to 'false' to not affect the inactivity timeout detection logic.
     ///   - callback: The receiver for the TransmitterProtocol method calls.
     ///   - progress: The closure that is invoked after partial transfers.
     ///
@@ -615,12 +617,15 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     public func transfer(
         _ buffer: UnsafeBufferPointer<UInt8>,
         timeout: TimeInterval? = nil,
+        affectInactivityDetection: Bool = true,
         callback: TransmitterProtocol? = nil,
         progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         if let queue = tqueue() {
             
-            Connection.sQueue.sync { pendingTransfers.increment() }
+            if affectInactivityDetection {
+                Connection.sQueue.sync { pendingTransfers.increment() }
+            }
             
             queue.async {
                 
@@ -632,7 +637,9 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                     callback: callback ?? self?.transmitterProtocol ?? self,
                     progress: progress ?? self?.transmitterProgressMonitor)
                 
-                self?.inactivityDetectionRestartForEndOfQueuedTransfer()
+                if affectInactivityDetection {
+                    self?.inactivityDetectionRestartForEndOfQueuedTransfer()
+                }
             }
             
             return .queued(id: Int(bitPattern: buffer.baseAddress))
@@ -647,7 +654,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                 callback: callback ?? transmitterProtocol ?? self,
                 progress: progress ?? transmitterProgressMonitor) ?? .error(message: "Interface no longer available")
             
-            inactivityDetectionRestart()
+            if affectInactivityDetection { inactivityDetectionRestart() }
             
             return result
         }
@@ -661,6 +668,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// - Parameters:
     ///   - data: A data object containing the bytes to be transferred. ___The callee must ensure that this object remains allocated until the transfer is complete.___
     ///   - timeout: The timeout for the data transfer.
+    ///   - affectInactivityDetection: Set to 'false' to not affect the inactivity timeout detection logic.
     ///   - callback: The receiver for the TransmitterProtocol method calls.
     ///   - progress: The closure that is invoked after partial transfers.
     ///
@@ -670,12 +678,13 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     public func transfer(
         _ data: Data,
         timeout: TimeInterval? = nil,
+        affectInactivityDetection: Bool = true,
         callback: TransmitterProtocol? = nil,
         progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult in
             let buffer = UnsafeBufferPointer<UInt8>.init(start: ptr, count: data.count)
-            return self.transfer(buffer, timeout: timeout, callback: callback, progress: progress)
+            return self.transfer(buffer, timeout: timeout, affectInactivityDetection: affectInactivityDetection, callback: callback, progress: progress)
         }
     }
     
@@ -687,6 +696,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// - Parameters:
     ///   - string: The string to be transferred coded in UTF-8. ___The callee must ensure that this object remains allocated until the transfer is complete.___
     ///   - timeout: The timeout for the data transfer.
+    ///   - affectInactivityDetection: Set to 'false' to not affect the inactivity timeout detection logic.
     ///   - callback: The receiver for the TransmitterProtocol method calls.
     ///   - progress: The closure that is invoked after partial transfers.
     ///
@@ -696,11 +706,12 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     public func transfer(
         _ string: String,
         timeout: TimeInterval? = nil,
+        affectInactivityDetection: Bool = true,
         callback: TransmitterProtocol? = nil,
         progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         if let data = string.data(using: String.Encoding.utf8) {
-            return self.transfer(data, timeout: timeout, callback: callback, progress: progress)
+            return self.transfer(data, timeout: timeout, affectInactivityDetection: affectInactivityDetection, callback: callback, progress: progress)
         } else {
             _ = transmitterProgressMonitor?(0, 0)
             (callback ?? self).transmitterError(0, "Cannot convert string to UTF8")
@@ -714,6 +725,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// - Parameters:
     ///   - buffer: The pointer to a buffer with the bytes to be transferred.
     ///   - timeout: The timeout for the data transfer.
+    ///   - affectInactivityDetection: Set to 'false' to not affect the inactivity timeout detection logic.
     ///   - callback: The receiver for the TransmitterProtocol method calls.
     ///   - progress: The closure that is invoked after partial transfers.
     ///
@@ -723,12 +735,15 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     public func bufferedTransfer(
         _ buffer: UnsafeBufferPointer<UInt8>,
         timeout: TimeInterval? = nil,
+        affectInactivityDetection: Bool = true,
         callback: TransmitterProtocol? = nil,
         progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         if let queue = tqueue() {
 
-            Connection.sQueue.sync { pendingTransfers.increment() }
+            if affectInactivityDetection {
+                Connection.sQueue.sync { pendingTransfers.increment() }
+            }
 
             let copy = UnsafeMutableRawBufferPointer.allocate(count: buffer.count)
             memcpy(copy.baseAddress, buffer.baseAddress, buffer.count)
@@ -743,7 +758,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                     callback: callback ?? self?.transmitterProtocol ?? self,
                     progress: progress ?? self?.transmitterProgressMonitor)
                 
-                self?.inactivityDetectionRestartForEndOfQueuedTransfer()
+                if affectInactivityDetection { self?.inactivityDetectionRestartForEndOfQueuedTransfer() }
 
                 copy.deallocate()
             }
@@ -760,7 +775,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                 callback: callback ?? transmitterProtocol ?? self,
                 progress: progress ?? transmitterProgressMonitor) ?? .error(message: "Interface no longer available")
             
-            inactivityDetectionRestart()
+            if affectInactivityDetection { inactivityDetectionRestart() }
 
             return result
         }
@@ -772,6 +787,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// - Parameters:
     ///   - data: A data object containing the bytes to be transferred.
     ///   - timeout: The timeout for the data transfer.
+    ///   - affectInactivityDetection: Set to 'false' to not affect the inactivity timeout detection logic.
     ///   - callback: The receiver for the TransmitterProtocol method calls.
     ///   - progress: The closure that is invoked after partial transfers.
     ///
@@ -781,12 +797,13 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     public func bufferedTransfer(
         _ data: Data,
         timeout: TimeInterval? = nil,
+        affectInactivityDetection: Bool = true,
         callback: TransmitterProtocol? = nil,
         progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult in
             let buffer = UnsafeBufferPointer<UInt8>.init(start: ptr, count: data.count)
-            return self.bufferedTransfer(buffer, timeout: timeout, callback: callback, progress: progress)
+            return self.bufferedTransfer(buffer, timeout: timeout, affectInactivityDetection: affectInactivityDetection, callback: callback, progress: progress)
         }
     }
     
@@ -796,6 +813,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// - Parameters:
     ///   - string: The string to be transferred coded in UTF-8.
     ///   - timeout: The timeout for the data transfer.
+    ///   - affectInactivityDetection: Set to 'false' to not affect the inactivity timeout detection logic.
     ///   - callback: The receiver for the TransmitterProtocol method calls.
     ///   - progress: The closure that is invoked after partial transfers.
     ///
@@ -805,11 +823,12 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     public func bufferedTransfer(
         _ string: String,
         timeout: TimeInterval? = nil,
+        affectInactivityDetection: Bool = true,
         callback: TransmitterProtocol? = nil,
         progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
         if let data = string.data(using: String.Encoding.utf8) {
-            return self.bufferedTransfer(data, timeout: timeout, callback: callback, progress: progress)
+            return self.bufferedTransfer(data, timeout: timeout, affectInactivityDetection: affectInactivityDetection, callback: callback, progress: progress)
         } else {
             _ = transmitterProgressMonitor?(0, 0)
             (callback ?? self).transmitterError(0, "Cannot convert string to UTF8")
