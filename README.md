@@ -70,7 +70,11 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-#### v0.10.3 (Current)
+#### v0.10.4 (Current)
+
+- Bugfix: The sQueue in SwifterSocket.Connection could be deallocated before its processes were complete.
+
+#### v0.10.3
 
 - BRUtils update to 0.2.0
 
