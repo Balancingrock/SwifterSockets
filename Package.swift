@@ -3,6 +3,6 @@ import PackageDescription
 let package = Package(
     name: "SwifterSockets",
     dependencies: [
-        .Package(url: "https://github.com/Balancingrock/BRUtils", Version(0, 2, 0))
+        .Package(url: "../BRUtils", Version(0, 3, 0))
     ]
 )
