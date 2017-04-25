@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Transmit.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.14
+//  Version:    0.10.6
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.6 - Added closing of the socket on transmitterClosed.
 // 0.9.14 - Moved transmitter protocol to this file
 //        - Moved progress signature to this file
 //        - Added id to transmitter protocol methods
@@ -261,6 +262,7 @@ public func tipTransfer(
             return .error(message: message)
             
         case .closed:
+            close(socket) // Ensure that the socket is closed from our end.
             _ = progress?(bytesTransferred, buffer.count)
             callback?.transmitterClosed(id)
             return .closed

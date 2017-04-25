@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.5
+//  Version:    0.10.6
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,10 @@
 //
 // History
 //
+// 0.10.6  - Renamed 'abortConnection' to 'connectionWasClosed'.
+//         - In transmitterClosed the inerface is immediately set to 'nil' as it is no longer available. This prevents
+//           errors in the SSL connection that could occur when trying to close an SSL interface that was already
+//           closed.
 // 0.10.5  - Added affectInactivityDetection to the transfer calls.
 // 0.10.4  - Fixed sQueue deallocation problem by making it static.
 // 0.9.15  - Added inactivity detection.
@@ -837,9 +841,9 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
 
     
-    /// If a transmitter queue is used, the abortConnection will be scheduled on the transmitter queue after all scheduled transfers have taken place.
+    /// If a transmitter queue is used, this will close the connection after all pending transfers complete. If no queue is used it will close the connection immediately.
     ///
-    /// - Note: Overriding: must call super.
+    /// If customization of the closing activities is needed, override 'connectionWasClosed'.
     
     public func closeConnection() {
         
@@ -847,24 +851,28 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         
         if let queue = tqueue() {
             
-            queue.async { [weak self] in self?.abortConnection() }
+            queue.async {
+                [weak self] in
+                self?._closeConnection()
+            }
             
         } else {
-            
-            abortConnection()
+            _closeConnection()
         }
     }
     
-    
-    /// Immediately closes the connection and frees resources.
-    ///
-    /// - Note: Child classes should override this function to release any additional resources that have been allocated. Must call super.
-    
-    open func abortConnection() {
-        
+    private func _closeConnection() {
         interface?.close()
         interface = nil
+        connectionWasClosed()
     }
+    
+    
+    /// Child classes can override this method to release resources that have been allocated during setup & usage of the connection.
+    ///
+    /// As the name indicates, the connection to the client has been closed already.
+    
+    open func connectionWasClosed() {}
 
     
     /// Starts the receiver loop. From now on the receiver protocol will be used to handle data transfer related issues.
@@ -895,32 +903,33 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     open func transmitterReady(_ id: Int) {}
     
     
-    /// Default implementation: Closes the connection to the client from the server side immediately.
+    /// Default implementation: Makes the interface immediately unavailable.
     ///
-    /// - Note: If overriden, call super.transmitterClosed at the end.
+    /// - Note: If overriden, call super.transmitterClosed first to ensure that the interface can no longer be used. Calling super.transmitterClosed will also invoke a possible override of connectionWasClosed.
     
     open func transmitterClosed(_ id: Int) {
-        abortConnection()
+        interface = nil
+        connectionWasClosed()
     }
     
     
     /// Default implementation: Closes the connection to the client from the server side immediately.
     ///
-    /// - Note: If overriden, call super.transmitterTimeout at the end.
+    /// - Note: If overriden, call super.transmitterTimeout at the end. Calling super.transmitterTimeout will also invoke a possible override of connectionWasClosed.
     
     open func transmitterTimeout(_ id: Int) {
         errorHandler?("Timeout on transmission")
-        abortConnection()
+        closeConnection()
     }
     
     
     /// Default implementation: Closes the connection to the client from the server side immediately.
     ///
-    /// - Note: If overriden, call super.transmitterError at the end.
+    /// - Note: If overriden, call super.transmitterError at the end. Calling super.transmitterError will also invoke a possible override of connectionWasClosed.
     
     open func transmitterError(_ id: Int, _ message: String) {
         errorHandler?(message)
-        abortConnection()
+        closeConnection()
     }
     
     
