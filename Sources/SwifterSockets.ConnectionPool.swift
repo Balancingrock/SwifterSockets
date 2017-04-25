@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.ConnectionPool.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.2
+//  Version:    0.10.6
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.6 - Added sorting for next available connection.
 // 0.10.2 - Added BRUtils for the Result type
 // 0.9.15 - Added loopcount to the return of allocateOrTimeout function.
 // 0.9.14 - Initial release
@@ -87,6 +88,20 @@ public final class ConnectionPool {
     private var inUse: Array<Connection> = []
     
     
+    /// Signature of a sorting functions for connection objects
+    ///
+    /// Should return true if lhs should be sorted before rhs.
+    
+    public typealias SortingSignature = (_ lhs: Connection, _ rhs: Connection) -> Bool
+    
+    
+    /// This sorting function will be used to find the connection object within the available connections. The "first" connection object will be returned.
+    ///
+    /// If nil, no sorting will be done.
+    
+    public var sorter: SortingSignature?
+    
+    
     /// Allocates a connection object and returns it.
     ///
     /// - Note: This is a synchronous operation.
@@ -101,7 +116,12 @@ public final class ConnectionPool {
             
             var connection: Connection?
             
-            if self.available.count > 0 { connection = self.available.popLast() }
+            if self.available.count > 0 {
+                
+                if self.sorter != nil { self.available.sort(by: self.sorter!) }
+                
+                connection = self.available.removeFirst()
+            }
             
             if connection != nil { self.inUse.insert(connection!, at: 0) }
             
