@@ -1,7 +1,7 @@
 # SwifterSockets
 A collection of socket utilities in pure Swift
 
-SwifterSockets is part of [Swiftfire](http://swiftfire.nl), the next generation personal webserver.
+SwifterSockets is part of [Swiftfire](http://swiftfire.nl), the server for websites build with Swift.
 
 # Features
 - Shields the Swift application from the complexity of the Unix socket calls.
@@ -75,6 +75,8 @@ Note: Planned releases are for information only, they are subject to change with
 - Updated the references captured by closures.
 - In transmitterClosed the inerface is immediately set to 'nil' to prevent errors in an SSL connectionon closing.
 - Renamed 'abortConnection' to 'connectionWasClosed'.
+- Added sorting to the connection pool.
+- Added closing of the socket on transmitterClosed.
 
 #### 0.10.5
 
@@ -100,7 +102,7 @@ Note: Planned releases are for information only, they are subject to change with
 
 - Added a result function to process Result<T> results
  
-#### v0.9.15
+#### 0.9.15
 
 - Added inactivity detection for Connections.
 
