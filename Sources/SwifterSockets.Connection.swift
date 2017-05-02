@@ -52,6 +52,7 @@
 //         - In transmitterClosed the inerface is immediately set to 'nil' as it is no longer available. This prevents
 //           errors in the SSL connection that could occur when trying to close an SSL interface that was already
 //           closed.
+//         - Updated the references captured by closures.
 // 0.10.5  - Added affectInactivityDetection to the transfer calls.
 // 0.10.4  - Fixed sQueue deallocation problem by making it static.
 // 0.9.15  - Added inactivity detection.
@@ -563,8 +564,9 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     public func inactivityDetectionRestart() {
         Connection.sQueue.sync {
-            lastActivity = Date()
-            if let inactivityDetectionThreshold = inactivityDetectionThreshold {
+            [unowned self] in
+            self.lastActivity = Date()
+            if let inactivityDetectionThreshold = self.inactivityDetectionThreshold {
                 Connection.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
             }
         }
@@ -575,10 +577,11 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
 
     private func inactivityDetectionRestartForEndOfQueuedTransfer() {
         Connection.sQueue.sync {
-            lastActivity = Date()
-            pendingTransfers.decrementAndExecuteOnNull {
-                if let inactivityDetectionThreshold = inactivityDetectionThreshold {
-                    Connection.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold, execute: inactivityDetection)
+            [unowned self] in
+            self.lastActivity = Date()
+            self.pendingTransfers.decrementAndExecuteOnNull {
+                if let inactivityDetectionThreshold = self.inactivityDetectionThreshold {
+                    Connection.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold, execute: self.inactivityDetection)
                 }
             }
         }
@@ -634,15 +637,16 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
             queue.async {
                 
                 [weak self] in
+                guard let `self` = self else { return }
                 
-                _ = self?.interface?.transfer(
+                _ = self.interface?.transfer(
                     buffer: buffer,
-                    timeout: timeout ?? self?.transmitterTimeoutValue,
-                    callback: callback ?? self?.transmitterProtocol ?? self,
-                    progress: progress ?? self?.transmitterProgressMonitor)
+                    timeout: timeout ?? self.transmitterTimeoutValue,
+                    callback: callback ?? self.transmitterProtocol ?? self,
+                    progress: progress ?? self.transmitterProgressMonitor)
                 
                 if affectInactivityDetection {
-                    self?.inactivityDetectionRestartForEndOfQueuedTransfer()
+                    self.inactivityDetectionRestartForEndOfQueuedTransfer()
                 }
             }
             
@@ -755,14 +759,15 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
             queue.async {
                 
                 [weak self] in
+                guard let `self` = self else { return }
                 
-                _ = self?.interface?.transfer(
+                _ = self.interface?.transfer(
                     buffer: UnsafeBufferPointer(start: copy.baseAddress!.assumingMemoryBound(to: UInt8.self), count: buffer.count),
-                    timeout: timeout ?? self?.transmitterTimeoutValue,
-                    callback: callback ?? self?.transmitterProtocol ?? self,
-                    progress: progress ?? self?.transmitterProgressMonitor)
+                    timeout: timeout ?? self.transmitterTimeoutValue,
+                    callback: callback ?? self.transmitterProtocol ?? self,
+                    progress: progress ?? self.transmitterProgressMonitor)
                 
-                if affectInactivityDetection { self?.inactivityDetectionRestartForEndOfQueuedTransfer() }
+                if affectInactivityDetection { self.inactivityDetectionRestartForEndOfQueuedTransfer() }
 
                 copy.deallocate()
             }
@@ -884,11 +889,12 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         queue.async {
             
             [weak self] in
+            guard let `self` = self else { return }
             
-            self?.interface?.receiverLoop(
-                bufferSize: self?.receiverBufferSize ?? 20 * 1024,
-                duration: self?.receiverLoopDuration ?? 5,
-                receiver: self!)
+            self.interface?.receiverLoop(
+                bufferSize: self.receiverBufferSize,
+                duration: self.receiverLoopDuration,
+                receiver: self)
         }
     }
     

@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Server.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.2
+//  Version:    0.10.6
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.6 - Changes captured reference in accept loop from unowned to weak
 // 0.10.2 - Added BRUtils for the Result type
 // 0.9.14 - Moved server protocol to this file
 // 0.9.13 - General overhaul of public/private access.
@@ -444,7 +445,8 @@ public class TipServer: ServerProtocol {
         _stop = false
         acceptQueue.async() {
             
-            [unowned self] in
+            [weak self] in
+            guard let `self` = self else { return }
             
             ACCEPT_LOOP: while !self._stop {
                 
