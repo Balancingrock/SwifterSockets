@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.6
+//  Version:    0.10.7
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.7  - Bugfix: Added start of inactivity detection on receiverStart.
 // 0.10.6  - Renamed 'abortConnection' to 'connectionWasClosed'.
 //         - In transmitterClosed the inerface is immediately set to 'nil' as it is no longer available. This prevents
 //           errors in the SSL connection that could occur when trying to close an SSL interface that was already
@@ -885,6 +886,8 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     public func startReceiverLoop() {
         
         let queue = receiverQueue ?? DispatchQueue(label: "Receiver queue", qos: receiverQueueQoS, attributes: [], autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.inherit, target: nil)
+        
+        inactivityDetectionRestart()
         
         queue.async {
             
