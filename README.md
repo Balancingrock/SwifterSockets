@@ -70,7 +70,12 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-#### 0.10.6 (Current)
+#### 0.10.7 (Current)
+
+- Bugfix: Closing a connection of a connection object could crash an application (rare, only observed once).
+- Bugfix: There was a conditon that would prevent the release of connection objects causing a server to run out of connection objects (common when a server ran for several days without restarts)
+
+#### 0.10.6
 
 - Updated the references captured by closures.
 - In transmitterClosed the inerface is immediately set to 'nil' to prevent errors in an SSL connectionon closing.

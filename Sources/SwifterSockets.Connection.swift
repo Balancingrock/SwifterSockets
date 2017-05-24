@@ -78,7 +78,7 @@ import Foundation
 /// The i/o functions that glue a Connection object to an interface.
 
 public protocol InterfaceAccess {
-
+    
     
     /// An id that can be used for logging purposes and will differentiate between interfaces on a temporary basis.
     ///
@@ -93,7 +93,7 @@ public protocol InterfaceAccess {
     
     mutating func close()
     
-
+    
     /// Transfers the data in the buffer to the peer.
     ///
     /// - Parameters:
@@ -110,7 +110,7 @@ public protocol InterfaceAccess {
         callback: TransmitterProtocol?,
         progress: TransmitterProgressMonitor?) -> TransferResult?
     
-
+    
     /// Starts a receiver loop that will call the operations as defined in the ReceiverProtocol on the receiver.
     ///
     /// - Note: There will be no return from this function until a ReceiverProtocol method singals so, or until an error occurs.
@@ -137,7 +137,7 @@ public struct TipInterface: InterfaceAccess {
     /// It should be guaranteed that no two interfaces with the same logId are active at the same time.
     
     public var logId: Int32 { return socket ?? -1 }
-
+    
     
     /// The socket for this connection.
     
@@ -149,7 +149,7 @@ public struct TipInterface: InterfaceAccess {
     /// - Note: Even if 'true' is returned it is still possible that the next attempt to use the interface will immediately result in a termination of the connection. For example if the peer has already closed its side of the connection.
     
     public var isValid: Bool {
-    
+        
         if socket == nil { return false }
         if socket! < 0 { return false }
         return true
@@ -161,13 +161,13 @@ public struct TipInterface: InterfaceAccess {
     /// - Parameter socket: The socket to use for this interface.
     
     public init(_ socket: Int32) {
-    
+        
         self.socket = socket
     }
     
     
     /// Closes this end of a connection.
-
+    
     public mutating func close() {
         
         if isValid {
@@ -175,7 +175,7 @@ public struct TipInterface: InterfaceAccess {
             socket = nil
         }
     }
-
+    
     
     /// Transfers the data via the socket to the peer. This operation returns when the data has been accepted by the POSIX layer, i.e. the physical transfer may still be ongoing.
     ///
@@ -201,14 +201,14 @@ public struct TipInterface: InterfaceAccess {
                 timeout: timeout ?? 10,
                 callback: callback,
                 progress: progress)
-        
+            
         } else {
-        
+            
             return nil
         }
     }
     
-
+    
     /// Starts a receiver loop that will call the operations as defined in the ReceiverProtocol on the receiver.
     ///
     /// - Note: There will be no return from this function until a ReceiverProtocol method singals so, or until an error occurs.
@@ -217,7 +217,7 @@ public struct TipInterface: InterfaceAccess {
     ///   - bufferSize: The size of the buffer to create in bytes.
     ///   - duration: The duration for the loop.
     ///   - receiver: The receiver for the ReceiverProtocol method calls (if present).
-
+    
     public func receiverLoop(
         bufferSize: Int = 20 * 1024,
         duration: TimeInterval = 10,
@@ -240,13 +240,16 @@ public struct TipInterface: InterfaceAccess {
 ///
 /// - Note: The factory is responsible to retain the connection object. I.e. the factory should ensure that the connection object remains allocated until it is no longer needed (i.e. until the connection is closed).
 ///
-/// - Parameter intf: Provides acces to the underlying interface.
-/// - Parameter address: The IP address of the peer.
+/// - Parameters:
+///   - intf: Provides acces to the underlying interface that the connection should use.
+///   - address: The IP address of the peer.
 
 public typealias ConnectionObjectFactory = (_ intf: InterfaceAccess, _ address: String) -> Connection?
 
 
-/// The signature for the inactivity handler.
+/// The signature for an inactivity handler.
+///
+/// Inactivity handlers will run on their own (private) dispatch queue.
 
 public typealias InactivityHandler = (_ connection: Connection) -> Void
 
@@ -255,7 +258,7 @@ public typealias InactivityHandler = (_ connection: Connection) -> Void
 ///
 /// - Note: Every connection object is made ready for use with the "prepare" method. The "init" is ineffective for that.
 ///
-/// - Note: By default a connection stays open until the peer closes it. This is normally __unacceptable for a server!__
+/// - Note: By default a connection stays open until the peer closes it. This is normally __unacceptable for a server!__. For a servers it is recommened to use an inactivity detector that takes appropriate action when the connection is no longer used.
 
 open class Connection: ReceiverProtocol, TransmitterProtocol {
     
@@ -264,7 +267,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     // The third queue is called the 'usage' queue. It is used to keep track of the number of 'usages' that are made of the connection objects. (Very similar to Objective-C reference counters) When a transmitter closure is started, the usage count is increased by one. When a receiver loop event occurs, the usage count is also increased by one. When the tranmission is complete the usage count is decremented. And when a receiver event has been fully handled the usage count is also decremented. When the usage counter is decremented from 1 to 0, a check is performed on the 'pending close' flag. If that flag is active, the connection will be closed. If that flag is inactive the inactivity detection closure is scheduled on the usage queue.
     //
     // When the connection is requested to be closed, a closure is started on the usage queue that checks if the usage count == 0. If so, the connection is closed immediately. If not, then the 'pending close' flag is set.
-
+    
     
     /// Initialization options for a Connection object.
     
@@ -284,7 +287,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         /// The timeout for transmissions.
         ///
         /// Default is 10 seconds.
-
+        
         case transmitterTimeout(TimeInterval)
         
         
@@ -308,7 +311,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         /// The quality of service for the receiverQueue to be created if no receiverQueue is set.
         ///
         /// Default is .default
-
+        
         case receiverQueueQoS(DispatchQoS)
         
         
@@ -328,7 +331,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         
         /// The connection will be considered inactive if no transmission has taken place for at least as long as this time interval. When a connection is considered inactive, it will be closed. To avoid closing a connection after it becomes inactive specify nil (default).
         ///
-        /// Default is nil (none). Very small or 0 will lead to an immediate close of the connection after initial activity. This can lead to seemingly unpredictable behaviour. Servers typically use a default of 300 milli seconds or more.
+        /// Default is nil (none). Very small or 0 will lead to an immediate close of the connection after the first transmission or upon starting the receiverLoop. This can lead to seemingly unpredictable behaviour. Servers typically use a default of 300 milli seconds or more.
         ///
         /// When used, this value should strike a balance between keeping a connection open in anticipation of more activity (and thus avoiding the overhead of negotiation & accepting & preparing a new connection) and closing a connection because it is consuming system resources (including the connection itself if a connection pool is used) that are needed elsewhere.
         
@@ -365,7 +368,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     public private(set) var transmitterProtocol: TransmitterProtocol?
     
-
+    
     /// A callback closure that can be used to monitor (and abort) long running transmissions. There are no rules to determine how many times it will be called, however it will be invoked at least once when the transmission completes. If the closure returns 'false', the transmission will be aborted.
     
     public private(set) var transmitterProgressMonitor: TransmitterProgressMonitor?
@@ -427,8 +430,6 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     
     /// This queue is used for usage counting and to close down a connection after inactivity.
-    ///
-    /// - Note: Inactactivity actions are started from this queue.
     
     private static var uQueue: DispatchQueue = DispatchQueue(label: "Connection Usage Counting")
     
@@ -454,6 +455,13 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// - Note: that this number may only be accessed from within closures that execute on the uQueue.
     
     private var inactivityRequestCount: Int = 0
+    
+    
+    /// This queue is used for inactivity handlers.
+    ///
+    /// - Note: Inactactivity actions are started from this queue.
+    
+    private static var iQueue: DispatchQueue = DispatchQueue(label: "Inactivity handlers")
     
     
     
@@ -589,16 +597,6 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     }
     
     
-    /// Start the inactivity action if necessary
-    /*
-    private func inactivityDetection() {
-        if inactivityDetectionThreshold == nil { return }
-        //if pendingTransfers != 0 { return }
-        if abs(lastActivity.timeIntervalSinceNow) < inactivityDetectionThreshold! { return }
-        inactivityAction?(self)
-    }*/
-    
-    
     /// Increment the usage counter
     
     private func incrementUsageCount() {
@@ -628,7 +626,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
             if self.usageCount == 0 { return }
             
             
-            // Decrement the usage counter 
+            // Decrement the usage counter
             
             self.usageCount -= 1
             
@@ -643,7 +641,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                 if self.pendingClose {
                     self._closeConnection()
                 } else {
-                
+                    
                     // If there is an inactivity action, schedule it for execution
                     
                     if  let _ = self.inactivityAction,
@@ -653,10 +651,10 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                         
                         let myRequestCount = self.inactivityRequestCount
                         
-                        Connection.uQueue.asyncAfter(deadline: DispatchTime.now() + inactivityDetectionThreshold) {
+                        Connection.iQueue.asyncAfter(deadline: DispatchTime.now() + inactivityDetectionThreshold) {
                             [weak self] in
                             guard let `self` = self else { return }
-
+                            
                             // Cancel the inactivity action if there is a pending usage or if there was another inactivity action request made.
                             
                             if self.usageCount == 0, self.inactivityRequestCount == myRequestCount {
@@ -668,34 +666,6 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
             }
         }
     }
-    
-    
-    /// Call this function to indicate that the inactivity timeout detection has to be restarted
-    /*
-    public func inactivityDetectionRestart() {
-        Connection.sQueue.sync {
-            [unowned self] in
-            self.lastActivity = Date()
-            if let inactivityDetectionThreshold = self.inactivityDetectionThreshold {
-                Connection.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold) { [weak self] in self?.inactivityDetection() }
-            }
-        }
-    }*/
-
-    
-    /// Call this function to indicate that the inactivity timeout detection has to be restarted but only for queued transfers that ended.
-    /*
-    private func inactivityDetectionRestartForEndOfQueuedTransfer() {
-        Connection.sQueue.sync {
-            [unowned self] in
-            self.lastActivity = Date()
-            self.pendingTransfers.decrementAndExecuteOnNull {
-                if let inactivityDetectionThreshold = self.inactivityDetectionThreshold {
-                    Connection.sQueue.asyncAfter(deadline: .now() + inactivityDetectionThreshold, execute: self.inactivityDetection)
-                }
-            }
-        }
-    }*/
     
     
     /// If a transmitterQueue is set, that transmitterQueue will be returned. If no transmitterQueue is present, but a quality of service for the transmitterQueue is set, then a new queue will be created for the specified QoS. If no queue or QoS is set, nil will be returned.
@@ -729,7 +699,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///   - progress: The closure that is invoked after partial transfers.
     ///
     /// - Returns: If the operation takes place on a dispatch queue, nil will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
-
+    
     @discardableResult
     public func transfer(
         _ buffer: UnsafeBufferPointer<UInt8>,
@@ -820,7 +790,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///   - progress: The closure that is invoked after partial transfers.
     ///
     /// - Returns: If the operation takes place on a dispatch queue, .queued(id) will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
-
+    
     @discardableResult
     public func transfer(
         _ data: Data,
@@ -848,7 +818,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     ///   - progress: The closure that is invoked after partial transfers.
     ///
     /// - Returns: If the operation takes place on a dispatch queue, .queued(id) will be returned. If the operation is executed in-line the return value will indicate the success/failure conditions that occured. Note that this will be the duplicate information a potential callback operation will have received.
-
+    
     @discardableResult
     public func transfer(
         _ string: String,
@@ -900,7 +870,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         var result: TransferResult
         
         if let queue = tqueue() {
-
+            
             let copy = UnsafeMutableRawBufferPointer.allocate(count: buffer.count)
             memcpy(copy.baseAddress, buffer.baseAddress, buffer.count)
             
@@ -918,7 +888,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
                 // Check if lock was achieved
                 
                 guard self.interface != nil else { return }
-
+                
                 
                 // Transfer
                 
@@ -952,11 +922,11 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         // Unlock
         
         self.decrementUsageCount()
-
+        
         
         return result
     }
-
+    
     
     /// Copy the content of the given data object and transfer that to the peer. The original data object can immediately be used again or deallocated.
     ///
@@ -1011,7 +981,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
             return .error(message: "Cannot convert string to UTF8")
         }
     }
-
+    
     
     /// If a transmitter queue is used, this will close the connection after all pending transfers complete. If no queue is used it will close the connection immediately.
     ///
@@ -1021,7 +991,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         
         if interface == nil { return }
         
-        Connection.uQueue.sync {
+        Connection.uQueue.async {
             [weak self] in
             guard let `self` = self else { return }
             
@@ -1047,7 +1017,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// As the name indicates, the connection to the client has been closed already.
     
     open func connectionWasClosed() {}
-
+    
     
     /// Starts the receiver loop. From now on the receiver protocol will be used to handle data transfer related issues.
     
@@ -1141,7 +1111,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     // Receives the data and passes it on if a lock was obtained.
     
     public func receiverData(_ buffer: UnsafeBufferPointer<UInt8>) -> Bool {
-
+        
         
         // Try to get a lock
         
