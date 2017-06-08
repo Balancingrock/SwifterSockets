@@ -70,7 +70,12 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-#### 0.10.7 (Current)
+#### 0.10.8 (Current)
+
+- Upgraded BRUtils to 0.5.0
+- Made incrementUsageCount and decrementUsageCount public.
+
+#### 0.10.7
 
 - Bugfix: Closing a connection of a connection object could crash an application (rare, only observed once).
 - Bugfix: There was a conditon that would prevent the release of connection objects causing a server to run out of connection objects (common when a server ran for several days without restarts)

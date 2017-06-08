@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.7
+//  Version:    0.10.8
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.8  - Made incrementUsageCount and decrementUsageCount public.
 // 0.10.7  - Bugfix: partial reimplementation to prevent crashes due to clashes of receiver events and close events.
 // 0.10.6  - Renamed 'abortConnection' to 'connectionWasClosed'.
 //         - In transmitterClosed the inerface is immediately set to 'nil' as it is no longer available. This prevents
@@ -599,7 +600,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// Increment the usage counter
     
-    private func incrementUsageCount() {
+    public func incrementUsageCount() {
         Connection.uQueue.sync {
             [weak self] in
             guard let `self` = self else { return }
@@ -614,7 +615,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     
     /// Decrement the usage counter
     
-    private func decrementUsageCount() {
+    public func decrementUsageCount() {
         Connection.uQueue.sync {
             [weak self] in
             guard let `self` = self else { return }
