@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.ConnectionPool.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.6
+//  Version:    0.10.8
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.8 - Added 'Darwin' to sleep calls.
 // 0.10.6 - Added sorting for next available connection.
 // 0.10.2 - Added BRUtils for the Result type
 // 0.9.15 - Added loopcount to the return of allocateOrTimeout function.
@@ -149,7 +150,7 @@ public final class ConnectionPool {
             
             if loopCount >= timeout { break }
             
-            sleep(1)
+            _ = Darwin.sleep(1)
             
             loopCount += 1
         }
@@ -239,7 +240,7 @@ public final class ConnectionPool {
                 }
             }
             
-            sleep(1)
+            _ = Darwin.sleep(1)
         }
     }
 }
