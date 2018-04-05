@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.8
+//  Version:    0.10.11
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.11 - Migration to Swift 4, minor adjustments.
 // 0.10.8  - Made incrementUsageCount and decrementUsageCount public.
 // 0.10.7  - Bugfix: partial reimplementation to prevent crashes due to clashes of receiver events and close events.
 // 0.10.6  - Renamed 'abortConnection' to 'connectionWasClosed'.
@@ -872,7 +873,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         
         if let queue = tqueue() {
             
-            let copy = UnsafeMutableRawBufferPointer.allocate(count: buffer.count)
+            let copy = UnsafeMutableRawBufferPointer.allocate(byteCount: buffer.count, alignment: 8)
             memcpy(copy.baseAddress, buffer.baseAddress, buffer.count)
             
             queue.async {

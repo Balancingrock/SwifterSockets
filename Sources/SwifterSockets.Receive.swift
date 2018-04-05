@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Receive.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.9.14
+//  Version:    0.10.11
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.11 - Migration to Swift 4, minor adjustments.
 // 0.9.14 - Moved receiver protocol to this file
 // 0.9.13 - Comment section update
 // 0.9.12 - Documentation updated to accomodate the documentation tool 'jazzy'
@@ -135,7 +136,7 @@ public func tipReceiverLoop(
     
     // Allocate the data buffer
     
-    let buffer = UnsafeMutableRawPointer.allocate(bytes: bufferSize, alignedTo: 1)
+    let buffer = UnsafeMutableRawPointer.allocate(byteCount: bufferSize, alignment: 8)
     
     
     // ===============================================================================
@@ -201,6 +202,6 @@ public func tipReceiverLoop(
     
     // Deallocate the data buffer
     
-    buffer.deallocate(bytes: bufferSize, alignedTo: 1)
+    buffer.deallocate()
 }
 

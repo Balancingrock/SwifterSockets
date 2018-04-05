@@ -70,7 +70,11 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-#### 0.10.10 (Current)
+#### 0.10.11 (Current)
+
+- Migration to Swift 4, minor adjustments.
+
+#### 0.10.10
 
 - Upgraded BRUtils to 0.10.0
 

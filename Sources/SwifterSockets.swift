@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.2
+//  Version:    0.10.11
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -48,6 +48,7 @@
 //
 // History
 //
+// 0.10.10 - Migration to Swift 4, minor adjustments.
 // 0.10.2  - Added BRUtils for the Result type
 // 0.10.1  - Analysed compilation time and speed up
 // 0.10.0  - Added func result
@@ -81,7 +82,7 @@ import Foundation
 
 /// A helper extensions to allow increment/decrement operations on counter values
 
-extension Integer {
+extension BinaryInteger {
 
     
     /// Increases self by one
@@ -428,9 +429,9 @@ public func fdSet(_ fd: Int32?, set: inout fd_set) {
     
     if let fd = fd {
     
-        let intOffset = Int(fd / 32)
-        let bitOffset = fd % 32
-        let mask = 1 << bitOffset
+        let intOffset: Int32 = fd / 32
+        let bitOffset: Int32 = fd % 32
+        let mask: Int32 = 1 << bitOffset
         
         switch intOffset {
         case 0: set.fds_bits.0 = set.fds_bits.0 | mask
@@ -482,9 +483,9 @@ public func fdClr(_ fd: Int32?, set: inout fd_set) {
     
     if let fd = fd {
     
-        let intOffset = Int(fd / 32)
-        let bitOffset = fd % 32
-        let mask = ~(1 << bitOffset)
+        let intOffset: Int32 = fd / 32
+        let bitOffset: Int32 = fd % 32
+        let mask: Int32 = ~(1 << bitOffset)
         
         switch intOffset {
         case 0: set.fds_bits.0 = set.fds_bits.0 & mask
@@ -536,9 +537,9 @@ public func fdIsSet(_ fd: Int32?, set: inout fd_set) -> Bool {
     
     if let fd = fd {
     
-        let intOffset = Int(fd / 32)
-        let bitOffset = fd % 32
-        let mask = 1 << bitOffset
+        let intOffset: Int32 = fd / 32
+        let bitOffset: Int32 = fd % 32
+        let mask: Int32 = 1 << bitOffset
         
         switch intOffset {
         case 0: return set.fds_bits.0 & mask != 0
