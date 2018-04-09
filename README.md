@@ -36,10 +36,10 @@ Extend the dependency of your project package with:
 
     dependencies: [
         ...
-        .Package(url: "https://github.com/Balancingrock/SwifterSockets", <version-number>)
+        .package(url: "https://github.com/Balancingrock/SwifterSockets", from: <version-number>)
     ]
 
-The _<version-number>_ must be replaced with the version number that must be used, for example: "0.2.0".
+The _<version-number>_ must be replaced with the version number that must be used, for example: "0.11.0".
 
 ## Use as a framework
 
@@ -70,7 +70,11 @@ Note: Planned releases are for information only, they are subject to change with
 
 - The current verion will be upgraded to 1.0.0 status when the full set necessary for Swiftfire 1.0.0 has been completed.
 
-#### 0.10.11 (Current)
+#### 0.11.0 (Current)
+
+- Migration to SPM 4
+
+#### 0.10.11
 
 - Migration to Swift 4, minor adjustments.
 

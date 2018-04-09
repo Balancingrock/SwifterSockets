@@ -1,4 +1,4 @@
-#User Directions
+# User Directions
 
 For a good introduction into socket programming, see [Beej's Guide to Network Programming](http://beej.us/guide/bgnet/output/html/multipage/index.html).
 
@@ -6,11 +6,11 @@ For an introduction into socket programming in Swift, see my blog series [Socket
 
 This document will show how to use SwifterSockets for socket programming.
 
-#Introduction
+# Introduction
 
 SwifterSockets can be used two ways: either as some syntactic sugar over the Unix socket calls, or as a  abstraction layer over the Unix socket calls.
 
-In the first case, socket programming is still socket programming. It will be necessary to gain some knowledge about socket programming via for example the Beej's guide.
+In the first case, socket programming is still socket programming. It will be necessary to gain some knowledge about socket programming, for example the Beej's guide.
 
 In the second case it is not necessary to learn about socket programming, but it is necessary to learn about SwifterSockets.
 
@@ -18,7 +18,7 @@ The following subsections are intended to get things goiing.
 
 For installation, see the [README](https://github.com/Balancingrock/SwifterSockets/blob/master/README.md)
 
-##Use as syntactic sugar
+## Use as syntactic sugar
 
 SwifterSockets provides the following functions for this kind of usage:
 
@@ -54,7 +54,7 @@ To setup a server, use `setupTipServer` followed by `tipAccept` and then `tipTra
 
 Call `closeSocket` to terminate a connection from either client or server.
 
-##Connection based usage
+## Connection based usage
 
 On a higher abstraction level SwifterSockets uses a "Connection" based approach. Whether as client or as server.
 
@@ -62,7 +62,7 @@ All _transmit_ and _receive_ operations take place on a Connection object.
 
 For this purpose SwifterSockets contains a `Connection` class that can be used directly, but much more likely can be used as the basis for a subclass that implements the _transmit_ and _receive_ operations needed in a project.
 
-###Connection Object Factory
+### Connection Object Factory
 
 Your project has to provide a connection object factory.
 
@@ -82,7 +82,7 @@ For SwifterSockets it always is an instance of `TipInterface`.
 
 The second parameter `address` allows the connection factory to determine if the connection request should be granted and/or to create a log of clients or servers that have been connected.
 
-###Setup a connection to a server
+### Setup a connection to a server
 
 To connect to a server use `connectToTipServer`:
 
@@ -103,7 +103,7 @@ public enum Result<T> {
 ```
 The object that is returned can be used to transmit and receive data to and from the peer. When the connection is no longer needed, call `closeConnection`. If there is a connection pool, the child class should override `closeConnection` to put the object back into the (free) pool.
 
-###Setup a server
+### Setup a server
 
 To setup a server, instantiate a new `TipServer` object. A server can have a lot of options, these are configured through an optional option list that can contain one or more of the following enums:
 
