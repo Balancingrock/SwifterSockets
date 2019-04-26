@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.11
+//  Version:    0.12.0
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -11,7 +11,7 @@
 //  Blog:       http://swiftrien.blogspot.com
 //  Git:        https://github.com/Swiftrien/SwifterSockets
 //
-//  Copyright:  (c) 2016-2017 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2016-2019 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -35,11 +35,6 @@
 //
 //  (It is always a good idea to visit the website/blog/google to ensure that you actually pay me and not some imposter)
 //
-//  For private and non-profit use the suggested price is the price of 1 good cup of coffee, say $4.
-//  For commercial use the suggested price is the price of 1 good meal, say $20.
-//
-//  You are however encouraged to pay more ;-)
-//
 //  Prices/Quotes for support, modifications or enhancements can be obtained from: rien@balancingrock.nl
 //
 // =====================================================================================================================
@@ -48,6 +43,7 @@
 //
 // History
 //
+// 0.12.0 - Replaced depreciated call in Swift 5
 // 0.10.11 - Migration to Swift 4, minor adjustments.
 // 0.10.8  - Made incrementUsageCount and decrementUsageCount public.
 // 0.10.7  - Bugfix: partial reimplementation to prevent crashes due to clashes of receiver events and close events.
@@ -801,9 +797,8 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         callback: TransmitterProtocol? = nil,
         progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
-        return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult in
-            let buffer = UnsafeBufferPointer<UInt8>.init(start: ptr, count: data.count)
-            return self.transfer(buffer, timeout: timeout, affectInactivityDetection: affectInactivityDetection, callback: callback, progress: progress)
+        return data.withUnsafeBytes { (buffer: UnsafeRawBufferPointer) -> TransferResult in
+            return self.transfer(buffer.bindMemory(to: UInt8.self), timeout: timeout, affectInactivityDetection: affectInactivityDetection, callback: callback, progress: progress)
         }
     }
     
@@ -949,9 +944,8 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         callback: TransmitterProtocol? = nil,
         progress: TransmitterProgressMonitor? = nil) -> TransferResult {
         
-        return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult in
-            let buffer = UnsafeBufferPointer<UInt8>.init(start: ptr, count: data.count)
-            return self.bufferedTransfer(buffer, timeout: timeout, affectInactivityDetection: affectInactivityDetection, callback: callback, progress: progress)
+        return data.withUnsafeBytes { (buffer: UnsafeRawBufferPointer) -> TransferResult in
+            return self.bufferedTransfer(buffer.bindMemory(to: UInt8.self), timeout: timeout, affectInactivityDetection: affectInactivityDetection, callback: callback, progress: progress)
         }
     }
     

@@ -3,7 +3,7 @@
 //  File:       SwifterSockets.Transmit.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.10.6
+//  Version:    0.12.0
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -11,7 +11,7 @@
 //  Blog:       http://swiftrien.blogspot.com
 //  Git:        https://github.com/Balancingrock/SwifterSockets
 //
-//  Copyright:  (c) 2014-2017 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2014-2019 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -35,11 +35,6 @@
 //
 //  (It is always a good idea to visit the website/blog/google to ensure that you actually pay me and not some imposter)
 //
-//  For private and non-profit use the suggested price is the price of 1 good cup of coffee, say $4.
-//  For commercial use the suggested price is the price of 1 good meal, say $20.
-//
-//  You are however encouraged to pay more ;-)
-//
 //  Prices/Quotes for support, modifications or enhancements can be obtained from: rien@balancingrock.nl
 //
 // =====================================================================================================================
@@ -48,6 +43,7 @@
 //
 // History
 //
+// 0.12.0 - Replaced depreciated call in Swift 5
 // 0.10.6 - Added closing of the socket on transmitterClosed.
 // 0.9.14 - Moved transmitter protocol to this file
 //        - Moved progress signature to this file
@@ -332,9 +328,8 @@ public func tipTransfer(
     callback: TransmitterProtocol? = nil,
     progress: TransmitterProgressMonitor? = nil) -> TransferResult {
     
-    return data.withUnsafeBytes { (ptr: UnsafePointer<UInt8>) -> TransferResult in
-        let ubptr = UnsafeBufferPointer<UInt8>.init(start: ptr, count: data.count)
-        return tipTransfer(socket: socket, buffer: ubptr, timeout: timeout, callback: callback, progress: progress)
+    return data.withUnsafeBytes { (urbp: UnsafeRawBufferPointer) -> TransferResult in
+        return tipTransfer(socket: socket, buffer: urbp.bindMemory(to: UInt8.self), timeout: timeout, callback: callback, progress: progress)
     }
 }
 
