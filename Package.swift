@@ -9,7 +9,7 @@ let package = Package(
             name: "SwifterSockets", targets: ["SwifterSockets"])
     ],
     dependencies: [
-        .package(url: "https://github.com/Balancingrock/BRUtils", from: "0.11.1")
+        .package(url: "https://github.com/Balancingrock/BRUtils", from: "0.13.0")
     ],
     targets: [
         .target(
