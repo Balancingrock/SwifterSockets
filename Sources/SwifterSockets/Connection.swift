@@ -1,15 +1,14 @@
 // =====================================================================================================================
 //
-//  File:       SwifterSockets.Connection.swift
+//  File:       Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    0.12.0
+//  Version:    1.0.0
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
-//  Website:    http://swiftfire.nl/pages/projects/swiftersockets/
-//  Blog:       http://swiftrien.blogspot.com
-//  Git:        https://github.com/Swiftrien/SwifterSockets
+//  Website:    http://swiftfire.nl/
+//  Git:        https://github.com/Balancingrock/Swiftfire
 //
 //  Copyright:  (c) 2016-2019 Marinus van der Lugt, All rights reserved.
 //
@@ -22,18 +21,12 @@
 //
 //  I also ask you to please leave this header with the source code.
 //
-//  I strongly believe that voluntarism is the way for societies to function optimally. Thus I have choosen to leave it
-//  up to you to determine the price for this code. You pay me whatever you think this code is worth to you.
+//  Like you, I need to make a living:
 //
-//   - You can send payment via paypal to: sales@balancingrock.nl
+//   - You can send payment (you choose the amount) via paypal to: sales@balancingrock.nl
 //   - Or wire bitcoins to: 1GacSREBxPy1yskLMc9de2nofNv2SNdwqH
 //
-//  I prefer the above two, but if these options don't suit you, you can also send me a gift from my amazon.co.uk
-//  wishlist: http://www.amazon.co.uk/gp/registry/wishlist/34GNMPZKAQ0OO/ref=cm_sw_em_r_wsl_cE3Tub013CKN6_wb
-//
 //  If you like to pay in another way, please contact me at rien@balancingrock.nl
-//
-//  (It is always a good idea to visit the website/blog/google to ensure that you actually pay me and not some imposter)
 //
 //  Prices/Quotes for support, modifications or enhancements can be obtained from: rien@balancingrock.nl
 //
@@ -43,195 +36,10 @@
 //
 // History
 //
-// 0.12.0 - Replaced depreciated call in Swift 5
-// 0.10.11 - Migration to Swift 4, minor adjustments.
-// 0.10.8  - Made incrementUsageCount and decrementUsageCount public.
-// 0.10.7  - Bugfix: partial reimplementation to prevent crashes due to clashes of receiver events and close events.
-// 0.10.6  - Renamed 'abortConnection' to 'connectionWasClosed'.
-//         - In transmitterClosed the inerface is immediately set to 'nil' as it is no longer available. This prevents
-//           errors in the SSL connection that could occur when trying to close an SSL interface that was already
-//           closed.
-//         - Updated the references captured by closures.
-// 0.10.5  - Added affectInactivityDetection to the transfer calls.
-// 0.10.4  - Fixed sQueue deallocation problem by making it static.
-// 0.9.15  - Added inactivity detection.
-// 0.9.14  - Updated the transfer protocol methods to include the buffer pointer.
-//         - Added buffered transfer functions.
-// 0.9.13  - Allowed overriding of prepare methods.
-//         - Allow public access of transmitterQueue.
-//         - Added logId to InterfaceAccess
-//         - Made interface and remoteAddress members public & private(set)
-//         - General overhaul of public/private access.
-//         - Comment section update
-// 0.9.12  - Documentation updated to accomodate the documentation tool 'jazzy'
-// 0.9.11  - Comment change
-// 0.9.9   - Updated access control
-// 0.9.8   - Initial release
-//
+// 1.0.0 - Removed older history
 // =====================================================================================================================
 
 import Foundation
-
-
-/// The i/o functions that glue a Connection object to an interface.
-
-public protocol InterfaceAccess {
-    
-    
-    /// An id that can be used for logging purposes and will differentiate between interfaces on a temporary basis.
-    ///
-    /// It should be guaranteed that no two interfaces with the same logId are active at the same time.
-    
-    var logId: Int32 { get }
-    
-    
-    /// Closes the connection.
-    ///
-    /// - Note: Data transfers will be aborted if running and may result in error messages on the receiver/transmitter protocols.
-    
-    mutating func close()
-    
-    
-    /// Transfers the data in the buffer to the peer.
-    ///
-    /// - Parameters:
-    ///   - buffer: The buffer with data to be transferred.
-    ///   - timeout: The timeout for the transfer.
-    ///   - callback: The receiver for the TransmitterProtocol method calls (if present).
-    ///   - progress: The closure that is invoked after partial transfers (if any).
-    ///
-    /// - Returns: See the TransferResult definition.
-    
-    func transfer(
-        buffer: UnsafeBufferPointer<UInt8>,
-        timeout: TimeInterval?,
-        callback: TransmitterProtocol?,
-        progress: TransmitterProgressMonitor?) -> TransferResult?
-    
-    
-    /// Starts a receiver loop that will call the operations as defined in the ReceiverProtocol on the receiver.
-    ///
-    /// - Note: There will be no return from this function until a ReceiverProtocol method singals so, or until an error occurs.
-    ///
-    /// - Parameters:
-    ///   - bufferSize: The size of the buffer to create in bytes.
-    ///   - duration: The duration for the loop.
-    ///   - receiver: The receiver for the ReceiverProtocol method calls (if present).
-    
-    func receiverLoop(
-        bufferSize: Int,
-        duration: TimeInterval,
-        receiver: ReceiverProtocol)
-}
-
-
-/// This class implements the InterfaceAccess protocol for the POSIX TCP/IP socket interface.
-
-public struct TipInterface: InterfaceAccess {
-    
-    
-    /// An id that can be used for logging purposes and will differentiate between interfaces on a temporary basis.
-    ///
-    /// It should be guaranteed that no two interfaces with the same logId are active at the same time.
-    
-    public var logId: Int32 { return socket ?? -1 }
-    
-    
-    /// The socket for this connection.
-    
-    public private(set) var socket: Int32?
-    
-    
-    /// Returns true if the connection is still usable.
-    ///
-    /// - Note: Even if 'true' is returned it is still possible that the next attempt to use the interface will immediately result in a termination of the connection. For example if the peer has already closed its side of the connection.
-    
-    public var isValid: Bool {
-        
-        if socket == nil { return false }
-        if socket! < 0 { return false }
-        return true
-    }
-    
-    
-    /// Creates a new interface.
-    ///
-    /// - Parameter socket: The socket to use for this interface.
-    
-    public init(_ socket: Int32) {
-        
-        self.socket = socket
-    }
-    
-    
-    /// Closes this end of a connection.
-    
-    public mutating func close() {
-        
-        if isValid {
-            closeSocket(socket)
-            socket = nil
-        }
-    }
-    
-    
-    /// Transfers the data via the socket to the peer. This operation returns when the data has been accepted by the POSIX layer, i.e. the physical transfer may still be ongoing.
-    ///
-    /// - Parameters:
-    ///   - buffer: The buffer containing the data to be transferred.
-    ///   - timeout: The timeout that applies to the transfer.
-    ///   - callback: The receiver for the TransmitterProtocol method calls (if present).
-    ///   - progress: The closure that is invoked after partial transfers (if any).
-    ///
-    /// - Returns: See the TransferResult definition.
-    
-    public func transfer(
-        buffer: UnsafeBufferPointer<UInt8>,
-        timeout: TimeInterval?,
-        callback: TransmitterProtocol? = nil,
-        progress: TransmitterProgressMonitor? = nil) -> TransferResult? {
-        
-        if isValid {
-            
-            return tipTransfer(
-                socket: socket!,
-                buffer: buffer,
-                timeout: timeout ?? 10,
-                callback: callback,
-                progress: progress)
-            
-        } else {
-            
-            return nil
-        }
-    }
-    
-    
-    /// Starts a receiver loop that will call the operations as defined in the ReceiverProtocol on the receiver.
-    ///
-    /// - Note: There will be no return from this function until a ReceiverProtocol method singals so, or until an error occurs.
-    ///
-    /// - Parameters:
-    ///   - bufferSize: The size of the buffer to create in bytes.
-    ///   - duration: The duration for the loop.
-    ///   - receiver: The receiver for the ReceiverProtocol method calls (if present).
-    
-    public func receiverLoop(
-        bufferSize: Int = 20 * 1024,
-        duration: TimeInterval = 10,
-        receiver: ReceiverProtocol
-        ) {
-        
-        if isValid {
-            
-            tipReceiverLoop(
-                socket: socket!,
-                bufferSize: bufferSize,
-                duration: duration,
-                receiver: receiver)
-        }
-    }
-}
 
 
 /// Signature of a closure that is invoked to retrieve/create a connection object.
@@ -252,7 +60,7 @@ public typealias ConnectionObjectFactory = (_ intf: InterfaceAccess, _ address: 
 public typealias InactivityHandler = (_ connection: Connection) -> Void
 
 
-/// Objects of this class represents a connection with another computer.
+/// Objects of this class represent a connection with another computer.
 ///
 /// - Note: Every connection object is made ready for use with the "prepare" method. The "init" is ineffective for that.
 ///

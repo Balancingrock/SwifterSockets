@@ -1,4 +1,4 @@
-// swift-tools-version:4.0
+// swift-tools-version:5.0
 
 import PackageDescription
 
@@ -9,7 +9,7 @@ let package = Package(
             name: "SwifterSockets", targets: ["SwifterSockets"])
     ],
     dependencies: [
-        .package(url: "https://github.com/Balancingrock/BRUtils", from: "0.13.0")
+        .package(url: "https://github.com/Balancingrock/BRUtils", from: "1.0.0")
     ],
     targets: [
         .target(

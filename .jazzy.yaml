@@ -6,6 +6,6 @@ module: SwifterSockets
 hide_documentation_coverage: true
 xcodebuild_arguments: [-target, SwifterSockets]
 github_url: https://github.com/Balancingrock/SwifterSockets
-output: ~/Documents/Websites/sf/projects/swiftersockets/reference
+output: ~/Documents/Websites/swiftfire.nl/projects/swiftersockets/reference
 clean: true
 theme: fullwidth
