@@ -3,11 +3,11 @@
 //  File:       ReceiverProtocol.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.0
+//  Version:    1.0.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
-//  Website:    http://swiftfire.nl/
+//  Website:    http://swiftfire.nl/projects/swiftersockets/swiftersockets.html
 //  Git:        https://github.com/Balancingrock/Swiftfire
 //
 //  Copyright:  (c) 2014-2019 Marinus van der Lugt, All rights reserved.
@@ -36,6 +36,7 @@
 //
 // History
 //
+// 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 

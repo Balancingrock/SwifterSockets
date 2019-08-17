@@ -66,6 +66,10 @@ Note: Planned releases are for information only, they are subject to change with
 - No new features planned. Features and bugfixes will be made on an ad-hoc basis as needed to support Swiftfire development.
 - For feature requests and bugfixes please contact rien@balancingrock.nl
 
+#### 1.0.1 (Current)
+
+- Fixed website link in header
+
 #### 1.0.0 (Current)
 
 - Restructured for Swiftfire 1.0.0
