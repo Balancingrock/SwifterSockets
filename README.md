@@ -36,9 +36,11 @@ Alternatively you can clone the project and generate a Xcode framework in the fo
 
 1. First clone SwifterSockets and the create the Xcode project:
 
-    $ git clone https://github.com/Balancingrock/SwifterSockets
-    $ cd SwifterSockets
-    $ swift package generate-xcodeproj
+~~~~
+$ git clone https://github.com/Balancingrock/SwifterSockets
+$ cd SwifterSockets
+$ swift package generate-xcodeproj
+~~~~
 
 1. Double click that project to open it. Once open set the `Defines Module` to 'yes' in the `Build Settings` before creating the framework. (Otherwise the import of the framework in another project won't work)
 
