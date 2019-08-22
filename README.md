@@ -8,6 +8,8 @@ The [Swiftfire website](http://swiftfire.nl)
 
 The [reference manual](http://swiftfire.nl/projects/swiftersockets/reference/index.html)
 
+SwifterSockets is also used in our PortSpy application in the [App Store](https://itunes.apple.com/us/app/port-spy/id1163684496)
+
 # Features
 
 - Shields the Swift application from the complexity of the Unix socket calls.
@@ -34,7 +36,7 @@ SwifterSockets can be used by the Swift Package Manager. Just add it to your pac
 
 Alternatively you can clone the project and generate a Xcode framework in the following way:
 
-1. First clone SwifterSockets and the create the Xcode project:
+1. First clone the repository and create a Xcode project:
 
 ~~~~
 $ git clone https://github.com/Balancingrock/SwifterSockets
@@ -52,10 +54,10 @@ $ swift package generate-xcodeproj
 
 No new features planned. Updates are made on an ad-hoc basis as needed to support Swiftfire development.
 
-#### 1.0.1 (Current)
+#### 1.0.1
 
 - Fixed website link in header
 
-#### 1.0.0 (Current)
+#### 1.0.0
 
 - Restructured for Swiftfire 1.0.0
