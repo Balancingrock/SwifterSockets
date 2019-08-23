@@ -52,6 +52,10 @@ Alternatively you can clone the project and generate a Xcode framework in the fo
 
 No new features planned. Updates are made on an ad-hoc basis as needed to support Swiftfire development.
 
+#### 1.0.2
+
+- Documenation updates
+
 #### 1.0.1
 
 - Fixed website link in header
