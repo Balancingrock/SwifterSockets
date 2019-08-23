@@ -3,7 +3,7 @@
 //  File:       TipServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.0.2
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,6 +36,7 @@
 //
 // History
 //
+// 1.0.2 - Documentation updates
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
@@ -92,7 +93,7 @@ public class TipServer: ServerProtocol {
         
         /// This closure will be invoked after a connection is accepted. It will run on the acceptQueue and block further accepts until it finishes.
         /// 
-        /// Must be provided before server is started.
+        /// Must be provided before the server is started.
         
         case connectionObjectFactory(ConnectionObjectFactory)
         
@@ -119,24 +120,52 @@ public class TipServer: ServerProtocol {
     }
     
     
-    // Optioned properties
+    /// See `TipServer.Option`
     
     public private(set) var port: String = "80"
+    
+    
+    /// See `TipServer.Option`
+
     public private(set) var maxPendingConnectionRequests: Int = 20
+    
+    
+    /// See `TipServer.Option`
+
     public private(set) var acceptLoopDuration: TimeInterval = 5
+    
+    
+    /// See `TipServer.Option`
+
     public private(set) var acceptQueue: DispatchQueue!
+    
+    
+    /// See `TipServer.Option`
+
     public private(set) var connectionObjectFactory: ConnectionObjectFactory?
+    
+    
+    /// See `TipServer.Option`
+
     public private(set) var aliveHandler: AliveHandler?
+    
+    
+    /// See `TipServer.Option`
+
     public private(set) var errorHandler: ErrorHandler?
+    
+    
+    /// See `TipServer.Option`
+
     public private(set) var addressHandler: AddressHandler?
     
     
-    // Interface properties
-    
+    /// See `TipServer.Option`
+
     public private(set) var socket: Int32?
     
     
-    /// - Returns true when the server is running.
+    /// See `TipServer.Option`
 
     public var isRunning: Bool { return socket != nil }
     
@@ -169,7 +198,7 @@ public class TipServer: ServerProtocol {
     @discardableResult
     public func setOptions(_ options: [Option]) -> Result<Bool> {
         
-        guard socket == nil else { return .error(message: "SwifterSockets.Server.TipServer.setOptions: Socket is already active, no changes made") }
+        guard socket == nil else { return .error(message: "SwifterSockets.TipServer.TipServer.setOptions: Socket is already active, no changes made") }
         
         for option in options {
         
@@ -221,7 +250,7 @@ public class TipServer: ServerProtocol {
         // Exit if there is no connectionObjectFactory
         
         guard connectionObjectFactory != nil else {
-            return .error(message: "SwifterSockets.Server.TipServer.start: Missing ConnectionObjectFactory closure")
+            return .error(message: "SwifterSockets.TipServer.TipServer.start: Missing ConnectionObjectFactory closure")
         }
         
         

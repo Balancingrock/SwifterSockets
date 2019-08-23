@@ -3,7 +3,7 @@
 //  File:       ConnectToTipServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.0.2
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,6 +36,7 @@
 //
 // History
 //
+// 1.0.2 - Error message updates
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
@@ -224,7 +225,7 @@ public func connectToTipServer(
     
     switch connectToTipServer(atAddress: address, atPort: port) {
         
-    case let .error(message): return .error(message: "SwifterSockets.connectToTipServer: Error on connect,\n\(message)")
+    case let .error(message): return .error(message: "SwifterSockets.ConnectToTipServer.connectToTipServer: Error on connect,\n\(message)")
         
     case let .success(socket):
         
@@ -236,7 +237,7 @@ public func connectToTipServer(
             return .success(connection)
             
         } else {
-            return .error(message: "SwifterSockets.connectToTipServer: connectionObjectFactory did not provide an object")
+            return .error(message: "SwifterSockets.ConnectToTipServer.connectToTipServer: connectionObjectFactory did not provide an object")
         }
     }
 }

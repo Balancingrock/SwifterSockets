@@ -3,7 +3,7 @@
 //  File:       Connection.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.0.2
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,6 +36,7 @@
 //
 // History
 //
+// 1.0.2 - Documentation update
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
@@ -216,7 +217,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     public private(set) var errorHandler: ErrorHandler?
     
     
-    // The type of connection.
+    /// The type of connection.
     
     public private(set) var interface: InterfaceAccess?
     
@@ -229,11 +230,6 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
     /// The time of last activity
     
     private var lastActivity: Date = Date()
-    
-    
-    // The count of outstanding transfers
-    
-    // private var pendingTransfers: Int = 0
     
     
     /// This queue is used for usage counting and to close down a connection after inactivity.

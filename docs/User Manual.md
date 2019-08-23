@@ -1,22 +1,16 @@
-# User Directions
-
-For a good introduction into socket programming, see [Beej's Guide to Network Programming](http://beej.us/guide/bgnet/output/html/multipage/index.html).
-
-For an introduction into socket programming in Swift, see my blog series [Socket Programming in Swift](http://swiftrien.blogspot.com/2015/10/socket-programming-in-swift-part-1.html)
+# User Manual
 
 This document will show how to use SwifterSockets for socket programming.
 
 # Introduction
 
-SwifterSockets can be used two ways: either as some syntactic sugar over the Unix socket calls, or as a  abstraction layer over the Unix socket calls.
+SwifterSockets can be used two ways: either as some syntactic sugar over the Unix socket calls, or as an abstraction layer over the Unix socket calls.
 
 In the first case, socket programming is still socket programming. It will be necessary to gain some knowledge about socket programming, for example the Beej's guide.
 
 In the second case it is not necessary to learn about socket programming, but it is necessary to learn about SwifterSockets.
 
 The following subsections are intended to get things goiing.
-
-For installation, see the [README](https://github.com/Balancingrock/SwifterSockets/blob/master/README.md)
 
 ## Use as syntactic sugar
 
@@ -66,7 +60,7 @@ For this purpose SwifterSockets contains a `Connection` class that can be used d
 
 Your project has to provide a connection object factory.
 
-This factory creates the project's connection objects on demand. Since connection objects can be expensive, the project may implement a pool of connection objects allowing them to be reused. A simple connection pool implementation is provided as a part of SwifterSockets.
+This factory creates the project's connection objects on demand. Since connection objects can be expensive, the project may implement a pool of connection objects allowing them to be reused. A simple connection pool is provided as a part of SwifterSockets.
 
 The connection object factory is passed as a parameter (closure) to either `connectToTipServer` or during the setup of the `TipServer` class.
 
@@ -78,7 +72,7 @@ public typealias ConnectionObjectFactory = (_ intf: InterfaceAccess, _ address: 
 
 Where the `InterfaceAccess` is a protocol in and of itsef. This parameter allows the creation of other interfaces using the same mechanism. For example in SecureSockets it is used to create SSL connections.
 
-For SwifterSockets it always is an instance of `TipInterface`.
+For SwifterSockets it should be an instance of `TipInterface`.
 
 The second parameter `address` allows the connection factory to determine if the connection request should be granted and/or to create a log of clients or servers that have been connected.
 
@@ -105,62 +99,7 @@ The object that is returned can be used to transmit and receive data to and from
 
 ### Setup a server
 
-To setup a server, instantiate a new `TipServer` object. A server can have a lot of options, these are configured through an optional option list that can contain one or more of the following enums:
-
-```swift
-/// Options with which the TipServer can be initialized.
-    
-public enum Option {
-        
-        
-    /// The port on which the server will be listening.
-    /// - Note: Default = "80"
-        
-    case port(String)
-        
-        
-    /// The maximum number of connection requests that will be queued.
-    /// - Note: Default = 20
-        
-    case maxPendingConnectionRequests(Int)
-        
-        
-    /// This specifies the duration of the accept loop when no connection requests arrive.
-    /// - Note: By implication this also specifies the minimum time between two 'aliveHandler' invocations.
-    /// - Note: Default = 5 seconds
-        
-    case acceptLoopDuration(TimeInterval)
-        
-        
-    /// The server socket operations (Accept loop and "errorProcessor") run synchronously on this queue.
-    /// - Note: Default = serial with default qos.
-        
-    case acceptQueue(DispatchQueue)
-        
-        
-    /// This closure will be invoked after a connection is accepted. It will run on the acceptQueue and block further accepts until it finishes.
-    /// - Note: Must be provided before server is started.
-        
-    case connectionObjectFactory(ConnectionObjectFactory)
-        
-        
-    /// This closure will be called when the accept loop wraps around without any activity. It will run on the accept queue and should return asap.
-    /// - Note: Default = nil
-        
-    case aliveHandler(AliveHandler?)
-        
-        
-    /// This closure will be called to inform the callee of possible error's during the accept loop. The accept loop will try to continue after reporting an error. It will run on the accept queue and should return asap.
-    /// - Note: Default = nil
-        
-    case errorHandler(ErrorHandler?)
-        
-        
-    /// This closure is started right after a connection has been accepted, but before the connection object factory is called. If it returns 'true' processing resumes as normal and the connection object factor is called. If it returns false, the connection will be terminated.
-
-    case addressHandler(AddressHandler?)
-}
-```
+To setup a server, instantiate a new `TipServer` object. A server can have a lot of options, these are configured through an optional option list. For the complete list see `TipServer.Option`
 
 Of course to be usefull, at least the connectionObjectFactory should be set.
 
