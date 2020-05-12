@@ -3,14 +3,14 @@
 //  File:       TipServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.2
+//  Version:    1.1.0
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
 //  Website:    http://swiftfire.nl/projects/swiftersockets/swiftersockets.html
 //  Git:        https://github.com/Balancingrock/Swiftfire
 //
-//  Copyright:  (c) 2014-2019 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2014-2020 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -36,14 +36,13 @@
 //
 // History
 //
+// 1.1.0 - Switched to Swift.Result instead of BRUtils.Result
 // 1.0.2 - Documentation updates
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
 import Foundation
-
-import BRUtils
 
 
 /// This class implements a TCP/IP server.
@@ -196,9 +195,11 @@ public class TipServer: ServerProtocol {
     /// - Returns: Either .success(true) or .error(message: String)
     
     @discardableResult
-    public func setOptions(_ options: [Option]) -> Result<Bool> {
+    public func setOptions(_ options: [Option]) -> Result<Bool, SwifterSocketsError> {
         
-        guard socket == nil else { return .error(message: "SwifterSockets.TipServer.TipServer.setOptions: Socket is already active, no changes made") }
+        guard socket == nil else {
+            return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Socket is already active, no changes made"))
+        }
         
         for option in options {
         
@@ -224,7 +225,7 @@ public class TipServer: ServerProtocol {
     /// - Returns: Either .success(true) or .error(message: String)
     
     @discardableResult
-    public func setOptions(_ options: Option ...) -> Result<Bool> {
+    public func setOptions(_ options: Option ...) -> Result<Bool, SwifterSocketsError> {
         return setOptions(options)
     }
     
@@ -239,7 +240,7 @@ public class TipServer: ServerProtocol {
     /// - Returns: Either .success(true) or .error(message: String)
     
     @discardableResult
-    public func start() -> Result<Bool> {
+    public func start() -> Result<Bool, SwifterSocketsError> {
         
         
         // Exit if already running
@@ -250,7 +251,7 @@ public class TipServer: ServerProtocol {
         // Exit if there is no connectionObjectFactory
         
         guard connectionObjectFactory != nil else {
-            return .error(message: "SwifterSockets.TipServer.TipServer.start: Missing ConnectionObjectFactory closure")
+            return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Missing ConnectionObjectFactory closure"))
         }
         
         
@@ -263,53 +264,55 @@ public class TipServer: ServerProtocol {
         
         switch setupTipServer(onPort: port, maxPendingConnectionRequest: Int32(maxPendingConnectionRequests)) {
             
-        case let .error(message): return .error(message: message)
+        case let .failure(message): return .failure(message)
             
             
-        case let .success(sock): socket = sock
-        
-        
-        // Start accepting
-        
-        _stop = false
-        acceptQueue.async() {
+        case let .success(sock):
             
-            [weak self] in
-            guard let `self` = self else { return }
+            socket = sock
             
-            ACCEPT_LOOP: while !self._stop {
+            
+            // Start accepting
+            
+            _stop = false
+            acceptQueue.async() {
                 
-                switch tipAccept(onSocket: sock, timeout: self.acceptLoopDuration, addressHandler: self.addressHandler) {
+                [weak self] in
+                guard let `self` = self else { return }
+                
+                ACCEPT_LOOP: while !self._stop {
                     
-                // Normal
-                case let .accepted(clientSocket, clientAddress):
-                    
-                    
-                    // Get a connection object
-                    
-                    let intf = TipInterface(clientSocket)
-                    
-                    if let connectedClient = self.connectionObjectFactory!(intf, clientAddress) {
-                    
-                        // Start receiver loop
+                    switch tipAccept(onSocket: sock, timeout: self.acceptLoopDuration, addressHandler: self.addressHandler) {
                         
-                        connectedClient.startReceiverLoop()
+                    // Normal
+                    case let .accepted(clientSocket, clientAddress):
+                        
+                        
+                        // Get a connection object
+                        
+                        let intf = TipInterface(clientSocket)
+                        
+                        if let connectedClient = self.connectionObjectFactory!(intf, clientAddress) {
+                            
+                            // Start receiver loop
+                            
+                            connectedClient.startReceiverLoop()
+                        }
+                        
+                        
+                    // Failed to establish a connection, try again.
+                    case .closed: self.errorHandler?("Socket unexpectedly closed.")
+                        
+                    // If the user provided an error processor, use that
+                    case let .error(message): self.errorHandler?(message)
+                        
+                    // Normal, try again
+                    case .timeout: self.aliveHandler?()
                     }
-                    
-                    
-                // Failed to establish a connection, try again.
-                case .closed: self.errorHandler?("Socket unexpectedly closed.")
-                    
-                // If the user provided an error processor, use that
-                case let .error(message): self.errorHandler?(message)
-                    
-                // Normal, try again
-                case .timeout: self.aliveHandler?()
                 }
-            }
-            
-            closeSocket(self.socket)
-            self.socket = nil
+                
+                closeSocket(self.socket)
+                self.socket = nil
             }
         }
         

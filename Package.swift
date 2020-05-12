@@ -8,13 +8,10 @@ let package = Package(
         .library(
             name: "SwifterSockets", targets: ["SwifterSockets"])
     ],
-    dependencies: [
-        .package(url: "https://github.com/Balancingrock/BRUtils", from: "1.0.0")
-    ],
+    dependencies: [],
     targets: [
         .target(
-            name: "SwifterSockets",
-            dependencies: ["BRUtils"]
+            name: "SwifterSockets"
         )
     ]
 )

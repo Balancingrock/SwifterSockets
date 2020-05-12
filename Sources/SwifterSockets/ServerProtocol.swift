@@ -3,14 +3,14 @@
 //  File:       ServerProtocol.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.1.0
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
 //  Website:    http://swiftfire.nl/projects/swiftersockets/swiftersockets.html
 //  Git:        https://github.com/Balancingrock/Swiftfire
 //
-//  Copyright:  (c) 2014-2019 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2014-2020 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -36,13 +36,12 @@
 //
 // History
 //
+// 1.1.0 - Switched to Swift.Result instead of BRUtils.Result
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
 import Foundation
-
-import BRUtils
 
 
 /// Control methods for a server.
@@ -54,7 +53,7 @@ public protocol ServerProtocol {
     ///
     /// - Returns: Either .success(true), or .error(message: String) with the message detailing the kind of error that occured.
     
-    func start() -> Result<Bool>
+    func start() -> Result<Bool, SwifterSocketsError>
     
     
     /// Stops the server.

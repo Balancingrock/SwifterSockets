@@ -3,14 +3,14 @@
 //  File:       TipAccept.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.1.0
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
 //  Website:    http://swiftfire.nl/projects/swiftersockets/swiftersockets.html
 //  Git:        https://github.com/Balancingrock/Swiftfire
 //
-//  Copyright:  (c) 2014-2019 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2014-2020 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -36,6 +36,7 @@
 //
 // History
 //
+// 1.1.0 - Unrolling of SocketAddress (to get rid of compiler warnings)
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
@@ -131,9 +132,11 @@ public func tipAccept(
     // Accept the incoming connection request
     // ======================================
     
-    var clientSocket: Int32 = 0
-    let clientSocketAddress = SocketAddress { sockAddrPointer, sockAddrLength in
-        clientSocket = Darwin.accept(socket, sockAddrPointer, sockAddrLength)
+    var clientSocketStorage = sockaddr_storage() // Will contain either an ipv4 or an ipv6 sockaddr
+    let clientSocket = withUnsafePointer(to: &clientSocketStorage) { (p) -> Int32 in
+        let sockaddrPtr: UnsafeMutablePointer<sockaddr> = UnsafeMutableRawPointer(mutating: p)!.bindMemory(to: sockaddr.self, capacity: 1)
+        var len = socklen_t(MemoryLayout<sockaddr_storage>.size)
+        return Darwin.accept(socket, sockaddrPtr, &len)
     }
     
     
@@ -172,8 +175,10 @@ public func tipAccept(
     // ===========================================
     
     var clientIp: String = "Unknown"
-    if let (ipOrNil, _) = clientSocketAddress?.doWithPtr(body: { addr, _ in sockaddrDescription(addr) }) {
-        clientIp = ipOrNil ?? "Unknown"
+    withUnsafePointer(to: &clientSocketStorage) { (p) -> Void in
+        let ptr = UnsafeRawPointer(p)!.bindMemory(to: sockaddr.self, capacity: 1)
+        let (ipOrNil, _) = sockaddrDescription(ptr)
+        if let ip = ipOrNil { clientIp = ip }
     }
     
     

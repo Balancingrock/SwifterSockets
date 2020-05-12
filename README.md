@@ -52,6 +52,12 @@ Alternatively you can clone the project and generate a Xcode framework in the fo
 
 No new features planned. Updates are made on an ad-hoc basis as needed to support Swiftfire development.
 
+#### 1.1.0
+
+- Removed SocketAddress.swift (due to warnings in Swift 5.2)
+- Switched to Swift.Result instead of BRUtils.Result
+- Removed now superfluous BRUtils dependency
+
 #### 1.0.2
 
 - Documenation updates

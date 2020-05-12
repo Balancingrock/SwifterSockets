@@ -3,14 +3,14 @@
 //  File:       SetupTipServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.1.0
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
 //  Website:    http://swiftfire.nl/projects/swiftersockets/swiftersockets.html
 //  Git:        https://github.com/Balancingrock/Swiftfire
 //
-//  Copyright:  (c) 2014-2019 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2014-2020 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -36,13 +36,12 @@
 //
 // History
 //
+// 1.1.0 - Switched to Swift.Result instead of BRUtils.Result
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
 import Foundation
-
-import BRUtils
 
 
 /// Sets up a socket for listening on the specified service port number. It will listen on all available IP addresses of the server, either in IPv4 or IPv6.
@@ -53,7 +52,7 @@ import BRUtils
 ///
 /// - Returns: Either .success(socket: Int32) or .error(message: String).
 
-public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int32) -> Result<Int32> {
+public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int32) -> Result<Int32, SwifterSocketsError> {
     
     
     // General purpose status variable, used to detect error returns from socket functions
@@ -101,7 +100,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
         } else {
             strError = String(validatingUTF8: Darwin.gai_strerror(status)) ?? "Unknown error code"
         }
-        return .error(message: strError)
+        return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Status error for getaddrinfo\nError code: \(strError)"))
     }
     
     
@@ -120,7 +119,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
     if socketDescriptor == -1 {
         let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
         Darwin.freeaddrinfo(servinfo)
-        return .error(message: strError)
+        return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): SocketDescriptor error\nError code: \(strError)"))
     }
     
     
@@ -141,7 +140,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
         let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
         Darwin.freeaddrinfo(servinfo)
         closeSocket(socketDescriptor)
-        return .error(message: strError)
+        return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Status error for setsockopt\nError code: \(strError)"))
     }
     
     
@@ -160,7 +159,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
         let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
         Darwin.freeaddrinfo(servinfo)
         closeSocket(socketDescriptor)
-        return .error(message: strError)
+        return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): SocketDescriptor error\nError code: \(strError)"))
     }
     
     
@@ -185,7 +184,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
     if status != 0 {
         let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
         closeSocket(socketDescriptor)
-        return .error(message: strError)
+        return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Status error for listen\nError code: \(strError)"))
     }
     
     

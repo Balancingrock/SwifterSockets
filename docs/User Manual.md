@@ -17,9 +17,9 @@ The following subsections are intended to get things goiing.
 SwifterSockets provides the following functions for this kind of usage:
 
 ```swift
-public func connectToTipServer(atAddress address: String, atPort port: String) -> Result<Int32> {}
+public func connectToTipServer(atAddress address: String, atPort port: String) -> Result<Int32, SwifterSocketsError> {}
     
-public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int32) -> Result<Int32> {}
+public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int32) -> Result<Int32, SwifterSocketsError> {}
     
 public func tipTransfer(
     socket: Int32,
@@ -84,18 +84,10 @@ To connect to a server use `connectToTipServer`:
 public func connectToTipServer(
     atAddress address: String,
     atPort port: String,
-    connectionObjectFactory: ConnectionObjectFactory) -> Result<Connection> {}
+    connectionObjectFactory: ConnectionObjectFactory) -> Result<Connection, SwifterSocketsError> {}
 ```
 
-When the connection is created it returns an enum with the connection object in it. If it fails, it returns an enum with an error message in it. The defenition of `Result` is:
-
-```swift
-public enum Result<T> {
-    case error(message: String)
-    case success(T)
-}
-```
-The object that is returned can be used to transmit and receive data to and from the peer. When the connection is no longer needed, call `closeConnection`. If there is a connection pool, the child class should override `closeConnection` to put the object back into the (free) pool.
+When the connection is created it returns .success with a connection object in it. The connection object can be used to transmit and receive data to and from the peer. When the connection is no longer needed, call `closeConnection`. If there is a connection pool, the child class should override `closeConnection` to put the object back into the (free) pool.
 
 ### Setup a server
 

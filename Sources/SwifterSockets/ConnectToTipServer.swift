@@ -3,14 +3,14 @@
 //  File:       ConnectToTipServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.2
+//  Version:    1.1.0
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
 //  Website:    http://swiftfire.nl/projects/swiftersockets/swiftersockets.html
 //  Git:        https://github.com/Balancingrock/Swiftfire
 //
-//  Copyright:  (c) 2014-2019 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2014-2020 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -36,6 +36,7 @@
 //
 // History
 //
+// 1.1.0 - Switched to Swift.Result instead of BRUtils.Result
 // 1.0.2 - Error message updates
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
@@ -43,7 +44,6 @@
 
 
 import Foundation
-import BRUtils
 
 
 /// Connects a socket to a server.
@@ -54,7 +54,7 @@ import BRUtils
 ///
 /// - Returns: Either .success(socket: Int32) or .error(message: String).
 
-public func connectToTipServer(atAddress address: String, atPort port: String) -> Result<Int32> {
+public func connectToTipServer(atAddress address: String, atPort port: String) -> Result<Int32, SwifterSocketsError> {
     
     
     // General purpose status variable, used to detect error returns from socket functions
@@ -102,7 +102,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
         } else {
             strError = String(validatingUTF8: Darwin.gai_strerror(status)) ?? "Unknown error code"
         }
-        return .error(message: strError)
+        return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Status error for getaddrinfo\nError code: \(strError)"))
     }
     
     
@@ -163,7 +163,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
         let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
         Darwin.freeaddrinfo(servinfo)
         if socketDescriptor != nil { closeSocket(socketDescriptor!) }
-        return .error(message: strError)
+        return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Status error for connect\nError code: \(strError)"))
     }
     
     
@@ -172,7 +172,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     if socketDescriptor == nil {
         let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
         Darwin.freeaddrinfo(servinfo)
-        return .error(message: strError)
+        return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Socket descriptor error\nError code: \(strError)"))
     }
     
     
@@ -199,7 +199,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     if status == -1 {
         let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
         closeSocket(socketDescriptor!)
-        return .error(message: strError)
+        return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Status error for setsockopt\nError code: \(strError)"))
     }
     
     
@@ -221,11 +221,14 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
 public func connectToTipServer(
     atAddress address: String,
     atPort port: String,
-    connectionObjectFactory: ConnectionObjectFactory) -> Result<Connection> {
+    connectionObjectFactory: ConnectionObjectFactory) -> Result<Connection, SwifterSocketsError> {
     
     switch connectToTipServer(atAddress: address, atPort: port) {
         
-    case let .error(message): return .error(message: "SwifterSockets.ConnectToTipServer.connectToTipServer: Error on connect,\n\(message)")
+    case let .failure(message):
+        
+        return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): connectToTipServer failed\n\(message)"))
+        
         
     case let .success(socket):
         
@@ -237,7 +240,7 @@ public func connectToTipServer(
             return .success(connection)
             
         } else {
-            return .error(message: "SwifterSockets.ConnectToTipServer.connectToTipServer: connectionObjectFactory did not provide an object")
+            return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): ConnectionObjectFactory failed to provide a connection object"))
         }
     }
 }

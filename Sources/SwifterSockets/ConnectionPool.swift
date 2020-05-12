@@ -3,14 +3,14 @@
 //  File:       ConnectionPool.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.1.0
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
 //  Website:    http://swiftfire.nl/projects/swiftersockets/swiftersockets.html
 //  Git:        https://github.com/Balancingrock/Swiftfire
 //
-//  Copyright:  (c) 2017-2019 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2017-2020 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -36,12 +36,12 @@
 //
 // History
 //
+// 1.1.0 - Switched to Swift.Result instead of BRUtils.Result
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
 import Foundation
-import BRUtils
 
 
 /// Connection pool management.
@@ -153,7 +153,7 @@ public final class ConnectionPool {
     /// - Returns: Either .success(true) or .error(message: String).
     
     @discardableResult
-    public func free(connection: Connection) -> Result<Bool> {
+    public func free(connection: Connection) -> Result<Bool, SwifterSocketsError> {
         
         return queue.sync() {
             
@@ -179,9 +179,9 @@ public final class ConnectionPool {
                     }
                 }
                 if !foundInAvailable {
-                    return .error(message: "Connection not found in 'used' or 'available' pool")
+                    return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Connection not found in 'used' or 'available' pool"))
                 } else {
-                    return .error(message: "Connection not found in 'used' pool, tried to close twice?")
+                    return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Connection not found in 'used' pool, tried to close twice?"))
                 }
             }
             
