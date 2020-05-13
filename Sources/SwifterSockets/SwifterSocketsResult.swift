@@ -47,8 +47,8 @@ import Foundation
 
 public struct SwifterSocketsError: Error {
     let message : String
-    var errorDescription: String? { return message }
-    init(file: String = #file, function: String = #function, line: Int = #line, _ str: String) {
+    public var errorDescription: String? { return message }
+    public init(file: String = #file, function: String = #function, line: Int = #line, _ str: String) {
         message = "\(file).\(function).\(line): \(str)"
     }
 }
