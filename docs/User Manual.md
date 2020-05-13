@@ -17,9 +17,9 @@ The following subsections are intended to get things goiing.
 SwifterSockets provides the following functions for this kind of usage:
 
 ```swift
-public func connectToTipServer(atAddress address: String, atPort port: String) -> Result<Int32, SwifterSocketsError> {}
+public func connectToTipServer(atAddress address: String, atPort port: String) -> SwifterSocketsResult<Int32> {}
     
-public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int32) -> Result<Int32, SwifterSocketsError> {}
+public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int32) -> SwifterSocketsResult<Int32> {}
     
 public func tipTransfer(
     socket: Int32,
@@ -84,7 +84,7 @@ To connect to a server use `connectToTipServer`:
 public func connectToTipServer(
     atAddress address: String,
     atPort port: String,
-    connectionObjectFactory: ConnectionObjectFactory) -> Result<Connection, SwifterSocketsError> {}
+    connectionObjectFactory: ConnectionObjectFactory) -> SwifterSocketsResult<Connection> {}
 ```
 
 When the connection is created it returns .success with a connection object in it. The connection object can be used to transmit and receive data to and from the peer. When the connection is no longer needed, call `closeConnection`. If there is a connection pool, the child class should override `closeConnection` to put the object back into the (free) pool.

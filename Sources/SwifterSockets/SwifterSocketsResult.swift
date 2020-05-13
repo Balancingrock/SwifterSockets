@@ -1,16 +1,16 @@
 // =====================================================================================================================
 //
-//  File:       ServerProtocol.swift
+//  File:       SwifterSocketsResult.swift
 //  Project:    SwifterSockets
 //
 //  Version:    1.1.0
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
-//  Website:    http://swiftfire.nl/projects/swiftersockets/swiftersockets.html
-//  Git:        https://github.com/Balancingrock/Swiftfire
+//  Website:    http://swiftfire.nl/projects/securesockets/securesockets.html
+//  Git:        https://github.com/Balancingrock/SecureSockets
 //
-//  Copyright:  (c) 2014-2020 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2020 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -36,29 +36,27 @@
 //
 // History
 //
-// 1.1.0 - Switched to Swift.Result instead of BRUtils.Result
-// 1.0.1 - Fixed website link in header
-// 1.0.0 - Removed older history
+// 1.1.0 - Initial version
+//
 // =====================================================================================================================
 
 import Foundation
 
 
-/// Control methods for a server.
+/// Used for the failure option of Swift.Result
 
-public protocol ServerProtocol {
-    
-    
-    /// Starts the server.
-    ///
-    /// - Returns: Either .success(true), or .error(message: String) with the message detailing the kind of error that occured.
-    
-    func start() -> SwifterSocketsResult<Bool>
-    
-    
-    /// Stops the server.
-    ///
-    /// - Note: There are delays involved, the accept loop may still accept new requests until it loops around. Requests being processed will be allowed to continue normally.
-    
-    func stop()
+public struct SwifterSocketsError: Error {
+    let message : String
+    var errorDescription: String? { return message }
+    init(file: String = #file, function: String = #function, line: Int = #line, _ str: String) {
+        message = "\(file).\(function).\(line): \(str)"
+    }
 }
+
+
+/// Typealias for a result with a secure socket failure case.
+
+public typealias SwifterSocketsResult<T> = Result<T, SwifterSocketsError>
+
+
+

@@ -56,6 +56,7 @@ No new features planned. Updates are made on an ad-hoc basis as needed to suppor
 
 - Removed SocketAddress.swift (due to warnings in Swift 5.2)
 - Switched to Swift.Result instead of BRUtils.Result
+- Introduced SwifterSocketsResult
 - Removed now superfluous BRUtils dependency
 
 #### 1.0.2

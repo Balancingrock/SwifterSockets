@@ -70,19 +70,6 @@ extension BinaryInteger {
 }
 
 
-/// For use with the Swift Result type
-
-public enum SwifterSocketsError: Error {
-    case message(String)
-    
-    var errorDescription: String? {
-        switch self {
-        case .message(let str): return "SwifterSockets message: \(str)"
-        }
-    }
-}
-
-
 /// Signature for a closure that is used to process error messages.
 ///
 /// - Parameter message: Contains a textual description of the error.

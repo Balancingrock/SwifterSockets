@@ -153,7 +153,7 @@ public final class ConnectionPool {
     /// - Returns: Either .success(true) or .error(message: String).
     
     @discardableResult
-    public func free(connection: Connection) -> Result<Bool, SwifterSocketsError> {
+    public func free(connection: Connection) -> SwifterSocketsResult<Bool> {
         
         return queue.sync() {
             
@@ -179,9 +179,9 @@ public final class ConnectionPool {
                     }
                 }
                 if !foundInAvailable {
-                    return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Connection not found in 'used' or 'available' pool"))
+                    return .failure(SwifterSocketsError("Connection not found in 'used' or 'available' pool"))
                 } else {
-                    return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Connection not found in 'used' pool, tried to close twice?"))
+                    return .failure(SwifterSocketsError("Connection not found in 'used' pool, tried to close twice?"))
                 }
             }
             

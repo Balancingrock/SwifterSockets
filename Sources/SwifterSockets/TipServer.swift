@@ -195,10 +195,10 @@ public class TipServer: ServerProtocol {
     /// - Returns: Either .success(true) or .error(message: String)
     
     @discardableResult
-    public func setOptions(_ options: [Option]) -> Result<Bool, SwifterSocketsError> {
+    public func setOptions(_ options: [Option]) -> SwifterSocketsResult<Bool> {
         
         guard socket == nil else {
-            return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Socket is already active, no changes made"))
+            return .failure(SwifterSocketsError("Socket is already active, no changes made"))
         }
         
         for option in options {
@@ -225,7 +225,7 @@ public class TipServer: ServerProtocol {
     /// - Returns: Either .success(true) or .error(message: String)
     
     @discardableResult
-    public func setOptions(_ options: Option ...) -> Result<Bool, SwifterSocketsError> {
+    public func setOptions(_ options: Option ...) -> SwifterSocketsResult<Bool> {
         return setOptions(options)
     }
     
@@ -240,7 +240,7 @@ public class TipServer: ServerProtocol {
     /// - Returns: Either .success(true) or .error(message: String)
     
     @discardableResult
-    public func start() -> Result<Bool, SwifterSocketsError> {
+    public func start() -> SwifterSocketsResult<Bool> {
         
         
         // Exit if already running
@@ -251,7 +251,7 @@ public class TipServer: ServerProtocol {
         // Exit if there is no connectionObjectFactory
         
         guard connectionObjectFactory != nil else {
-            return .failure(SwifterSocketsError.message("\(#file).\(#function).\(#line): Missing ConnectionObjectFactory closure"))
+            return .failure(SwifterSocketsError("Missing ConnectionObjectFactory closure"))
         }
         
         
