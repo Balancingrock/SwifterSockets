@@ -46,8 +46,19 @@ import Foundation
 /// Used for the failure option of Swift.Result
 
 public struct SwifterSocketsError: Error {
+    
+    /// The message to be returned for this error
+    
     let message : String
+    
+    
+    /// The error description is the same as the message stored in this error
+    
     public var errorDescription: String? { return message }
+    
+    
+    /// Creates a new error including file, function and line numbers.
+    
     public init(file: String = #file, function: String = #function, line: Int = #line, _ str: String) {
         message = "\(file).\(function).\(line): \(str)"
     }
