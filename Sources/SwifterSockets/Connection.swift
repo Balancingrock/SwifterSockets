@@ -673,7 +673,14 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         
         if let queue = tqueue() {
             
+            #if os(Linux)
+            guard let copy = UnsafeMutableRawBufferPointer.allocate(byteCount: buffer.count, alignment: 8) else {
+                return TransferResult.error(message: "Failed to allocate a transfer buffer")
+            }
+            #else
             let copy = UnsafeMutableRawBufferPointer.allocate(byteCount: buffer.count, alignment: 8)
+            #endif
+            
             memcpy(copy.baseAddress, buffer.baseAddress, buffer.count)
             
             queue.async {
