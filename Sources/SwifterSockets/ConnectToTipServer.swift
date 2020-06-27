@@ -82,7 +82,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
         ai_canonname: nil,
         ai_next: nil)
     #else
-    var hints = Darwin.addrinfo(
+    var hints = addrinfo(
         ai_flags: AI_PASSIVE,       // Assign the address of the local host to the socket structures
         ai_family: AF_UNSPEC,       // Either IPv4 or IPv6
         ai_socktype: SOCK_STREAM,   // TCP
@@ -96,7 +96,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     
     // For the information needed to create a socket (result from the getaddrinfo)
     
-    var servinfo: UnsafeMutablePointer<Darwin.addrinfo>? = nil
+    var servinfo: UnsafeMutablePointer<addrinfo>? = nil
     
     
     // Get the info we need to create our socket descriptor
