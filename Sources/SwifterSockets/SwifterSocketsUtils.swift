@@ -3,14 +3,14 @@
 //  File:       SwifterSocketsUtils.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.1.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
 //  Website:    http://swiftfire.nl/projects/swiftersockets/swiftersockets.html
 //  Git:        https://github.com/Balancingrock/Swiftfire
 //
-//  Copyright:  (c) 2014-2019 Marinus van der Lugt, All rights reserved.
+//  Copyright:  (c) 2014-2020 Marinus van der Lugt, All rights reserved.
 //
 //  License:    Use or redistribute this code any way you like with the following two provision:
 //
@@ -36,11 +36,15 @@
 //
 // History
 //
+// 1.1.1 - Linux compatibility
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
 import Foundation
+#if os(Linux)
+import Glibc
+#endif
 
 
 /// A helper extensions to allow increment/decrement operations on counter values
@@ -127,7 +131,7 @@ public func sockaddrDescription(_ addr: UnsafePointer<sockaddr>) -> (ipAddress: 
     var hostBuffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
     var serviceBuffer = [CChar](repeating: 0, count: Int(NI_MAXSERV))
     
-    if Darwin.getnameinfo(
+    if getnameinfo(
         addr,
         socklen_t(addr.pointee.sa_len),
         &hostBuffer,
@@ -259,5 +263,5 @@ public func closeSocket(_ socket: Int32?) -> Bool? {
     
     guard let s = socket else { return nil }
     
-    return Darwin.close(s) == 0
+    return close(s) == 0
 }
