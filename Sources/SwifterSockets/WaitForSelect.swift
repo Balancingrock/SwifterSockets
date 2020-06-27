@@ -97,11 +97,11 @@ public func waitForSelect(socket: Int32, timeout: Date, forRead: Bool, forWrite:
     }
     
     let availableSeconds = Int(availableTime)
-    let availableUSeconds = Int32((availableTime - Double(availableSeconds)) * 1_000_000.0)
+    let availableUSeconds = Int((availableTime - Double(availableSeconds)) * 1_000_000.0)
     #if os(Linux)
-    var availableTimeval = timeval(tv_sec: availableSeconds, tv_usec: Int(availableUSeconds))
-    #else
     var availableTimeval = timeval(tv_sec: availableSeconds, tv_usec: availableUSeconds)
+    #else
+    var availableTimeval = timeval(tv_sec: availableSeconds, tv_usec: Int32(availableUSeconds))
     #endif
     
     // ======================================================================================================
