@@ -131,7 +131,22 @@ public func sockaddrDescription(_ addr: UnsafePointer<sockaddr>) -> (ipAddress: 
     var hostBuffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
     var serviceBuffer = [CChar](repeating: 0, count: Int(NI_MAXSERV))
     
-    if getnameinfo(
+    #if os(Linux)
+    
+    let addrLen = MemoryLayout<sockaddr>.size
+    
+    let result = getnameinfo(
+        addr,
+        socklen_t(addrlen),
+        &hostBuffer,
+        socklen_t(hostBuffer.count),
+        &serviceBuffer,
+        socklen_t(serviceBuffer.count),
+        NI_NUMERICHOST | NI_NUMERICSERV)
+
+    #else
+    
+    let result = getnameinfo(
         addr,
         socklen_t(addr.pointee.sa_len),
         &hostBuffer,
@@ -139,12 +154,14 @@ public func sockaddrDescription(_ addr: UnsafePointer<sockaddr>) -> (ipAddress: 
         &serviceBuffer,
         socklen_t(serviceBuffer.count),
         NI_NUMERICHOST | NI_NUMERICSERV)
-        
-        == 0 {
-        
+    
+    #endif
+    
+    if result == 0 {
         host = String(cString: hostBuffer)
         service = String(cString: serviceBuffer)
     }
+    
     return (host, service)
 }
 
@@ -195,30 +212,30 @@ public func logSocketOptions(_ socket: Int32) -> String {
     
     func forFlagOptionAtLevel(_ level: Int32, withName name: Int32, str: String) {
         var optionValueFlag: Int32 = 0
-        var ovFlagLength: socklen_t = 4
+        var ovFlagLength = socklen_t(MemoryLayout<Int32>.size)
         _ = getsockopt(socket, level, name, &optionValueFlag, &ovFlagLength)
         res += "\(str) = " + (optionValueFlag == 0 ? "No" : "Yes")
     }
     
     func forIntOptionAtLevel(_ level: Int32, withName name: Int32, str: String) {
         var optionValueInt: Int32 = 0
-        var ovIntLength: socklen_t = 4
+        var ovIntLength = socklen_t(MemoryLayout<Int32>.size)
         _ = getsockopt(socket, level, name, &optionValueInt, &ovIntLength)
         res += "\(str) = \(optionValueInt)"
     }
     
     func forLingerOptionAtLevel(_ level: Int32, withName name: Int32, str: String) {
         var optionValueLinger = linger(l_onoff: 0, l_linger: 0)
-        var ovLingerLength: socklen_t = 8
+        var ovLingerLength = socklen_t(MemoryLayout<linger>.size)
         _ = getsockopt(socket, level, name, &optionValueLinger, &ovLingerLength)
         res += "\(str) onOff = \(optionValueLinger.l_onoff), linger = \(optionValueLinger.l_linger)"
     }
     
     func forTimeOptionAtLevel(_ level: Int32, withName name: Int32, str: String) {
-        var optionValueTime = time_value(seconds: 0, microseconds: 0)
+        var optionValueTime = timeval(tv_sec: 0, tv_usec: 0)
         var ovTimeLength: socklen_t = 8
         _ = getsockopt(socket, level, name, &optionValueTime, &ovTimeLength)
-        res += "\(str) seconds = \(optionValueTime.seconds), microseconds = \(optionValueTime.microseconds)"
+        res += "\(str) seconds = \(optionValueTime.tv_sec), microseconds = \(optionValueTime.tv_usec)"
     }
     
     
@@ -240,7 +257,9 @@ public func logSocketOptions(_ socket: Int32) -> String {
     forFlagOptionAtLevel(SOL_SOCKET, withName: SO_REUSEADDR, str: "SO_REUSEADDR")
     forFlagOptionAtLevel(SOL_SOCKET, withName: SO_REUSEPORT, str: "SO_REUSEPORT")
     forIntOptionAtLevel(SOL_SOCKET, withName: SO_TYPE, str: "SO_TYPE")
+    #if !os(Linux)
     forFlagOptionAtLevel(SOL_SOCKET, withName: SO_USELOOPBACK, str: "SO_USELOOPBACK")
+    #endif
     forIntOptionAtLevel(IPPROTO_IP, withName: IP_TOS, str: "IP_TOS")
     forIntOptionAtLevel(IPPROTO_IP, withName: IP_TTL, str: "IP_TTL")
     forIntOptionAtLevel(IPPROTO_IPV6, withName: IPV6_UNICAST_HOPS, str: "IPV6_UNICAST_HOPS")
