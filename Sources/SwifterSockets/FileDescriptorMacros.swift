@@ -81,7 +81,7 @@ public func fdSet(_ fd: Int32?, set: inout fd_set) {
         
         let intOffset = fd / 64
         let bitOffset = fd % 64
-        let mask: Int64 = 1 << bitOffset
+        let mask: Int = 1 << bitOffset
         
         switch intOffset {
         case 0: set.__fds_bits.0 = set.__fds_bits.0 | mask
@@ -165,7 +165,7 @@ public func fdClr(_ fd: Int32?, set: inout fd_set) {
 
         let intOffset = fd / 64
         let bitOffset = fd % 64
-        let mask: Int64 = ~(1 << bitOffset)
+        let mask: Int = ~(1 << bitOffset)
 
         switch intOffset {
         case 0: set.__fds_bits.0 = set.__fds_bits.0 & mask
@@ -249,7 +249,7 @@ public func fdIsSet(_ fd: Int32?, set: inout fd_set) -> Bool {
 
         let intOffset = fd / 64
         let bitOffset = fd % 64
-        let mask: Int64 = 1 << bitOffset
+        let mask: Int = 1 << bitOffset
 
         switch intOffset {
         case 0: return set.__fds_bits.0 & mask != 0
