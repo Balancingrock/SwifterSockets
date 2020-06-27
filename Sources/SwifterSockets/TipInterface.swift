@@ -1,9 +1,9 @@
 // =====================================================================================================================
 //
-//  File:       TipTransfer.swift
+//  File:       TipInterface.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.1.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,6 +36,7 @@
 //
 // History
 //
+// 1.1.1 - Fixed filename in header
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================

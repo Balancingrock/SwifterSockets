@@ -3,7 +3,7 @@
 //  File:       TipReceiverLoop.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.1.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,12 +36,16 @@
 //
 // History
 //
+// 1.1.1 - Linux compatibility
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
-
 import Foundation
+
+#if os(Linux)
+import Glibc
+#endif
 
 
 /// This function loops and calls out to the ReceiverProtocol data (if present) for received data and interface events. The loop does not terminate until a ReceiverProtocol method returns a status indicating termination, or an error occured.
@@ -106,7 +110,7 @@ public func tipReceiverLoop(
             // Call the recv
             // =============
             
-            let bytesRead = Darwin.recv(socket, buffer.assumingMemoryBound(to: UInt8.self), bufferSize, 0)
+            let bytesRead = recv(socket, buffer.assumingMemoryBound(to: UInt8.self), bufferSize, 0)
             
             switch bytesRead {
                 

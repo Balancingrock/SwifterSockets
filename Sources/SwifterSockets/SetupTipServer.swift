@@ -82,7 +82,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
     
     // For the information needed to create a socket (result from the getaddrinfo)
     
-    var servinfo: UnsafeMutablePointer<Darwin.addrinfo>? = nil
+    var servinfo: UnsafeMutablePointer<addrinfo>? = nil
     
     
     // Get the info we need to create our socket descriptor
@@ -99,7 +99,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
     if status != 0 {
         var strError: String
         if status == EAI_SYSTEM {
-            strError = String(validatingUTF8: strerror(Darwin.errno)) ?? "Unknown error code"
+            strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
         } else {
             strError = String(validatingUTF8: gai_strerror(status)) ?? "Unknown error code"
         }
