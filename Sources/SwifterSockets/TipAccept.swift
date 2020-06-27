@@ -155,7 +155,11 @@ public func tipAccept(
     // ================================================
     // Set the socket option: prevent SIGPIPE exception
     // ================================================
+    //
+    // Note on Linux we need to use the sendFlags = Int32(MSG_NOSIGNAL)
     
+    #if !os(Linux)
+
     var optval = 1;
     
     let status = setsockopt(
@@ -171,6 +175,8 @@ public func tipAccept(
         return .error(message: errstr)
     }
     
+    #endif
+
     
     // ===========================================
     // get Ip Addres and Port number of the client

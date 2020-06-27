@@ -200,7 +200,12 @@ public func tipTransfer(
         let size = buffer.count - outOffset
         let dataStart = buffer.baseAddress! + outOffset
         
+        #if os(Linux)
+        // Prevent SIGPIPE error on linux, on mac this is done in the socket options
+        let bytesSend = send(socket, dataStart, size, Int32(MSG_NOSIGNAL))
+        #else
         let bytesSend = send(socket, dataStart, size, 0)
+        #endif
         
         switch bytesSend {
             
