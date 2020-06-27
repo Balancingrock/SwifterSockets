@@ -675,7 +675,7 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
             
             let copy = UnsafeMutableRawBufferPointer.allocate(byteCount: buffer.count, alignment: 8)
             #if swift(>=5.0)
-            memcpy(copy.baseAddress!, buffer.baseAddress, buffer.count)
+            memcpy(copy.baseAddress!, buffer.baseAddress!, buffer.count)
             #else
             memcpy(copy.baseAddress, buffer.baseAddress, buffer.count)
             #endif
