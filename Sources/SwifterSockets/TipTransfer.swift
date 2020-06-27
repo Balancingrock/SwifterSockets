@@ -3,7 +3,7 @@
 //  File:       TipTransfer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.1.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,14 +36,15 @@
 //
 // History
 //
+// 1.1.1 - Linux compatibility
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
-
 import Foundation
-
-
+#if os(Linux)
+import Glibc
+#endif
 
 
 /// Signature of a closure that can be used as a progress indicator for lengthy transfers. It can also be used to abort a transfer.
@@ -199,7 +200,7 @@ public func tipTransfer(
         let size = buffer.count - outOffset
         let dataStart = buffer.baseAddress! + outOffset
         
-        let bytesSend = Darwin.send(socket, dataStart, size, 0)
+        let bytesSend = send(socket, dataStart, size, 0)
         
         switch bytesSend {
             

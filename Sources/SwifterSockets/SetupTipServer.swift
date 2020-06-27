@@ -73,7 +73,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
     var hints = addrinfo(
         ai_flags: AI_PASSIVE,               // Assign the address of the local host to the socket structures
         ai_family: AF_UNSPEC,               // Either IPv4 or IPv6
-        ai_socktype: SOCK_STREAM,           // TCP
+        ai_socktype: Int32(SOCK_STREAM.rawValue), // TCP
         ai_protocol: 0,
         ai_addrlen: 0,
         ai_addr: nil,
@@ -83,7 +83,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
     var hints = addrinfo(
         ai_flags: AI_PASSIVE,               // Assign the address of the local host to the socket structures
         ai_family: AF_UNSPEC,               // Either IPv4 or IPv6
-        ai_socktype: Int32(SOCK_STREAM),    // TCP
+        ai_socktype: SOCK_STREAM,           // TCP
         ai_protocol: 0,
         ai_addrlen: 0,
         ai_canonname: nil,

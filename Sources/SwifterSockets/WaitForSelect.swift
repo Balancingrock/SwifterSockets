@@ -3,7 +3,7 @@
 //  File:       WaitForSelect.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.1.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,12 +36,15 @@
 //
 // History
 //
+// 1.1.1 - Linux compatibility
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
 import Foundation
-
+#if os(Linux)
+import Glibc
+#endif
 
 /// Return values of the _waitForSelect_ function.
 
@@ -95,8 +98,11 @@ public func waitForSelect(socket: Int32, timeout: Date, forRead: Bool, forWrite:
     
     let availableSeconds = Int(availableTime)
     let availableUSeconds = Int32((availableTime - Double(availableSeconds)) * 1_000_000.0)
+    #if os(Linux)
+    var availableTimeval = timeval(tv_sec: availableSeconds, tv_usec: Int(availableUSeconds))
+    #else
     var availableTimeval = timeval(tv_sec: availableSeconds, tv_usec: availableUSeconds)
-    
+    #endif
     
     // ======================================================================================================
     // Use the select API to wait for anything to happen on our client socket only within the timeout period.
@@ -105,12 +111,14 @@ public func waitForSelect(socket: Int32, timeout: Date, forRead: Bool, forWrite:
     // Note: Since SSL may require a handshake it is necessary to check for both read & write activity.
     
     let numOfFd:Int32 = socket + 1
-    var readSet:fd_set = fd_set(fds_bits: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-    var writeSet:fd_set = fd_set(fds_bits: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-    
+    var readSet:fd_set = fd_set()
+    fdZero(&readSet)
+    var writeSet:fd_set = fd_set()
+    fdZero(&writeSet)
+
     if forRead { fdSet(socket, set: &readSet) }
     if forWrite { fdSet(socket, set: &writeSet) }
-    let status = Darwin.select(numOfFd, &readSet, &writeSet, nil, &availableTimeval)
+    let status = select(numOfFd, &readSet, &writeSet, nil, &availableTimeval)
     
     // Because we only specified 1 FD, we do not need to check on which FD the event was received
     

@@ -3,7 +3,7 @@
 //  File:       ConnectToTipServer.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.1.0
+//  Version:    1.1.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,14 +36,17 @@
 //
 // History
 //
+// 1.1.1 - Linux compatibility
 // 1.1.0 - Switched to Swift.Result instead of BRUtils.Result
 // 1.0.2 - Error message updates
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
-
 import Foundation
+#if os(Linux)
+import Glibc
+#endif
 
 
 /// Connects a socket to a server.
@@ -68,6 +71,17 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     
     // Protocol configuration, used to retrieve the data needed to create the socket descriptor
     
+    #if os(Linux)
+    var hints = Darwin.addrinfo(
+        ai_flags: AI_PASSIVE,                       // Assign the address of the local host to the socket structures
+        ai_family: AF_UNSPEC,                       // Either IPv4 or IPv6
+        ai_socktype: Int32(SOCK_STREAM.rawValue),   // TCP
+        ai_protocol: 0,
+        ai_addrlen: 0,
+        ai_addr: nil,
+        ai_canonname: nil,
+        ai_next: nil)
+    #else
     var hints = Darwin.addrinfo(
         ai_flags: AI_PASSIVE,       // Assign the address of the local host to the socket structures
         ai_family: AF_UNSPEC,       // Either IPv4 or IPv6
@@ -77,6 +91,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
         ai_canonname: nil,
         ai_addr: nil,
         ai_next: nil)
+    #endif
     
     
     // For the information needed to create a socket (result from the getaddrinfo)
@@ -86,7 +101,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     
     // Get the info we need to create our socket descriptor
     
-    status = Darwin.getaddrinfo(
+    status = getaddrinfo(
         address,                    // The IP or URL of the server to connect to
         port,                       // The port to which will be transferred
         &hints,                     // Protocol configuration as per above
@@ -98,9 +113,9 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     if status != 0 {
         var strError: String
         if status == EAI_SYSTEM {
-            strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
+            strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
         } else {
-            strError = String(validatingUTF8: Darwin.gai_strerror(status)) ?? "Unknown error code"
+            strError = String(validatingUTF8: gai_strerror(status)) ?? "Unknown error code"
         }
         return .failure(SwifterSocketsError("Status error for getaddrinfo\nError code: \(strError)"))
     }
@@ -118,7 +133,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
         // Create the socket descriptor
         // ============================
         
-        socketDescriptor = Darwin.socket(
+        socketDescriptor = socket(
             (info?.pointee.ai_family)!,      // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
             (info?.pointee.ai_socktype)!,    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
             (info?.pointee.ai_protocol)!)    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
@@ -135,7 +150,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
         // Connect to the server
         // =====================
         
-        status = Darwin.connect(socketDescriptor!, info?.pointee.ai_addr, (info?.pointee.ai_addrlen)!)
+        status = connect(socketDescriptor!, info?.pointee.ai_addr, (info?.pointee.ai_addrlen)!)
         
         
         // Break if successful.
@@ -160,8 +175,8 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     // Cop out if there is a status error
     
     if status != 0 {
-        let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
-        Darwin.freeaddrinfo(servinfo)
+        let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
+        freeaddrinfo(servinfo)
         if socketDescriptor != nil { closeSocket(socketDescriptor!) }
         return .failure(SwifterSocketsError("Status error for connect\nError code: \(strError)"))
     }
@@ -170,8 +185,8 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     // Cop out if there was a socketDescriptor error
     
     if socketDescriptor == nil {
-        let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
-        Darwin.freeaddrinfo(servinfo)
+        let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
+        freeaddrinfo(servinfo)
         return .failure(SwifterSocketsError("Socket descriptor error\nError code: \(strError)"))
     }
     
@@ -180,7 +195,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     // Don't need the servinfo anymore
     // ===============================
     
-    Darwin.freeaddrinfo(servinfo)
+    freeaddrinfo(servinfo)
     
     
     // ================================================
@@ -189,7 +204,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     
     var optval = 1;
     
-    status = Darwin.setsockopt(
+    status = setsockopt(
         socketDescriptor!,
         SOL_SOCKET,
         SO_NOSIGPIPE,
@@ -197,7 +212,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
         socklen_t(MemoryLayout<Int>.size))
     
     if status == -1 {
-        let strError = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
+        let strError = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
         closeSocket(socketDescriptor!)
         return .failure(SwifterSocketsError("Status error for setsockopt\nError code: \(strError)"))
     }
