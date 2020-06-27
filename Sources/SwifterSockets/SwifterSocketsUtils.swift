@@ -133,7 +133,7 @@ public func sockaddrDescription(_ addr: UnsafePointer<sockaddr>) -> (ipAddress: 
     
     #if os(Linux)
     
-    let addrLen = MemoryLayout<sockaddr>.size
+    let addrlen = MemoryLayout<sockaddr>.size
     
     let result = getnameinfo(
         addr,
@@ -260,12 +260,12 @@ public func logSocketOptions(_ socket: Int32) -> String {
     #if !os(Linux)
     forFlagOptionAtLevel(SOL_SOCKET, withName: SO_USELOOPBACK, str: "SO_USELOOPBACK")
     #endif
-    forIntOptionAtLevel(IPPROTO_IP, withName: IP_TOS, str: "IP_TOS")
-    forIntOptionAtLevel(IPPROTO_IP, withName: IP_TTL, str: "IP_TTL")
-    forIntOptionAtLevel(IPPROTO_IPV6, withName: IPV6_UNICAST_HOPS, str: "IPV6_UNICAST_HOPS")
-    forFlagOptionAtLevel(IPPROTO_IPV6, withName: IPV6_V6ONLY, str: "IPV6_V6ONLY")
-    forIntOptionAtLevel(IPPROTO_TCP, withName: TCP_MAXSEG, str: "TCP_MAXSEG")
-    forFlagOptionAtLevel(IPPROTO_TCP, withName: TCP_NODELAY, str: "TCP_NODELAY")
+    forIntOptionAtLevel(Int32(IPPROTO_IP), withName: IP_TOS, str: "IP_TOS")
+    forIntOptionAtLevel(Int32(IPPROTO_IP), withName: IP_TTL, str: "IP_TTL")
+    forIntOptionAtLevel(Int32(IPPROTO_IPV6), withName: IPV6_UNICAST_HOPS, str: "IPV6_UNICAST_HOPS")
+    forFlagOptionAtLevel(Int32(IPPROTO_IPV6), withName: IPV6_V6ONLY, str: "IPV6_V6ONLY")
+    forIntOptionAtLevel(Int32(IPPROTO_TCP), withName: TCP_MAXSEG, str: "TCP_MAXSEG")
+    forFlagOptionAtLevel(Int32(IPPROTO_TCP), withName: TCP_NODELAY, str: "TCP_NODELAY")
     
     return res
 }
