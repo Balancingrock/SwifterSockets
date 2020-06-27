@@ -3,7 +3,7 @@
 //  File:       TipAccept.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.1.0
+//  Version:    1.1.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,14 +36,16 @@
 //
 // History
 //
+// 1.1.1 - Linux compatibility
 // 1.1.0 - Unrolling of SocketAddress (to get rid of compiler warnings)
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
-
 import Foundation
-
+#if os(Linux)
+import Glibc
+#endif
 
 /// Signature of a closure that can be invoked immediately after a client has been accepted.
 ///
@@ -136,7 +138,7 @@ public func tipAccept(
     let clientSocket = withUnsafePointer(to: &clientSocketStorage) { (p) -> Int32 in
         let sockaddrPtr: UnsafeMutablePointer<sockaddr> = UnsafeMutableRawPointer(mutating: p)!.bindMemory(to: sockaddr.self, capacity: 1)
         var len = socklen_t(MemoryLayout<sockaddr_storage>.size)
-        return Darwin.accept(socket, sockaddrPtr, &len)
+        return accept(socket, sockaddrPtr, &len)
     }
     
     
@@ -145,7 +147,7 @@ public func tipAccept(
     // =====================================
     
     if clientSocket == -1 { // Error
-        let errstr = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
+        let errstr = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
         return .error(message: errstr)
     }
     
@@ -156,7 +158,7 @@ public func tipAccept(
     
     var optval = 1;
     
-    let status = Darwin.setsockopt(
+    let status = setsockopt(
         clientSocket,
         SOL_SOCKET,
         SO_NOSIGPIPE,
@@ -165,7 +167,7 @@ public func tipAccept(
     
     if status == -1 {
         closeSocket(clientSocket)
-        let errstr = String(validatingUTF8: Darwin.strerror(Darwin.errno)) ?? "Unknown error code"
+        let errstr = String(validatingUTF8: strerror(errno)) ?? "Unknown error code"
         return .error(message: errstr)
     }
     
