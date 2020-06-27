@@ -69,6 +69,17 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
     
     // Protocol configuration, used to retrieve the data needed to create the socket descriptor
     
+    #if os(Linux)
+    var hints = addrinfo(
+        ai_flags: AI_PASSIVE,               // Assign the address of the local host to the socket structures
+        ai_family: AF_UNSPEC,               // Either IPv4 or IPv6
+        ai_socktype: SOCK_STREAM,           // TCP
+        ai_protocol: 0,
+        ai_addrlen: 0,
+        ai_addr: nil,
+        ai_canonname: nil,
+        ai_next: nil)
+    #else
     var hints = addrinfo(
         ai_flags: AI_PASSIVE,               // Assign the address of the local host to the socket structures
         ai_family: AF_UNSPEC,               // Either IPv4 or IPv6
@@ -78,6 +89,7 @@ public func setupTipServer(onPort port: String, maxPendingConnectionRequest: Int
         ai_canonname: nil,
         ai_addr: nil,
         ai_next: nil)
+    #endif
     
     
     // For the information needed to create a socket (result from the getaddrinfo)
