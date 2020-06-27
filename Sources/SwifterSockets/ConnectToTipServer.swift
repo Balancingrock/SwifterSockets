@@ -72,7 +72,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     // Protocol configuration, used to retrieve the data needed to create the socket descriptor
     
     #if os(Linux)
-    var hints = Darwin.addrinfo(
+    var hints = addrinfo(
         ai_flags: AI_PASSIVE,                       // Assign the address of the local host to the socket structures
         ai_family: AF_UNSPEC,                       // Either IPv4 or IPv6
         ai_socktype: Int32(SOCK_STREAM.rawValue),   // TCP
@@ -201,6 +201,9 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
     // ================================================
     // Set the socket option: prevent SIGPIPE exception
     // ================================================
+    // On linux this is done in send using the sendFlags
+
+    #if !os(Linux)
     
     var optval = 1;
     
@@ -217,6 +220,7 @@ public func connectToTipServer(atAddress address: String, atPort port: String) -
         return .failure(SwifterSocketsError("Status error for setsockopt\nError code: \(strError)"))
     }
     
+    #endif
     
     // Ready to start calling send(), return the socket
     

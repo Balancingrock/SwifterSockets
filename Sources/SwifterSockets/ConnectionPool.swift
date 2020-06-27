@@ -3,7 +3,7 @@
 //  File:       ConnectionPool.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.1.0
+//  Version:    1.1.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,12 +36,16 @@
 //
 // History
 //
+// 1.1.1 - Linux compatibility
 // 1.1.0 - Switched to Swift.Result instead of BRUtils.Result
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
 
 import Foundation
+#if os(Linux)
+import Glibc
+#endif
 
 
 /// Connection pool management.
@@ -135,7 +139,7 @@ public final class ConnectionPool {
             
             if loopCount >= timeout { break }
             
-            _ = Darwin.sleep(1)
+            _ = sleep(1)
             
             loopCount += 1
         }
@@ -225,7 +229,7 @@ public final class ConnectionPool {
                 }
             }
             
-            _ = Darwin.sleep(1)
+            _ = sleep(1)
         }
     }
 }
