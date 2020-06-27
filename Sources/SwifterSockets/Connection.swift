@@ -674,8 +674,12 @@ open class Connection: ReceiverProtocol, TransmitterProtocol {
         if let queue = tqueue() {
             
             let copy = UnsafeMutableRawBufferPointer.allocate(byteCount: buffer.count, alignment: 8)
+            #if swift(>=5.0)
+            memcpy(copy.baseAddress!, buffer.baseAddress, buffer.count)
+            #else
             memcpy(copy.baseAddress, buffer.baseAddress, buffer.count)
-            
+            #endif
+
             queue.async {
                 
                 [weak self] in
