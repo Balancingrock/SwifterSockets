@@ -3,7 +3,7 @@
 //  File:       FileDescriptorMacros.swift
 //  Project:    SwifterSockets
 //
-//  Version:    1.0.1
+//  Version:    1.1.1
 //
 //  Author:     Marinus van der Lugt
 //  Company:    http://balancingrock.nl
@@ -36,6 +36,7 @@
 //
 // History
 //
+// 1.1.1 - Linux compatibility
 // 1.0.1 - Fixed website link in header
 // 1.0.0 - Removed older history
 // =====================================================================================================================
@@ -50,7 +51,16 @@ import Foundation
 /// - Returns: The set that is opinted at is filled with all zero's.
 
 public func fdZero(_ set: inout fd_set) {
+
+    #if os(Linux)
+    
+    set.__fds_bits = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+    #else
+    
     set.fds_bits = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    
+    #endif
 }
 
 
@@ -67,10 +77,38 @@ public func fdSet(_ fd: Int32?, set: inout fd_set) {
     
     if let fd = fd {
         
-        let intOffset: Int32 = fd / 32
-        let bitOffset: Int32 = fd % 32
-        let mask: Int32 = 1 << bitOffset
+        #if os(Linux)
         
+        let intOffset = fd / 64
+        let bitOffset = fd % 64
+        let mask: Int64 = 1 << bitOffset
+        
+        switch intOffset {
+        case 0: set.__fds_bits.0 = set.__fds_bits.0 | mask
+        case 1: set.__fds_bits.1 = set.__fds_bits.1 | mask
+        case 2: set.__fds_bits.2 = set.__fds_bits.2 | mask
+        case 3: set.__fds_bits.3 = set.__fds_bits.3 | mask
+        case 4: set.__fds_bits.4 = set.__fds_bits.4 | mask
+        case 5: set.__fds_bits.5 = set.__fds_bits.5 | mask
+        case 6: set.__fds_bits.6 = set.__fds_bits.6 | mask
+        case 7: set.__fds_bits.7 = set.__fds_bits.7 | mask
+        case 8: set.__fds_bits.8 = set.__fds_bits.8 | mask
+        case 9: set.__fds_bits.9 = set.__fds_bits.9 | mask
+        case 10: set.__fds_bits.10 = set.__fds_bits.10 | mask
+        case 11: set.__fds_bits.11 = set.__fds_bits.11 | mask
+        case 12: set.__fds_bits.12 = set.__fds_bits.12 | mask
+        case 13: set.__fds_bits.13 = set.__fds_bits.13 | mask
+        case 14: set.__fds_bits.14 = set.__fds_bits.14 | mask
+        case 15: set.__fds_bits.15 = set.__fds_bits.15 | mask
+        default: break
+        }
+
+        #else
+        
+        let intOffset = fd / 32
+        let bitOffset = fd % 32
+        let mask: Int32 = 1 << bitOffset
+                
         switch intOffset {
         case 0: set.fds_bits.0 = set.fds_bits.0 | mask
         case 1: set.fds_bits.1 = set.fds_bits.1 | mask
@@ -106,6 +144,8 @@ public func fdSet(_ fd: Int32?, set: inout fd_set) {
         case 31: set.fds_bits.31 = set.fds_bits.31 | mask
         default: break
         }
+
+        #endif
     }
 }
 
@@ -121,10 +161,38 @@ public func fdClr(_ fd: Int32?, set: inout fd_set) {
     
     if let fd = fd {
         
-        let intOffset: Int32 = fd / 32
-        let bitOffset: Int32 = fd % 32
+        #if os(Linux)
+
+        let intOffset = fd / 64
+        let bitOffset = fd % 64
+        let mask: Int64 = ~(1 << bitOffset)
+
+        switch intOffset {
+        case 0: set.__fds_bits.0 = set.__fds_bits.0 & mask
+        case 1: set.__fds_bits.1 = set.__fds_bits.1 & mask
+        case 2: set.__fds_bits.2 = set.__fds_bits.2 & mask
+        case 3: set.__fds_bits.3 = set.__fds_bits.3 & mask
+        case 4: set.__fds_bits.4 = set.__fds_bits.4 & mask
+        case 5: set.__fds_bits.5 = set.__fds_bits.5 & mask
+        case 6: set.__fds_bits.6 = set.__fds_bits.6 & mask
+        case 7: set.__fds_bits.7 = set.__fds_bits.7 & mask
+        case 8: set.__fds_bits.8 = set.__fds_bits.8 & mask
+        case 9: set.__fds_bits.9 = set.__fds_bits.9 & mask
+        case 10: set.__fds_bits.10 = set.__fds_bits.10 & mask
+        case 11: set.__fds_bits.11 = set.__fds_bits.11 & mask
+        case 12: set.__fds_bits.12 = set.__fds_bits.12 & mask
+        case 13: set.__fds_bits.13 = set.__fds_bits.13 & mask
+        case 14: set.__fds_bits.14 = set.__fds_bits.14 & mask
+        case 15: set.__fds_bits.15 = set.__fds_bits.15 & mask
+        default: break
+        }
+
+        #else
+
+        let intOffset = fd / 32
+        let bitOffset = fd % 32
         let mask: Int32 = ~(1 << bitOffset)
-        
+
         switch intOffset {
         case 0: set.fds_bits.0 = set.fds_bits.0 & mask
         case 1: set.fds_bits.1 = set.fds_bits.1 & mask
@@ -160,6 +228,8 @@ public func fdClr(_ fd: Int32?, set: inout fd_set) {
         case 31: set.fds_bits.31 = set.fds_bits.31 & mask
         default: break
         }
+
+        #endif
     }
 }
 
@@ -175,10 +245,38 @@ public func fdIsSet(_ fd: Int32?, set: inout fd_set) -> Bool {
     
     if let fd = fd {
         
-        let intOffset: Int32 = fd / 32
-        let bitOffset: Int32 = fd % 32
+        #if os(Linux)
+
+        let intOffset = fd / 64
+        let bitOffset = fd % 64
+        let mask: Int64 = 1 << bitOffset
+
+        switch intOffset {
+        case 0: return set.__fds_bits.0 & mask != 0
+        case 1: return set.__fds_bits.1 & mask != 0
+        case 2: return set.__fds_bits.2 & mask != 0
+        case 3: return set.__fds_bits.3 & mask != 0
+        case 4: return set.__fds_bits.4 & mask != 0
+        case 5: return set.__fds_bits.5 & mask != 0
+        case 6: return set.__fds_bits.6 & mask != 0
+        case 7: return set.__fds_bits.7 & mask != 0
+        case 8: return set.__fds_bits.8 & mask != 0
+        case 9: return set.__fds_bits.9 & mask != 0
+        case 10: return set.__fds_bits.10 & mask != 0
+        case 11: return set.__fds_bits.11 & mask != 0
+        case 12: return set.__fds_bits.12 & mask != 0
+        case 13: return set.__fds_bits.13 & mask != 0
+        case 14: return set.__fds_bits.14 & mask != 0
+        case 15: return set.__fds_bits.15 & mask != 0
+        default: return false
+        }
+
+        #else
+
+        let intOffset = fd / 32
+        let bitOffset = fd % 32
         let mask: Int32 = 1 << bitOffset
-        
+
         switch intOffset {
         case 0: return set.fds_bits.0 & mask != 0
         case 1: return set.fds_bits.1 & mask != 0
@@ -214,6 +312,8 @@ public func fdIsSet(_ fd: Int32?, set: inout fd_set) -> Bool {
         case 31: return set.fds_bits.31 & mask != 0
         default: return false
         }
+        
+        #endif
         
     } else {
         return false
