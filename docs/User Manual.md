@@ -95,4 +95,4 @@ To setup a server, instantiate a new `TipServer` object. A server can have a lot
 
 Of course to be usefull, at least the connectionObjectFactory should be set.
 
-When a connection is accepted and the connectionObjectFactory returned a connection object, the receiverloop of the connection object will be started automatically. Hence the connection object can immediately start servicing the incoming request without additional setup.
+When a connection is accepted and the connectionObjectFactory returned a connection object, the receiverloop of the connection object will be started automatically. Hence the connection object can immediately start serviceing the incoming request without additional setup.

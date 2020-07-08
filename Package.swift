@@ -4,14 +4,9 @@ import PackageDescription
 
 let package = Package(
     name: "SwifterSockets",
-    products: [
-        .library(
-            name: "SwifterSockets", targets: ["SwifterSockets"])
-    ],
+    platforms: [.macOS(.v10_12), .iOS(.v8)],
+    products: [.library(name: "SwifterSockets", targets: ["SwifterSockets"])],
     dependencies: [],
-    targets: [
-        .target(
-            name: "SwifterSockets"
-        )
-    ]
+    targets: [.target(name: "SwifterSockets")],
+    swiftLanguageVersions: [.v4, .v4_2, .v5]
 )
