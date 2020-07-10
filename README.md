@@ -52,6 +52,10 @@ Alternatively you can clone the project and generate a Xcode framework in the fo
 
 No new features planned. Updates are made on an ad-hoc basis as needed to support Swiftfire development.
 
+#### 1.1.3
+
+- Reduced suported macOS platform to v10_10.
+
 #### 1.1.2
 
 - Added platforms, swift version and LICENSE file.
